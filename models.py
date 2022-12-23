@@ -78,7 +78,7 @@ class Members(BaseModel):
 
     poc: bool = False
     contact: str | None = Field(
-        None, regex="((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
+        None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
     # Validator
     _check_email = validator('mail', allow_reuse=True)(iiit_email_only)
