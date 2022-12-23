@@ -1,5 +1,5 @@
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from pydantic import (
     BaseModel,
@@ -68,7 +68,10 @@ class Members(BaseModel):
     mail: EmailStr = Field(...)
     role: constr(min_length=1, max_length=99,
                  strip_whitespace=True) = Field(...)
-    year: int = Field(default_factory=datetime.now().year, ge=2015, le=2040)
+    start_year: int = Field(
+        default_factory=datetime.now().year, ge=2015, le=2040)
+    end_year: int | None = Field(
+        default_factory=datetime.now().year + 1, ge=2015, le=2041)  # Added for future use maybe
     approved: bool = False
 
     poc: bool = False
@@ -80,10 +83,10 @@ class Members(BaseModel):
 
     @validator("poc", always=True)
     def check_current_poc(cls, value, values):
-        if value==True and values["year"] != datetime.today().year:
+        if value == True and values["year"] != datetime.now().year:
             return False
         return value
-    
+
     @validator("contact", always=True)
     def check_poc_contact(cls, value, values):
         if values["poc"] == True and not value:
