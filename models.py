@@ -67,7 +67,7 @@ class EnumCategories(str, Enum):
 
 
 class Members(BaseModel):
-    mail: EmailStr = Field(...)
+    rollno: int = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
     # type: ignore
     start_year: int = Field(
@@ -76,24 +76,22 @@ class Members(BaseModel):
         default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
     approved: bool = False
 
-    poc: bool = False
-    contact: str | None = Field(
-        None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
+    poc: bool = Field(False, description="Club POC")
+    # contact: str | None = Field(
+    #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
-    # Validator
-    _check_email = validator('mail', allow_reuse=True)(iiit_email_only)
-
+    # Validators
     @validator("poc", always=True)
     def check_current_poc(cls, value, values):
         if value == True and values["start_year"] != datetime.now().year:
             return False
         return value
 
-    @validator("contact", always=True)
-    def check_poc_contact(cls, value, values):
-        if values["poc"] == True and not value:
-            raise ValueError("POC Contact Number should be added")
-        return value
+    # @validator("contact", always=True)
+    # def check_poc_contact(cls, value, values):
+    #     if values["poc"] == True and not value:
+    #         raise ValueError("POC Contact Number should be added")
+    #     return value
 
     @validator("end_year", always=True)
     def check_end_year(cls, value, values):
