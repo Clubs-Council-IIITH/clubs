@@ -70,17 +70,23 @@ class Members(BaseModel):
     rollno: int = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
     # type: ignore
-    start_year: int = Field(
-        default_factory=current_year, ge=2015, le=2040)
-    end_year: int | None = Field(
-        default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
-    approved: bool = False
+    start_year: int = Field(...,
+                            default_factory=current_year, ge=2015, le=2040)
+    end_year: int | None = Field(...,
+                                 default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
+    approved: bool = Field(False)
 
     poc: bool = Field(False, description="Club POC")
     # contact: str | None = Field(
     #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
     # Validators
+    @validator("end_year", always=True)
+    def check_end_year(cls, value, values):
+        if value == values["start_year"]:
+            return value + 1
+        return value
+
     @validator("poc", always=True)
     def check_current_poc(cls, value, values):
         if value == True and values["start_year"] != datetime.now().year:
@@ -92,12 +98,6 @@ class Members(BaseModel):
     #     if values["poc"] == True and not value:
     #         raise ValueError("POC Contact Number should be added")
     #     return value
-
-    @validator("end_year", always=True)
-    def check_end_year(cls, value, values):
-        if value == values["start_year"]:
-            return value + 1
-        return value
 
     class Config:
         arbitrary_types_allowed = True
