@@ -71,8 +71,24 @@ class Members(BaseModel):
     year: int = Field(default_factory=datetime.now().year, ge=2015, le=2040)
     approved: bool = False
 
+    poc: bool = False
+    contact: constr(
+        regex="((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))") | None = None
+
     # Validator
     _check_email = validator('mail', allow_reuse=True)(iiit_email_only)
+
+    @validator("poc", always=True)
+    def check_current_poc(cls, value, values):
+        if value==True and values["year"] != datetime.today().year:
+            return False
+        return value
+    
+    @validator("contact", always=True)
+    def check_poc_contact(cls, value, values):
+        if values["poc"] == True and not value:
+            raise ValueError("POC Contact Number should be added")
+        return value
 
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
@@ -90,11 +106,12 @@ class Socials(BaseModel):
 
 class Clubs(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    shortform: str = Field(...)
+    shortform: str = Field(...)  # To make unique
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    img: FilePath | None = None
+    logo: FilePath | None = None
+    banner: FilePath | None = None
     name: constr(min_length=2, max_length=100,
                  strip_whitespace=True) = Field(...)
     email: EmailStr = Field(...)
