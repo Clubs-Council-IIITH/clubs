@@ -1,7 +1,17 @@
 from bson import ObjectId
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, EmailStr, AnyHttpUrl, PositiveInt
+from pydantic import (
+    BaseModel,
+    Extra,
+    Field,
+    EmailStr,
+    AnyHttpUrl,
+    ValidationError,
+    validator,
+    FilePath,
+    constr,
+    conlist)
 from typing import List, Optional
 
 # for handling mongo ObjectIds
@@ -34,6 +44,15 @@ class Sample(BaseModel):
         json_encoders = {ObjectId: str}
 
 
+def iiit_email_only(v):
+    valid_domains = ['@iiit.ac.in',
+                     '@students.iiit.ac.in', '@research.iiit.ac.in']
+    if any(valid_domain in v for valid_domain in valid_domains):
+        return v.lower()
+
+    raise ValueError('Official iiit emails only.')
+
+
 class EnumStates(str, Enum):
     active = 'active'
     deleted = 'deleted'
@@ -47,9 +66,15 @@ class EnumCategories(str, Enum):
 
 class Members(BaseModel):
     mail: EmailStr = Field(...)
-    role: str = Field(...)
-    year: PositiveInt = Field(default_factory=datetime.now().year)
+    role: constr(min_length=1, max_length=99,
+                 strip_whitespace=True) = Field(...)
+    year: int = Field(default_factory=datetime.now().year, ge=2015, le=2040)
     approved: bool = False
+
+    # Validator
+    _check_email = validator('mail', allow_reuse=True)(iiit_email_only)
+
+    # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
 
 class Socials(BaseModel):
@@ -60,27 +85,38 @@ class Socials(BaseModel):
     twitter: AnyHttpUrl
     linkedin: AnyHttpUrl
     discord: AnyHttpUrl
-    other_links: List[str, AnyHttpUrl]  # Type and URL
+    other_links: conlist([str, AnyHttpUrl], unique_items=True)  # Type and URL
 
 
 class Clubs(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    shortform: str = Field(...)
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    # img: ??
-    name: str = Field(...)
+    img: FilePath | None = None
+    name: constr(min_length=2, max_length=100,
+                 strip_whitespace=True) = Field(...)
     email: EmailStr = Field(...)
-    tagline: str | None = Field(...)  # Optional but required
-    description: str | None = '[{"type":"paragraph", "children":[{"text":""}]}]'
+    tagline: constr(min_length=2, max_length=200,
+                    strip_whitespace=True) | None = Field(...)  # Optional but required
+    description: constr(
+        max_length=600, strip_whitespace=True) | None = '[{"type":"paragraph", "children":[{"text":""}]}]'
     socials: Socials | None = Field(...)
 
     members: List[Members] | None = Field(...)
 
-    created_time: datetime = Field(default_factory=datetime.utcnow)
+    created_time: datetime = Field(
+        default_factory=datetime.utcnow, allow_mutation=False)
     updated_time: datetime = Field(default_factory=datetime.utcnow)
+
+    # Validator
+    _check_email = validator('email', allow_reuse=True)(iiit_email_only)
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+        max_anystr_length = 600
+        validate_assignment = True
+        extra = Extra.forbid
