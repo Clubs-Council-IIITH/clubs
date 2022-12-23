@@ -69,7 +69,6 @@ class EnumCategories(str, Enum):
 class Members(BaseModel):
     rollno: int = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
-    # type: ignore
     start_year: int = Field(...,
                             default_factory=current_year, ge=2015, le=2040)
     end_year: int | None = Field(...,
@@ -110,13 +109,13 @@ class Members(BaseModel):
 
 
 class Socials(BaseModel):
-    website: AnyHttpUrl
-    instagram: AnyHttpUrl
-    facebook: AnyHttpUrl
-    youtube: AnyHttpUrl
-    twitter: AnyHttpUrl
-    linkedin: AnyHttpUrl
-    discord: AnyHttpUrl
+    website: AnyHttpUrl | None
+    instagram: AnyHttpUrl | None
+    facebook: AnyHttpUrl | None
+    youtube: AnyHttpUrl | None
+    twitter: AnyHttpUrl | None
+    linkedin: AnyHttpUrl | None
+    discord: AnyHttpUrl | None
     other_links: List[AnyHttpUrl] | None = Field(
         None, unique_items=True)  # Type and URL
 
