@@ -4,6 +4,7 @@ from enum import Enum
 from pydantic import (
     BaseModel,
     Extra,
+    StringField,
     Field,
     EmailStr,
     AnyHttpUrl,
@@ -83,7 +84,7 @@ class Members(BaseModel):
 
     @validator("poc", always=True)
     def check_current_poc(cls, value, values):
-        if value == True and values["year"] != datetime.now().year:
+        if value == True and values["start_year"] != datetime.now().year:
             return False
         return value
 
@@ -109,7 +110,7 @@ class Socials(BaseModel):
 
 class Clubs(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    shortform: str = Field(...)  # To make unique
+    shortform: str = StringField(...)  # To make unique
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
