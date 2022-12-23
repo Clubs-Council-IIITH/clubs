@@ -1,18 +1,15 @@
 from bson import ObjectId
-from datetime import datetime, date
+from datetime import datetime
 from enum import Enum
 from pydantic import (
     BaseModel,
     Extra,
-    StringField,
     Field,
     EmailStr,
     AnyHttpUrl,
     ValidationError,
     validator,
-    FilePath,
-    constr,
-    conlist)
+    FilePath)
 from typing import List, Optional
 
 # for handling mongo ObjectIds
@@ -45,13 +42,17 @@ class Sample(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-def iiit_email_only(v):
+def iiit_email_only(v: str) -> str:
     valid_domains = ['@iiit.ac.in',
                      '@students.iiit.ac.in', '@research.iiit.ac.in']
     if any(valid_domain in v for valid_domain in valid_domains):
         return v.lower()
 
     raise ValueError('Official iiit emails only.')
+
+
+def current_year() -> int:
+    return datetime.now().year
 
 
 class EnumStates(str, Enum):
@@ -67,17 +68,17 @@ class EnumCategories(str, Enum):
 
 class Members(BaseModel):
     mail: EmailStr = Field(...)
-    role: constr(min_length=1, max_length=99,
-                 strip_whitespace=True) = Field(...)
+    role: str = Field(..., min_length=1, max_length=99)
+    # type: ignore
     start_year: int = Field(
-        default_factory=datetime.now().year, ge=2015, le=2040)
+        default_factory=current_year, ge=2015, le=2040)
     end_year: int | None = Field(
-        default_factory=datetime.now().year + 1, ge=2015, le=2041)  # Added for future use maybe
+        default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
     approved: bool = False
 
     poc: bool = False
-    contact: constr(
-        regex="((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))") | None = None
+    contact: str | None = Field(
+        None, regex="((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
     # Validator
     _check_email = validator('mail', allow_reuse=True)(iiit_email_only)
@@ -94,6 +95,19 @@ class Members(BaseModel):
             raise ValueError("POC Contact Number should be added")
         return value
 
+    @validator("end_year", always=True)
+    def check_end_year(cls, value, values):
+        if value == values["start_year"]:
+            return value + 1
+        return value
+
+    class Config:
+        arbitrary_types_allowed = True
+        anystr_strip_whitespace = True
+        max_anystr_length = 600
+        validate_assignment = True
+        extra = Extra.forbid
+
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
 
@@ -105,24 +119,23 @@ class Socials(BaseModel):
     twitter: AnyHttpUrl
     linkedin: AnyHttpUrl
     discord: AnyHttpUrl
-    other_links: conlist([str, AnyHttpUrl], unique_items=True)  # Type and URL
+    other_links: List[AnyHttpUrl] | None = Field(
+        None, unique_items=True)  # Type and URL
 
 
 class Clubs(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    shortform: str = StringField(...)  # To make unique
+    shortform: str = Field(...)  # To make unique
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
     logo: FilePath | None = None
     banner: FilePath | None = None
-    name: constr(min_length=2, max_length=100,
-                 strip_whitespace=True) = Field(...)
-    email: EmailStr = Field(...)
-    tagline: constr(min_length=2, max_length=200,
-                    strip_whitespace=True) | None = Field(...)  # Optional but required
-    description: constr(
-        max_length=600, strip_whitespace=True) | None = '[{"type":"paragraph", "children":[{"text":""}]}]'
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr = Field(...)  # Optional but required
+    tagline: str | None = Field(..., min_length=2, max_length=200)
+    description: str | None = Field(
+        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600)
     socials: Socials | None = Field(...)
 
     members: List[Members] | None = Field(...)
@@ -141,3 +154,4 @@ class Clubs(BaseModel):
         max_anystr_length = 600
         validate_assignment = True
         extra = Extra.forbid
+        anystr_strip_whitespace = True
