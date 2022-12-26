@@ -9,7 +9,6 @@ MONGO_URI = "mongodb://{}:{}@mongo:{}/".format(
     getenv("MONGO_PASSWORD", default="password"),
     getenv("MONGO_PORT", default="27107")
 )
-# MONGO_URI = getenv("MONGO_URI", default="mongodb://localhost:27017/")
 MONGO_DATABASE = getenv("MONGO_DATABASE", default="default")
 
 # instantiate mongo client

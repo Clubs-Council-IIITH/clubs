@@ -6,12 +6,15 @@ from db import db
 
 # import all models and types
 from models import Sample
-from otypes import SampleQueryInput, SampleType
+from otypes import Info, SampleQueryInput, SampleType
 
 
 # sample query
 @strawberry.field
-def sampleQuery(sampleInput: SampleQueryInput) -> SampleType:
+def sampleQuery(sampleInput: SampleQueryInput, info: Info) -> SampleType:
+    user = info.context.user
+    print("user:", user)
+
     sample = jsonable_encoder(sampleInput.to_pydantic())
 
     # query from database
@@ -25,4 +28,8 @@ def sampleQuery(sampleInput: SampleQueryInput) -> SampleType:
     else:
         raise Exception("Sample not found!")
 
-list_all_queries = [sampleQuery,]
+
+# register all queries
+queries = [
+    sampleQuery,
+]
