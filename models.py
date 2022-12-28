@@ -69,10 +69,8 @@ class EnumCategories(str, Enum):
 class Members(BaseModel):
     rollno: int = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
-    start_year: int = Field(...,
-                            default_factory=current_year, ge=2015, le=2040)
-    end_year: int | None = Field(...,
-                                 default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
+    start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
+    end_year: int | None = Field(default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
     approved: bool = Field(False)
 
     poc: bool = Field(False, description="Club POC")
