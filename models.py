@@ -11,7 +11,7 @@ from pydantic import (
     ValidationError,
     validator)
 from typing import List
-# from typing import Optional
+from typing import Optional
 
 # for handling mongo ObjectIds
 
@@ -32,15 +32,15 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-## sample pydantic model
-# class Sample(BaseModel):
-#     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-#     attribute: Optional[str]
+# sample pydantic model
+class Sample(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    attribute: Optional[str]
 
-#     class Config:
-#         allow_population_by_field_name = True
-#         arbitrary_types_allowed = True
-#         json_encoders = {ObjectId: str}
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
 
 def iiit_email_only(v: str) -> str:
