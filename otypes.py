@@ -5,10 +5,11 @@ from strawberry.fastapi import BaseContext
 from strawberry.types import Info as _Info
 from strawberry.types.info import RootValueType
 
-from typing import Union, Dict
+from typing import Union, Dict, List
 from functools import cached_property
 
-from models import PyObjectId, Sample
+# from models import Sample
+from models import PyObjectId, Clubs, Socials, Members
 
 
 # custom context class
@@ -30,19 +31,79 @@ PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
 
-# sample object type from pydantic model with all fields exposed
-@strawberry.experimental.pydantic.type(model=Sample, all_fields=True)
-class SampleType:
+# # sample object type from pydantic model with all fields exposed
+# @strawberry.experimental.pydantic.type(model=Sample, all_fields=True)
+# class SampleType:
+#     pass
+
+
+# # sample query's input type from pydantic model
+# @strawberry.experimental.pydantic.input(model=Sample)
+# class SampleQueryInput:
+#     id: strawberry.auto
+
+
+# # sample mutation's input type from pydantic model
+# @strawberry.experimental.pydantic.input(model=Sample)
+# class SampleMutationInput:
+#     attribute: strawberry.auto
+
+
+# TYPES
+@strawberry.experimental.pydantic.type(model=Members, all_fields=True)
+class MembersType:
     pass
 
-
-# sample query's input type from pydantic model
-@strawberry.experimental.pydantic.input(model=Sample)
-class SampleQueryInput:
-    id: strawberry.auto
+# @strawberry.experimental.pydantic.type(model=Socials, all_fields=True)
+# class SocialsType:
+#     pass
 
 
-# sample mutation's input type from pydantic model
-@strawberry.experimental.pydantic.input(model=Sample)
-class SampleMutationInput:
-    attribute: strawberry.auto
+@strawberry.experimental.pydantic.type(Clubs, fields=[
+    "cid",
+    "state",
+    "category",
+    "logo",
+    "name",
+    "tagline"
+])
+class SimpleClubType:
+    pass
+
+@strawberry.experimental.pydantic.type(model=Clubs, fields=[
+    "cid",
+    "state",
+    "category",
+    "logo",
+    "banner",
+    "name",
+    "email",
+    "tagline",
+    "description",
+    "socials"
+])
+class FullClubType:
+    # socials: SocialsType
+    pass
+
+# QUERY INPUTS
+@strawberry.experimental.pydantic.input(model=Clubs)
+class SimpleClubQuery:
+    shortform: strawberry.auto
+
+# MUTATION INPUTS
+@strawberry.experimental.pydantic.input(model=Members)
+class FullMemberInput:
+    cid: str
+    rollno: strawberry.auto
+    role: strawberry.auto
+    start_year: strawberry.auto
+
+@strawberry.experimental.pydantic.input(model=Members)
+class SimpleMemberInput:
+    cid: str
+    rollno: strawberry.auto
+
+@strawberry.experimental.pydantic.input(model=Socials, all_fields=True)
+class SocialsInput:
+    pass

@@ -1,3 +1,4 @@
+import strawberry
 from bson import ObjectId
 from datetime import datetime
 from enum import Enum
@@ -8,9 +9,9 @@ from pydantic import (
     EmailStr,
     AnyHttpUrl,
     ValidationError,
-    validator,
-    FilePath)
-from typing import List, Optional
+    validator)
+from typing import List
+# from typing import Optional
 
 # for handling mongo ObjectIds
 
@@ -31,15 +32,15 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-# sample pydantic model
-class Sample(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    attribute: Optional[str]
+## sample pydantic model
+# class Sample(BaseModel):
+#     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+#     attribute: Optional[str]
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+#     class Config:
+#         allow_population_by_field_name = True
+#         arbitrary_types_allowed = True
+#         json_encoders = {ObjectId: str}
 
 
 def iiit_email_only(v: str) -> str:
@@ -54,12 +55,13 @@ def iiit_email_only(v: str) -> str:
 def current_year() -> int:
     return datetime.now().year
 
-
+@strawberry.enum
 class EnumStates(str, Enum):
     active = 'active'
     deleted = 'deleted'
 
 
+@strawberry.enum
 class EnumCategories(str, Enum):
     cultural = "CULTURAL"
     technical = "TECHNICAL"
@@ -120,12 +122,12 @@ class Socials(BaseModel):
 
 class Clubs(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    shortform: str = Field(...)  # To make unique
+    cid: str = Field(...)  # equivalent to club id
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    logo: FilePath | None = None
-    banner: FilePath | None = None
+    logo: str | None = Field(None)
+    banner: str | None = Field(None)
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
     tagline: str | None = Field(..., min_length=2, max_length=200)
