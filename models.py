@@ -75,9 +75,9 @@ class Member(BaseModel):
     role: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
     end_year: int | None = Field(default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
-    approved: bool = Field(False)
+    approved: bool = Field(default_factory=(lambda: 0==1))
 
-    poc: bool = Field(False, description="Club POC")
+    poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
     # contact: str | None = Field(
     #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
