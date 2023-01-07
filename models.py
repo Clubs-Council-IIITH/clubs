@@ -132,12 +132,12 @@ class Club(BaseModel):
     banner: str | None = Field(None)
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
-    tagline: str | None = Field(..., min_length=2, max_length=200)
+    tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
         '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600)
-    socials: Social | None = Field(...)
+    socials: Social | None = Field(None)
 
-    members: List[Member] | None = Field(...)
+    members: List[Member] | None = Field(None)
 
     created_time: datetime = Field(
         default_factory=datetime.utcnow, allow_mutation=False)
@@ -157,3 +157,4 @@ class Club(BaseModel):
 
 
 # TO ADD CLUB SUBSCRIPTION MODEL
+# ADD Descriptions for non-direct fields
