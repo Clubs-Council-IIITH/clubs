@@ -55,7 +55,7 @@ class SampleMutationInput:
 #     pass
 
 @strawberry.experimental.pydantic.type(model=Social, all_fields=True)
-class SocialType:
+class SocialsType:
     pass
 
 
@@ -84,11 +84,15 @@ class SimpleClubType:
     "socials"
 ])
 class FullClubType:
-    # socials: SocialType
+    # socials: SocialsType
     pass
 
 # QUERY INPUTS
 
+
+@strawberry.experimental.pydantic.input(model=Social, all_fields=True)
+class SocialsInput:
+    pass
 
 @strawberry.experimental.pydantic.input(model=Club, fields=["cid",])
 class SimpleClubInput:
@@ -135,8 +139,3 @@ class SimpleMemberInput:
     cid: str
     rollno: Optional[strawberry.auto]
     uid: strawberry.auto
-
-
-@strawberry.experimental.pydantic.input(model=Social, all_fields=True)
-class SocialInput:
-    pass
