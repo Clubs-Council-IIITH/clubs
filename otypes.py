@@ -49,7 +49,6 @@ class SampleMutationInput:
     attribute: strawberry.auto
 
 
-"""
 # TYPES
 # @strawberry.experimental.pydantic.type(model=Member, all_fields=True)
 # class MemberType:
@@ -141,4 +140,3 @@ class SimpleMemberInput:
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialInput:
     pass
-"""
