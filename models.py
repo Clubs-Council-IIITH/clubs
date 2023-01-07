@@ -55,6 +55,7 @@ def iiit_email_only(v: str) -> str:
 def current_year() -> int:
     return datetime.now().year
 
+
 @strawberry.enum
 class EnumStates(str, Enum):
     active = 'active'
@@ -68,7 +69,7 @@ class EnumCategories(str, Enum):
     other = "OTHER"
 
 
-class Members(BaseModel):
+class Member(BaseModel):
     rollno: int = Field(...)
     uid: str = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
@@ -109,7 +110,7 @@ class Members(BaseModel):
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
 
-class Socials(BaseModel):
+class Social(BaseModel):
     website: AnyHttpUrl | None
     instagram: AnyHttpUrl | None
     facebook: AnyHttpUrl | None
@@ -121,7 +122,7 @@ class Socials(BaseModel):
         None, unique_items=True)  # Type and URL
 
 
-class Clubs(BaseModel):
+class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(...)  # equivalent to club id
     state: EnumStates = EnumStates.active
@@ -134,9 +135,9 @@ class Clubs(BaseModel):
     tagline: str | None = Field(..., min_length=2, max_length=200)
     description: str | None = Field(
         '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600)
-    socials: Socials | None = Field(...)
+    socials: Social | None = Field(...)
 
-    members: List[Members] | None = Field(...)
+    members: List[Member] | None = Field(...)
 
     created_time: datetime = Field(
         default_factory=datetime.utcnow, allow_mutation=False)
@@ -153,3 +154,6 @@ class Clubs(BaseModel):
         validate_assignment = True
         extra = Extra.forbid
         anystr_strip_whitespace = True
+
+
+# TO ADD CLUB SUBSCRIPTION MODEL

@@ -1,6 +1,7 @@
 import strawberry
 
 from fastapi.encoders import jsonable_encoder
+from typing import List
 
 from db import db
 
@@ -8,6 +9,10 @@ from db import db
 from models import Sample
 from otypes import Info, SampleQueryInput, SampleType
 
+"""
+from models import Club, Member
+from otypes import SimpleClubType, FullClubType, SimpleClubInput
+"""
 
 # sample query
 @strawberry.field
@@ -28,6 +33,81 @@ def sampleQuery(sampleInput: SampleQueryInput, info: Info) -> SampleType:
     else:
         raise Exception("Sample not found!")
 
+
+"""
+@strawberry.field
+def getAllClubs(info: Info) -> SimpleClubType:
+    user = info.context.user
+    # role = user["role"]
+
+    result = 0  # Query mongodb based on roles
+
+    if result:
+        result = Club.parse_obj(result)
+        return SimpleClubType.from_pydantic(result)
+    else:
+        raise Exception("No Club Result Found")
+
+
+@strawberry.field
+def getPendingClubs(info: Info) -> SimpleClubType:
+    user = info.context.user
+    # role = user["role"]
+
+    result = 0  # Query mongodb based on cc role only
+
+    if result:
+        result = Club.parse_obj(result)
+        return SimpleClubType.from_pydantic(result)
+    else:
+        raise Exception("No Club Result Found")
+
+
+@strawberry.field
+def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
+    user = info.context.user
+    # role = user["role"]
+
+    input = jsonable_encoder(clubInput.to_pydantic())
+
+    result = 0  # Query mongodb based on roles
+
+    if result:
+        result = Club.parse_obj(result)
+        return FullClubType.from_pydantic(result)
+    else:
+        raise Exception("No Club Result Found")
+
+
+@strawberry.field
+def getMembers(clubInput: SimpleClubInput, info: Info) -> List[Member]:
+    user = info.context.user
+    # role = user["role"]
+
+    input = jsonable_encoder(clubInput.to_pydantic())
+
+    result = 0  # Query mongodb based on roles
+
+    if result:
+        result = Member.parse_obj(result)
+        return Member.from_pydantic(result)
+    else:
+        raise Exception("No Member Result Found")
+
+
+@strawberry.field
+def getPendingMembers(info: Info) -> List[Member]:
+    user = info.context.user
+    # role = user["role"]
+
+    result = 0  # Query mongodb based on roles
+
+    if result:
+        result = Member.parse_obj(result)
+        return Member.from_pydantic(result)
+    else:
+        raise Exception("No Member Result Found")
+"""
 
 # register all queries
 queries = [

@@ -5,11 +5,11 @@ from strawberry.fastapi import BaseContext
 from strawberry.types import Info as _Info
 from strawberry.types.info import RootValueType
 
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Optional
 from functools import cached_property
 
 from models import Sample
-from models import PyObjectId, Clubs, Socials, Members
+from models import PyObjectId, Club, Social, Member
 
 
 # custom context class
@@ -49,17 +49,18 @@ class SampleMutationInput:
     attribute: strawberry.auto
 
 
+"""
 # TYPES
-@strawberry.experimental.pydantic.type(model=Members, all_fields=True)
-class MembersType:
+# @strawberry.experimental.pydantic.type(model=Member, all_fields=True)
+# class MemberType:
+#     pass
+
+@strawberry.experimental.pydantic.type(model=Social, all_fields=True)
+class SocialType:
     pass
 
-@strawberry.experimental.pydantic.type(model=Socials, all_fields=True)
-class SocialsType:
-    pass
 
-
-@strawberry.experimental.pydantic.type(Clubs, fields=[
+@strawberry.experimental.pydantic.type(Club, fields=[
     "cid",
     "state",
     "category",
@@ -70,7 +71,8 @@ class SocialsType:
 class SimpleClubType:
     pass
 
-@strawberry.experimental.pydantic.type(model=Clubs, fields=[
+
+@strawberry.experimental.pydantic.type(model=Club, fields=[
     "cid",
     "state",
     "category",
@@ -83,29 +85,60 @@ class SimpleClubType:
     "socials"
 ])
 class FullClubType:
-    # socials: SocialsType
+    # socials: SocialType
     pass
 
 # QUERY INPUTS
-@strawberry.experimental.pydantic.input(model=Clubs)
-class SimpleClubQuery:
-    cid: strawberry.auto
+
+
+@strawberry.experimental.pydantic.input(model=Club, fields=["cid",])
+class SimpleClubInput:
+    pass
+
+
+@strawberry.experimental.pydantic.input(model=Club, fields=[
+    "cid",
+    "state",
+    "category",
+    "name",
+    "email"
+])
+class NewClubInput:
+    pass
+
+
+@strawberry.experimental.pydantic.input(model=Club, fields=[
+    "cid",
+    "state",
+    "category",
+    "name",
+    "email",
+    "tagline",
+    "description",
+    "socials"
+])
+class EditClubInput:
+    pass
 
 # MUTATION INPUTS
-@strawberry.experimental.pydantic.input(model=Members)
+@strawberry.experimental.pydantic.input(model=Member)
 class FullMemberInput:
     cid: str
     rollno: strawberry.auto
     uid: strawberry.auto
     role: strawberry.auto
     start_year: strawberry.auto
+    poc: Optional[strawberry.auto]
 
-@strawberry.experimental.pydantic.input(model=Members)
+
+@strawberry.experimental.pydantic.input(model=Member)
 class SimpleMemberInput:
     cid: str
-    # rollno: strawberry.auto
+    rollno: Optional[strawberry.auto]
     uid: strawberry.auto
 
-@strawberry.experimental.pydantic.input(model=Socials, all_fields=True)
-class SocialsInput:
+
+@strawberry.experimental.pydantic.input(model=Social, all_fields=True)
+class SocialInput:
     pass
+"""
