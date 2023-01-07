@@ -50,9 +50,9 @@ class SampleMutationInput:
 
 
 # TYPES
-# @strawberry.experimental.pydantic.type(model=Member, all_fields=True)
-# class MemberType:
-#     pass
+@strawberry.experimental.pydantic.type(model=Member, all_fields=True)
+class MemberType:
+    pass
 
 @strawberry.experimental.pydantic.type(model=Social, all_fields=True)
 class SocialsType:
@@ -131,11 +131,11 @@ class FullMemberInput:
     uid: strawberry.auto
     role: strawberry.auto
     start_year: strawberry.auto
-    poc: Optional[strawberry.auto]
+    poc: Optional[bool]
 
 
 @strawberry.experimental.pydantic.input(model=Member)
 class SimpleMemberInput:
     cid: str
-    rollno: Optional[strawberry.auto]
+    rollno: Optional[int]
     uid: strawberry.auto
