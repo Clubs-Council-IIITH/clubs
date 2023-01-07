@@ -12,7 +12,7 @@ from otypes import Info, SampleMutationInput, SampleType
 """
 from models import Club, Member
 from otypes import NewClubInput, SimpleClubInput, SimpleClubType, FullClubType
-from otypes import FullMemberInput, SimpleMemberInput
+from otypes import FullMemberInput, SimpleMemberInput, MemberType
 """
 
 # sample mutation
@@ -79,7 +79,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 # CHANGE POSTER
 
 @strawberry.mutation
-def createMember(memberInput: FullMemberInput, info: Info) -> List[Member]:
+def createMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 
@@ -95,7 +95,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> List[Member]:
 
 
 @strawberry.mutation
-def editMember(memberInput: FullMemberInput, info: Info) -> List[Member]:
+def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 
@@ -111,7 +111,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> List[Member]:
 
 
 @strawberry.mutation
-def deleteMember(memberInput: SimpleMemberInput, info: Info) -> List[Member]:
+def deleteMember(memberInput: SimpleMemberInput, info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 
@@ -127,7 +127,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> List[Member]:
 
 
 @strawberry.mutation
-def approveMember(memberInput: SimpleMemberInput, info: Info) -> List[Member]:
+def approveMember(memberInput: SimpleMemberInput, info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 

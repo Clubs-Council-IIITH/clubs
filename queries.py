@@ -80,7 +80,7 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
 
 @strawberry.field
-def getMembers(clubInput: SimpleClubInput, info: Info) -> List[Member]:
+def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 
@@ -96,7 +96,7 @@ def getMembers(clubInput: SimpleClubInput, info: Info) -> List[Member]:
 
 
 @strawberry.field
-def getPendingMembers(info: Info) -> List[Member]:
+def getPendingMembers(info: Info) -> List[MemberType]:
     user = info.context.user
     # role = user["role"]
 
