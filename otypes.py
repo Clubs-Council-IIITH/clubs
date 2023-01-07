@@ -96,13 +96,15 @@ class SimpleClubQuery:
 class FullMemberInput:
     cid: str
     rollno: strawberry.auto
+    uid: strawberry.auto
     role: strawberry.auto
     start_year: strawberry.auto
 
 @strawberry.experimental.pydantic.input(model=Members)
 class SimpleMemberInput:
     cid: str
-    rollno: strawberry.auto
+    # rollno: strawberry.auto
+    uid: strawberry.auto
 
 @strawberry.experimental.pydantic.input(model=Socials, all_fields=True)
 class SocialsInput:
