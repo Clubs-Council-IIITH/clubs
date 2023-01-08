@@ -94,9 +94,10 @@ class FullClubType:
 class SocialsInput:
     pass
 
-@strawberry.experimental.pydantic.input(model=Club, fields=["cid",])
+
+@strawberry.input
 class SimpleClubInput:
-    pass
+    cid: str
 
 
 @strawberry.experimental.pydantic.input(model=Club, fields=[
@@ -114,14 +115,13 @@ class NewClubInput:
     "cid",
     "state",
     "category",
-    "name",
-    "email",
     "tagline",
     "description",
     "socials"
 ])
 class EditClubInput:
-    pass
+    name: Optional[str] = strawberry.UNSET
+    email: Optional[str] = strawberry.UNSET
 
 # MUTATION INPUTS
 @strawberry.experimental.pydantic.input(model=Member)
@@ -137,5 +137,5 @@ class FullMemberInput:
 @strawberry.experimental.pydantic.input(model=Member)
 class SimpleMemberInput:
     cid: str
-    rollno: Optional[int]
+    rollno: Optional[int] = strawberry.UNSET
     uid: strawberry.auto

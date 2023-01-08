@@ -9,10 +9,8 @@ from db import db
 from models import Sample
 from otypes import Info, SampleQueryInput, SampleType
 
-"""
 from models import Club, Member
 from otypes import SimpleClubType, FullClubType, SimpleClubInput
-"""
 
 # sample query
 @strawberry.field
@@ -35,30 +33,42 @@ def sampleQuery(sampleInput: SampleQueryInput, info: Info) -> SampleType:
 
 
 """
+async def retrieve_clubs(active:bool, pending:bool):
+    clubs = []
+    async for student in student_collection.find():
+        clubs.append(student_helper(student))
+    return clubs
+"""
 @strawberry.field
-def getAllClubs(info: Info) -> SimpleClubType:
+def getAllClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     # role = user["role"]
 
-    result = 0  # Query mongodb based on roles
+    results = db.clubs.find()
+    # If not cc/club, then find with condition of only active clubs
 
-    if result:
-        result = Club.parse_obj(result)
-        return SimpleClubType.from_pydantic(result)
+    if results:
+        clubs = []
+        for result in results:
+            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
+        return clubs
     else:
         raise Exception("No Club Result Found")
 
 
 @strawberry.field
-def getPendingClubs(info: Info) -> SimpleClubType:
+def getDeletedClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     # role = user["role"]
 
-    result = 0  # Query mongodb based on cc role only
+    results = db.clubs.find({"state": "deleted"})
+    # If not cc, error
 
-    if result:
-        result = Club.parse_obj(result)
-        return SimpleClubType.from_pydantic(result)
+    if results:
+        clubs = []
+        for result in results:
+            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
+        return clubs
     else:
         raise Exception("No Club Result Found")
 
@@ -68,9 +78,10 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
     # role = user["role"]
 
-    input = jsonable_encoder(clubInput.to_pydantic())
+    input = jsonable_encoder(clubInput)
 
-    result = 0  # Query mongodb based on roles
+    result = db.clubs.find_one({"cid": input["cid"]})
+    # Query mongodb based on roles
 
     if result:
         result = Club.parse_obj(result)
@@ -79,6 +90,7 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         raise Exception("No Club Result Found")
 
 
+"""
 @strawberry.field
 def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     user = info.context.user
@@ -111,5 +123,23 @@ def getPendingMembers(info: Info) -> List[MemberType]:
 
 # register all queries
 queries = [
-    sampleQuery,
+    getAllClubs,
+    getDeletedClubs,
+    getClub
 ]
+
+
+# def getUserMeta(userInput: UserInput) -> UserMetaType:
+#     user = jsonable_encoder(userInput)
+
+#     # query database for user
+#     found_user = db.users.find_one({"uid": user["uid"]})
+
+#     # if user doesn't exist, add to database
+#     if found_user:
+#         found_user = User.parse_obj(found_user)
+#     else:
+#         found_user = User(uid=user["uid"])
+#         db.users.insert_one(jsonable_encoder(found_user))
+
+#     return UserMetaType.from_pydantic(found_user)

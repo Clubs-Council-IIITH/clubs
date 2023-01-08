@@ -2,6 +2,7 @@ import strawberry
 
 from fastapi.encoders import jsonable_encoder
 from typing import List
+from datetime import datetime
 
 from db import db
 
@@ -9,11 +10,9 @@ from db import db
 from models import Sample
 from otypes import Info, SampleMutationInput, SampleType
 
-"""
 from models import Club, Member
-from otypes import NewClubInput, SimpleClubInput, SimpleClubType, FullClubType
+from otypes import NewClubInput, SimpleClubInput, SimpleClubType, FullClubType, EditClubInput
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
-"""
 
 # sample mutation
 @strawberry.mutation
@@ -29,7 +28,6 @@ def sampleMutation(sampleInput: SampleMutationInput) -> SampleType:
     return SampleType.from_pydantic(created_sample)
 
 
-"""
 @strawberry.mutation
 def createClub(clubInput: NewClubInput) -> SimpleClubType:
     input = jsonable_encoder(clubInput.to_pydantic())
@@ -37,15 +35,16 @@ def createClub(clubInput: NewClubInput) -> SimpleClubType:
     # DB STUFF
     # Change upgrade & create time too
     # Add user with role too
-    created_id = 0
 
-    created_sample = Club.parse_obj(db.samples.find_one({"_id": created_id}))
+    created_id = db.clubs.insert_one(input).inserted_id
+    created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
 
+
 @strawberry.mutation
-def editClub(clubInput: NewClubInput, info: Info) -> FullClubType:
+def editClub(clubInput: EditClubInput, info: Info) -> SimpleClubType:
     user = info.context.user
     # role = user["role"]
 
@@ -54,11 +53,12 @@ def editClub(clubInput: NewClubInput, info: Info) -> FullClubType:
     # DB STUFF
     # Change entries only as per the roles
     # Change upgrade time too
-    created_id = 0
 
-    created_sample = Club.parse_obj(db.samples.find_one({"_id": created_id}))
+    db.clubs.update_one({"cid":input["cid"]}, {"$set": {"name":"BHAVV", "updated_time": datetime.utcnow}})
 
-    return FullClubType.from_pydantic(created_sample)
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+
+    return SimpleClubType.from_pydantic(created_sample)
 
 
 @strawberry.mutation
@@ -66,16 +66,17 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     user = info.context.user
     # role = user["role"]
 
-    input = jsonable_encoder(clubInput.to_pydantic())
+    input = jsonable_encoder(clubInput)
 
     # DB STUFF
     # Change upgrade time too
-    created_id = 0
+    db.clubs.update_one({"cid": input["cid"]}, {"$set": {"state": "deleted"}})
 
-    created_sample = Club.parse_obj(db.samples.find_one({"_id": created_id}))
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
+"""
 # CHANGE POSTER
 
 @strawberry.mutation
@@ -145,5 +146,7 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> List[MemberType
 
 # register all mutations
 mutations = [
-    sampleMutation,
+    createClub,
+    editClub,
+    deleteClub
 ]
