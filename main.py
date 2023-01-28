@@ -1,9 +1,10 @@
 import strawberry
-
 from strawberry.tools import create_type
 from strawberry.fastapi import GraphQLRouter
 
 from fastapi import FastAPI
+
+from os import getenv
 
 # override PyObjectId and Context scalars
 from models import PyObjectId
@@ -33,7 +34,13 @@ schema = strawberry.federation.Schema(
     scalar_overrides={PyObjectId: PyObjectIdType},
 )
 
+DEBUG = getenv("SERVICES_DEBUG", "False").lower() in ("true", "1", "t")
+
 # serve API with FastAPI router
 gql_app = GraphQLRouter(schema, context_getter=get_context)
-app = FastAPI()
+app = FastAPI(
+    debug=DEBUG,
+    title="CC Clubs Microservice",
+    desciption="Handles Data of Clubs and Members"
+    )
 app.include_router(gql_app, prefix="/graphql")
