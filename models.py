@@ -124,7 +124,7 @@ class Social(BaseModel):
 
 class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(...)  # equivalent to club id
+    cid: str = Field(...)  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
@@ -156,5 +156,5 @@ class Club(BaseModel):
         anystr_strip_whitespace = True
 
 
-# TO ADD CLUB SUBSCRIPTION MODEL
+# TO ADD CLUB SUBSCRIPTION MODEL - v2
 # ADD Descriptions for non-direct fields

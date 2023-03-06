@@ -74,6 +74,22 @@ def getDeletedClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
+def getActiveClubs(info: Info) -> List[SimpleClubType]:
+    user = info.context.user
+    # role = user["role"]
+
+    results = db.clubs.find({"state": "active"})
+    # If not cc, error
+
+    if results:
+        clubs = []
+        for result in results:
+            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
+        return clubs
+    else:
+        raise Exception("No Club Result Found")
+
+@strawberry.field
 def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
     # role = user["role"]
@@ -125,6 +141,7 @@ def getPendingMembers(info: Info) -> List[MemberType]:
 queries = [
     getAllClubs,
     getDeletedClubs,
+    getActiveClubs,
     getClub
 ]
 
