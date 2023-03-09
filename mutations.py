@@ -15,6 +15,8 @@ from otypes import NewClubInput, SimpleClubInput, SimpleClubType, FullClubType, 
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
 
 # sample mutation
+
+
 @strawberry.mutation
 def sampleMutation(sampleInput: SampleMutationInput) -> SampleType:
     sample = jsonable_encoder(sampleInput.to_pydantic())
@@ -29,68 +31,164 @@ def sampleMutation(sampleInput: SampleMutationInput) -> SampleType:
 
 
 @strawberry.mutation
-def createClub(clubInput: NewClubInput) -> SimpleClubType:
+def createClub(clubInput: NewClubInput, info: Info) -> FullClubType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+    
+    role = user["role"]
     input = jsonable_encoder(clubInput.to_pydantic())
 
-    # DB STUFF
     # Change upgrade & create time too
-    # Add user with role too
+    # Add user with role too, if doesn't exist
 
-    created_id = db.clubs.insert_one(input).inserted_id
-    created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
+    if role in ["cc", ]:
+        exists = db.clubs.find_one({"cid": input["cid"]})
+        if exists:
+            raise Exception("A club with this cid already exists")
+        
+        created_id = db.clubs.insert_one(input).inserted_id
+        created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
 
-    return SimpleClubType.from_pydantic(created_sample)
-
+        return SimpleClubType.from_pydantic(created_sample)
+    else:
+        raise Exception("Not Authenticated to access this API")
 
 
 @strawberry.mutation
-def editClub(clubInput: EditClubInput, info: Info) -> SimpleClubType:
+def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
     user = info.context.user
-    # role = user["role"]
+    role = user["role"]
 
+    role=user["role"]
+    uid = user["uid"]
     input = jsonable_encoder(clubInput.to_pydantic())
 
-    # DB STUFF
-    # Change entries only as per the roles
-    # Change upgrade time too
+    if role in ["cc", ]:
+        exists = db.clubs.find_one({"cid": input["cid"]})
+        if uid != input["cid"] and exists:
+            raise Exception("A club with this cid already exists")
+        
+        input["state"] = exists["state"]
+        
+        db.clubs.replace_one({"cid": uid}, input)
+        db.clubs.update_one({"cid": input["cid"]}, {
+            "$set": {"created_time": exists["created_time"], "updated_time": datetime.utcnow}})
 
-    db.clubs.update_one({"cid":input["cid"]}, {"$set": {"name":"BHAVV", "updated_time": datetime.utcnow}})
+        result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+        return FullClubType.from_pydantic(result)
+    
+    elif role in ["club", ] and user["uid"] == input["cid"]:
+        exists = db.clubs.find_one({"cid": input["cid"]})
+        if uid != input["cid"]:
+            raise Exception("Authentication Error! (CID CHANGED)")
+        
+        if input["name"] != exists["name"] or input["email"] != exists["email"]:
+            raise Exception("You don't have permission to change the name/email of the club. Please contact CC for it")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
-
-    return SimpleClubType.from_pydantic(created_sample)
+        if input["category"] != exists["category"]:
+            raise Exception("Only CC is allowed to change the category of club.")
+        
+        input["state"] = exists["state"]
+        
+        db.clubs.replace_one({"cid": uid}, input)
+        db.clubs.update_one({"cid": input["cid"]}, {
+            "$set": {"created_time": exists["created_time"], "updated_time": datetime.utcnow}})
+        
+        result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+        return FullClubType.from_pydantic(result)
+    else:
+        raise Exception("Not Authenticated to access this API")
 
 
 @strawberry.mutation
 def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
+    role = user["role"]
     input = jsonable_encoder(clubInput)
 
-    # DB STUFF
-    # Change upgrade time too
-    db.clubs.update_one({"cid": input["cid"]}, {"$set": {"state": "deleted"}})
+    if role not in ["cc", ]:
+        raise Exception("Not Authenticated to access this API")
+
+    db.clubs.update_one({"cid": input["cid"]}, {
+                        "$set": {"state": "deleted", "updated_time": datetime.utcnow}})
 
     created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
-"""
-# CHANGE POSTER
+# CHANGE POSTERs API
+
 
 @strawberry.mutation
-def createMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
+def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
+    role = user["role"]
+    uid = user["uid"]
     input = jsonable_encoder(memberInput.to_pydantic())
 
+    if input["cid"] != uid and role != "club":
+        raise Exception("Not Authenticated to access this API")
+    
+    input["end_year"] = 1 + input["start_year"]
+
     # DB STUFF
-    created_id = 0
+    created_id = db.members.insert_one(input).inserted_id
 
     created_sample = Member.parse_obj(
-        db.samples.find_one({"_id": created_id}))
+        db.members.find_one({"_id": created_id}, {"_id": 0}))
+
+    return MemberType.from_pydantic(created_sample)
+
+
+@strawberry.mutation
+def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    role = user["role"]
+    uid = user["uid"]
+    input = jsonable_encoder(memberInput.to_pydantic())
+
+    if input["cid"] != uid and role != "club":
+        raise Exception("Not Authenticated to access this API")
+
+    # DB STUFF
+    created_id = db.clubs.update_one({"$and": [{"cid": input["cid"]}, {"uid": input["uid"]}, {
+                                     "start_year": input["start_year"]}]}, {"$set": {"deleted": True}})
+
+    created_sample = Member.parse_obj(
+        db.members.find_one({"_id": created_id}))
+
+    return Member.from_pydantic(created_sample)
+
+
+@strawberry.mutation
+def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    role = user["role"]
+    uid = user["uid"]
+    input = jsonable_encoder(memberInput.to_pydantic())
+
+    if input["cid"] != uid and role != "club":
+        raise Exception("Not Authenticated to access this API")
+
+     # DB STUFF
+    created_id = db.clubs.update_one({"$and": [{"cid": input["cid"]}, {"uid": input["uid"]}, {
+                                     "start_year": input["start_year"]}, {"deleted": False}]}, {"$set": {"approved": True}})
+
+    created_sample = Member.parse_obj(
+        db.members.find_one({"_id": created_id}))
 
     return Member.from_pydantic(created_sample)
 
@@ -98,55 +196,36 @@ def createMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
 @strawberry.mutation
 def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
+    role = user["role"]
+    uid = user["uid"]
     input = jsonable_encoder(memberInput.to_pydantic())
 
-    # DB STUFF
-    created_id = 0
-
-    created_sample = Member.parse_obj(
-        db.samples.find_one({"_id": created_id}))
-
-    return Member.from_pydantic(created_sample)
-
-
-@strawberry.mutation
-def deleteMember(memberInput: SimpleMemberInput, info: Info) -> List[MemberType]:
-    user = info.context.user
-    # role = user["role"]
-
-    input = jsonable_encoder(memberInput.to_pydantic())
+    if input["cid"] != uid and role != "club":
+        raise Exception("Not Authenticated to access this API")
+    
+    input["end_year"] = 1 + input["start_year"]
 
     # DB STUFF
-    created_id = 0
+    db.clubs.replace_one({"$and": [{"cid": input["cid"]}, {"uid": input["uid"]}, {
+                                     "start_year": input["start_year"]}, {"deleted": False}]}, input)
 
-    created_sample = Member.parse_obj(
-        db.samples.find_one({"_id": created_id}))
+    updated_sample = Member.parse_obj(
+        db.samples.find_one({"cid": uid}))
 
-    return Member.from_pydantic(created_sample)
+    return Member.from_pydantic(updated_sample)
 
-
-@strawberry.mutation
-def approveMember(memberInput: SimpleMemberInput, info: Info) -> List[MemberType]:
-    user = info.context.user
-    # role = user["role"]
-
-    input = jsonable_encoder(memberInput.to_pydantic())
-
-    # DB STUFF
-    created_id = 0
-
-    created_sample = Member.parse_obj(
-        db.samples.find_one({"_id": created_id}))
-
-    return Member.from_pydantic(created_sample)
-"""
 
 
 # register all mutations
 mutations = [
     createClub,
     editClub,
-    deleteClub
+    deleteClub,
+    createMember,
+    deleteMember,
+    approveMember,
+    editMember
 ]

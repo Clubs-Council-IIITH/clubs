@@ -11,6 +11,7 @@ from otypes import Info, SampleQueryInput, SampleType
 
 from models import Club, Member
 from otypes import SimpleClubType, FullClubType, SimpleClubInput
+from otypes import MemberType
 
 # sample query
 @strawberry.field
@@ -32,20 +33,20 @@ def sampleQuery(sampleInput: SampleQueryInput, info: Info) -> SampleType:
         raise Exception("Sample not found!")
 
 
-"""
-async def retrieve_clubs(active:bool, pending:bool):
-    clubs = []
-    async for student in student_collection.find():
-        clubs.append(student_helper(student))
-    return clubs
-"""
 @strawberry.field
 def getAllClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
+    
+    role = user["role"]
 
-    results = db.clubs.find()
-    # If not cc/club, then find with condition of only active clubs
+    results = None
+
+    if role in ["public", "club", "slc", "slo"]:
+        results = db.clubs.find({"state": "active"})
+    elif role in ["cc",]:
+        results = db.clubs.find()
 
     if results:
         clubs = []
@@ -59,10 +60,17 @@ def getAllClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def getDeletedClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
+    
+    role = user["role"]
 
-    results = db.clubs.find({"state": "deleted"})
-    # If not cc, error
+    results = None
+
+    if role in ["cc",]:
+        results = db.clubs.find({"state": "deleted"})
+    else:
+        raise Exception("Not Authenticated to access this API")
 
     if results:
         clubs = []
@@ -76,10 +84,15 @@ def getDeletedClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def getActiveClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
-    results = db.clubs.find({"state": "active"})
-    # If not cc, error
+    role = user["role"]
+
+    results = None
+
+    if role in ["public", "club", "slc", "slo", "cc"]:
+        results = db.clubs.find({"state": "active"})
 
     if results:
         clubs = []
@@ -89,15 +102,21 @@ def getActiveClubs(info: Info) -> List[SimpleClubType]:
     else:
         raise Exception("No Club Result Found")
 
+
 @strawberry.field
 def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    role = user["role"]
 
     input = jsonable_encoder(clubInput)
 
     result = db.clubs.find_one({"cid": input["cid"]})
-    # Query mongodb based on roles
+
+    if role not in ["cc",] and result["state"] == "deleted":
+        result = None
 
     if result:
         result = Club.parse_obj(result)
@@ -106,19 +125,32 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         raise Exception("No Club Result Found")
 
 
-"""
 @strawberry.field
 def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
-    input = jsonable_encoder(clubInput.to_pydantic())
+    role = user["role"]
 
-    result = 0  # Query mongodb based on roles
+    results = None
+    input = jsonable_encoder(clubInput)
 
-    if result:
-        result = Member.parse_obj(result)
-        return Member.from_pydantic(result)
+    if role in ["cc", ]:
+        results = db.members.find(
+            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0})
+    elif role in ["club", ] and user["uid"] == input["cid"]:
+        results = db.members.find(
+            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0})
+    else:
+        results = db.members.find({"$and": [{"cid": input["cid"]}, {
+            "deleted": False}, {"approved": True}]}, {"_id": 0})
+
+    if results:
+        members = []
+        for result in results:
+            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+        return members
     else:
         raise Exception("No Member Result Found")
 
@@ -126,37 +158,32 @@ def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 @strawberry.field
 def getPendingMembers(info: Info) -> List[MemberType]:
     user = info.context.user
-    # role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
-    result = 0  # Query mongodb based on roles
+    role = user["role"]
 
-    if result:
-        result = Member.parse_obj(result)
-        return Member.from_pydantic(result)
+    results = None
+
+    if role in ["cc",]:
+        results = db.members.find(
+            {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0})
+
+    if results:
+        members = []
+        for result in results:
+            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+        return members
     else:
         raise Exception("No Member Result Found")
-"""
+
 
 # register all queries
 queries = [
     getAllClubs,
     getDeletedClubs,
     getActiveClubs,
-    getClub
+    getClub,
+    getMembers,
+    getPendingMembers
 ]
-
-
-# def getUserMeta(userInput: UserInput) -> UserMetaType:
-#     user = jsonable_encoder(userInput)
-
-#     # query database for user
-#     found_user = db.users.find_one({"uid": user["uid"]})
-
-#     # if user doesn't exist, add to database
-#     if found_user:
-#         found_user = User.parse_obj(found_user)
-#     else:
-#         found_user = User(uid=user["uid"])
-#         db.users.insert_one(jsonable_encoder(found_user))
-
-#     return UserMetaType.from_pydantic(found_user)
