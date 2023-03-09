@@ -50,9 +50,16 @@ class SampleMutationInput:
 
 
 # TYPES
-@strawberry.experimental.pydantic.type(model=Member, all_fields=True)
+@strawberry.experimental.pydantic.type(model=Member, fields=[
+    "cid",
+    "uid",
+    "start_year",
+    "role",
+    "approved"
+])
 class MemberType:
     pass
+
 
 @strawberry.experimental.pydantic.type(model=Social, all_fields=True)
 class SocialsType:
@@ -87,8 +94,7 @@ class FullClubType:
     # socials: SocialsType
     pass
 
-# QUERY INPUTS
-
+# CLUBS INPUTS
 
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
@@ -102,7 +108,6 @@ class SimpleClubInput:
 
 @strawberry.experimental.pydantic.input(model=Club, fields=[
     "cid",
-    "state",
     "category",
     "name",
     "email"
@@ -113,7 +118,6 @@ class NewClubInput:
 
 @strawberry.experimental.pydantic.input(model=Club, fields=[
     "cid",
-    "state",
     "category",
     "tagline",
     "description",
@@ -123,19 +127,23 @@ class EditClubInput:
     name: Optional[str] = strawberry.UNSET
     email: Optional[str] = strawberry.UNSET
 
-# MUTATION INPUTS
-@strawberry.experimental.pydantic.input(model=Member)
+# MEMBERS INPUTS
+
+@strawberry.experimental.pydantic.input(model=Member, fields=[
+    "cid",
+    "uid",
+    "role",
+    "start_year"
+])
 class FullMemberInput:
-    cid: str
-    rollno: strawberry.auto
-    uid: strawberry.auto
-    role: strawberry.auto
-    start_year: strawberry.auto
-    poc: Optional[bool]
-
-
-@strawberry.experimental.pydantic.input(model=Member)
-class SimpleMemberInput:
-    cid: str
     rollno: Optional[int] = strawberry.UNSET
-    uid: strawberry.auto
+    poc: Optional[bool] = strawberry.UNSET
+
+
+@strawberry.experimental.pydantic.input(model=Member, fields=[
+    "cid",
+    "uid",
+    "start_year"
+])
+class SimpleMemberInput:
+    rollno: Optional[int] = strawberry.UNSET
