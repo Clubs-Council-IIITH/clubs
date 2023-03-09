@@ -70,12 +70,14 @@ class EnumCategories(str, Enum):
 
 
 class Member(BaseModel):
-    rollno: int = Field(...)
+    cid: str = Field(...)
+    rollno: int | None = Field(None)
     uid: str = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
     end_year: int | None = Field(default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
     approved: bool = Field(default_factory=(lambda: 0==1))
+    deleted: bool = Field(default_factory=(lambda: 1==0))
 
     poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
     # contact: str | None = Field(
@@ -137,7 +139,7 @@ class Club(BaseModel):
         '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600)
     socials: Social | None = Field(None)
 
-    members: List[Member] | None = Field(None)
+    # members: List[Member] | None = Field(None)
 
     created_time: datetime = Field(
         default_factory=datetime.utcnow, allow_mutation=False)
