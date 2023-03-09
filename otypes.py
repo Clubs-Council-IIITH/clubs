@@ -118,14 +118,16 @@ class NewClubInput:
 
 @strawberry.experimental.pydantic.input(model=Club, fields=[
     "cid",
+    "name",
+    "email",
     "category",
     "tagline",
     "description",
     "socials"
 ])
 class EditClubInput:
-    name: Optional[str] = strawberry.UNSET
-    email: Optional[str] = strawberry.UNSET
+    banner: Optional[str] = strawberry.UNSET
+    logo: Optional[str] = strawberry.UNSET
 
 # MEMBERS INPUTS
 
