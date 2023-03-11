@@ -14,7 +14,7 @@ from otypes import MemberType
 
 
 @strawberry.field
-def getAllClubs(info: Info) -> List[SimpleClubType]:
+def allClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -40,7 +40,7 @@ def getAllClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
-def getDeletedClubs(info: Info) -> List[SimpleClubType]:
+def deletedClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -66,7 +66,7 @@ def getDeletedClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
-def getActiveClubs(info: Info) -> List[SimpleClubType]:
+def activeClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -88,7 +88,7 @@ def getActiveClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
-def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
+def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -116,7 +116,7 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
 
 @strawberry.field
-def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
+def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -158,7 +158,7 @@ def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 
 
 @strawberry.field
-def getPendingMembers(info: Info) -> List[MemberType]:
+def pendingMembers(info: Info) -> List[MemberType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -185,10 +185,10 @@ def getPendingMembers(info: Info) -> List[MemberType]:
 
 # register all queries
 queries = [
-    getAllClubs,
-    getDeletedClubs,
-    getActiveClubs,
-    getClub,
-    getMembers,
-    getPendingMembers,
+    allClubs,
+    deletedClubs,
+    activeClubs,
+    club,
+    members,
+    pendingMembers,
 ]
