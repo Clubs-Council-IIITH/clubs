@@ -186,7 +186,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
 
-    return Member.from_pydantic(created_sample)
+    return MemberType.from_pydantic(created_sample)
 
 
 @strawberry.mutation
@@ -217,7 +217,7 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
 
-    return Member.from_pydantic(created_sample)
+    return MemberType.from_pydantic(created_sample)
 
 
 @strawberry.mutation
@@ -250,7 +250,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
 
     updated_sample = Member.parse_obj(db.samples.find_one({"cid": uid}))
 
-    return Member.from_pydantic(updated_sample)
+    return MemberType.from_pydantic(updated_sample)
 
 
 # register all mutations
