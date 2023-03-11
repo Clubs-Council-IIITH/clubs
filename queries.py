@@ -25,9 +25,7 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
     if role in ["public", "club", "slc", "slo"]:
         results = db.clubs.find({"state": "active"})
-    elif role in [
-        "cc",
-    ]:
+    elif role in ["cc"]:
         results = db.clubs.find()
 
     if results:
@@ -49,9 +47,7 @@ def deletedClubs(info: Info) -> List[SimpleClubType]:
 
     results = None
 
-    if role in [
-        "cc",
-    ]:
+    if role in ["cc"]:
         results = db.clubs.find({"state": "deleted"})
     else:
         raise Exception("Not Authenticated to access this API")
@@ -95,17 +91,11 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
     role = user["role"]
 
-    input = jsonable_encoder(clubInput)
+    club_input = jsonable_encoder(clubInput)
 
-    result = db.clubs.find_one({"cid": input["cid"]})
+    result = db.clubs.find_one({"cid": club_input["cid"]})
 
-    if (
-        role
-        not in [
-            "cc",
-        ]
-        and result["state"] == "deleted"
-    ):
+    if role not in ["cc"] and result["state"] == "deleted":
         result = None
 
     if result:
@@ -124,27 +114,25 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     role = user["role"]
 
     results = None
-    input = jsonable_encoder(clubInput)
+    club_input = jsonable_encoder(clubInput)
 
-    if role in [
-        "cc",
-    ]:
+    if role in ["cc"]:
         results = db.members.find(
-            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0}
+            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
         )
-    elif (
-        role
-        in [
-            "club",
-        ]
-        and user["uid"] == input["cid"]
-    ):
+    elif role in ["club"] and user["uid"] == club_input["cid"]:
         results = db.members.find(
-            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0}
+            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
         )
     else:
         results = db.members.find(
-            {"$and": [{"cid": input["cid"]}, {"deleted": False}, {"approved": True}]},
+            {
+                "$and": [
+                    {"cid": club_input["cid"]},
+                    {"deleted": False},
+                    {"approved": True},
+                ]
+            },
             {"_id": 0},
         )
 
@@ -167,9 +155,7 @@ def pendingMembers(info: Info) -> List[MemberType]:
 
     results = None
 
-    if role in [
-        "cc",
-    ]:
+    if role in ["cc"]:
         results = db.members.find(
             {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
         )
