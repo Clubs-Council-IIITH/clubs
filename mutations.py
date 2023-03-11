@@ -20,10 +20,12 @@ from otypes import FullMemberInput, SimpleMemberInput, MemberType
 
 
 @strawberry.mutation
-def createClub(clubInput: NewClubInput, info: Info) -> FullClubType:
+def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
+
+    print("user:", user)
 
     role = user["role"]
     input = jsonable_encoder(clubInput.to_pydantic())
@@ -40,6 +42,7 @@ def createClub(clubInput: NewClubInput, info: Info) -> FullClubType:
         created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
 
         return SimpleClubType.from_pydantic(created_sample)
+
     else:
         raise Exception("Not Authenticated to access this API")
 
