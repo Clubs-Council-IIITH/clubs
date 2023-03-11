@@ -31,9 +31,7 @@ def createClub(clubInput: NewClubInput, info: Info) -> FullClubType:
     # Change upgrade & create time too
     # Add user with role too, if doesn't exist
 
-    if role in [
-        "cc",
-    ]:
+    if role in ["cc"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
         if exists:
             raise Exception("A club with this cid already exists")
@@ -55,9 +53,7 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
     uid = user["uid"]
     input = jsonable_encoder(clubInput.to_pydantic())
 
-    if role in [
-        "cc",
-    ]:
+    if role in ["cc"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
         if uid != input["cid"] and exists:
             raise Exception("A club with this cid already exists")
@@ -78,13 +74,7 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
         result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
         return FullClubType.from_pydantic(result)
 
-    elif (
-        role
-        in [
-            "club",
-        ]
-        and user["uid"] == input["cid"]
-    ):
+    elif role in ["club"] and user["uid"] == input["cid"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
         if uid != input["cid"]:
             raise Exception("Authentication Error! (CID CHANGED)")
@@ -125,9 +115,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     input = jsonable_encoder(clubInput)
 
-    if role not in [
-        "cc",
-    ]:
+    if role not in ["cc"]:
         raise Exception("Not Authenticated to access this API")
 
     db.clubs.update_one(

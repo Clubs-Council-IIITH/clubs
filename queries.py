@@ -13,9 +13,9 @@ from otypes import SimpleClubType, FullClubType, SimpleClubInput
 from otypes import MemberType
 
 
+# fetch all active clubs
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
-    # return all active clubs
     results = db.clubs.find({"state": "active"})
     clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
 
@@ -139,8 +139,8 @@ def pendingMembers(info: Info) -> List[MemberType]:
 
 # register all queries
 queries = [
-    clubs,
-    deletedClubs,
+    activeClubs,
+    allClubs,
     club,
     members,
     pendingMembers,
