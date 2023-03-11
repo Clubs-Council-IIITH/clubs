@@ -25,13 +25,11 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
     if user is None:
         raise Exception("Not Authenticated")
 
-    print("user:", user)
-
     role = user["role"]
     input = jsonable_encoder(clubInput.to_pydantic())
 
-    # Change upgrade & create time too
-    # Add user with role too, if doesn't exist
+    # TODO: Change upgrade & create time too
+    # TODO: Add user with role too, if doesn't exist
 
     if role in ["cc"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
