@@ -14,26 +14,16 @@ from otypes import MemberType
 
 
 @strawberry.field
-def clubs(info: Info) -> List[SimpleClubType]:
-    user = info.context.user
-
-    results = []
-
-    # if admin user, return all clubs
-    if (user is not None) and (user["role"] in ["cc"]):
-        results = db.clubs.find()
-
-    # else return only active clubs
-    else:
-        results = db.clubs.find({"state": "active"})
-
+def activeClubs(info: Info) -> List[SimpleClubType]:
+    # return all active clubs
+    results = db.clubs.find({"state": "active"})
     clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
 
     return clubs
 
 
 @strawberry.field
-def deletedClubs(info: Info) -> List[SimpleClubType]:
+def allClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -42,7 +32,8 @@ def deletedClubs(info: Info) -> List[SimpleClubType]:
 
     results = []
     if role in ["cc"]:
-        results = db.clubs.find({"state": "deleted"})
+        results = db.clubs.find()
+
     else:
         raise Exception("Not Authenticated to access this API")
 
