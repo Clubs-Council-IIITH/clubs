@@ -9,13 +9,13 @@ from pydantic import (
     EmailStr,
     AnyHttpUrl,
     ValidationError,
-    validator)
+    validator,
+)
 from typing import List
 from typing import Optional
 
+
 # for handling mongo ObjectIds
-
-
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):
@@ -32,24 +32,12 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-# sample pydantic model
-class Sample(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    attribute: Optional[str]
-
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
-
 def iiit_email_only(v: str) -> str:
-    valid_domains = ['@iiit.ac.in',
-                     '@students.iiit.ac.in', '@research.iiit.ac.in']
+    valid_domains = ["@iiit.ac.in", "@students.iiit.ac.in", "@research.iiit.ac.in"]
     if any(valid_domain in v for valid_domain in valid_domains):
         return v.lower()
 
-    raise ValueError('Official iiit emails only.')
+    raise ValueError("Official iiit emails only.")
 
 
 def current_year() -> int:
@@ -58,8 +46,8 @@ def current_year() -> int:
 
 @strawberry.enum
 class EnumStates(str, Enum):
-    active = 'active'
-    deleted = 'deleted'
+    active = "active"
+    deleted = "deleted"
 
 
 @strawberry.enum
@@ -75,9 +63,11 @@ class Member(BaseModel):
     uid: str = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
-    end_year: int | None = Field(default_factory=current_year, ge=2015, le=2041)  # Added for future use maybe
-    approved: bool = Field(default_factory=(lambda: 0==1))
-    deleted: bool = Field(default_factory=(lambda: 1==0))
+    end_year: int | None = Field(
+        default_factory=current_year, ge=2015, le=2041
+    )  # Added for future use maybe
+    approved: bool = Field(default_factory=(lambda: 0 == 1))
+    deleted: bool = Field(default_factory=(lambda: 1 == 0))
 
     poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
     # contact: str | None = Field(
@@ -121,7 +111,8 @@ class Social(BaseModel):
     linkedin: AnyHttpUrl | None
     discord: AnyHttpUrl | None
     other_links: List[AnyHttpUrl] | None = Field(
-        None, unique_items=True)  # Type and URL
+        None, unique_items=True
+    )  # Type and URL
 
 
 class Club(BaseModel):
@@ -136,17 +127,19 @@ class Club(BaseModel):
     email: EmailStr = Field(...)  # Optional but required
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600)
+        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600
+    )
     socials: Social | None = Field(None)
 
     # members: List[Member] | None = Field(None)
 
     created_time: datetime = Field(
-        default_factory=datetime.utcnow, allow_mutation=False)
+        default_factory=datetime.utcnow, allow_mutation=False
+    )
     updated_time: datetime = Field(default_factory=datetime.utcnow)
 
     # Validator
-    _check_email = validator('email', allow_reuse=True)(iiit_email_only)
+    _check_email = validator("email", allow_reuse=True)(iiit_email_only)
 
     class Config:
         allow_population_by_field_name = True

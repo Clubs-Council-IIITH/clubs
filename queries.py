@@ -6,31 +6,11 @@ from typing import List
 from db import db
 
 # import all models and types
-from models import Sample
-from otypes import Info, SampleQueryInput, SampleType
+from otypes import Info
 
 from models import Club, Member
 from otypes import SimpleClubType, FullClubType, SimpleClubInput
 from otypes import MemberType
-
-# sample query
-@strawberry.field
-def sampleQuery(sampleInput: SampleQueryInput, info: Info) -> SampleType:
-    user = info.context.user
-    print("user:", user)
-
-    sample = jsonable_encoder(sampleInput.to_pydantic())
-
-    # query from database
-    found_sample = db.samples.find_one({"_id": sample["_id"]})
-
-    # handle missing sample
-    if found_sample:
-        found_sample = Sample.parse_obj(found_sample)
-        return SampleType.from_pydantic(found_sample)
-
-    else:
-        raise Exception("Sample not found!")
 
 
 @strawberry.field
@@ -38,14 +18,16 @@ def getAllClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
-    
+
     role = user["role"]
 
     results = None
 
     if role in ["public", "club", "slc", "slo"]:
         results = db.clubs.find({"state": "active"})
-    elif role in ["cc",]:
+    elif role in [
+        "cc",
+    ]:
         results = db.clubs.find()
 
     if results:
@@ -62,12 +44,14 @@ def getDeletedClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
-    
+
     role = user["role"]
 
     results = None
 
-    if role in ["cc",]:
+    if role in [
+        "cc",
+    ]:
         results = db.clubs.find({"state": "deleted"})
     else:
         raise Exception("Not Authenticated to access this API")
@@ -115,7 +99,13 @@ def getClub(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
     result = db.clubs.find_one({"cid": input["cid"]})
 
-    if role not in ["cc",] and result["state"] == "deleted":
+    if (
+        role
+        not in [
+            "cc",
+        ]
+        and result["state"] == "deleted"
+    ):
         result = None
 
     if result:
@@ -136,15 +126,27 @@ def getMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     results = None
     input = jsonable_encoder(clubInput)
 
-    if role in ["cc", ]:
+    if role in [
+        "cc",
+    ]:
         results = db.members.find(
-            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0})
-    elif role in ["club", ] and user["uid"] == input["cid"]:
+            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0}
+        )
+    elif (
+        role
+        in [
+            "club",
+        ]
+        and user["uid"] == input["cid"]
+    ):
         results = db.members.find(
-            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0})
+            {"$and": [{"cid": input["cid"]}, {"deleted": False}]}, {"_id": 0}
+        )
     else:
-        results = db.members.find({"$and": [{"cid": input["cid"]}, {
-            "deleted": False}, {"approved": True}]}, {"_id": 0})
+        results = db.members.find(
+            {"$and": [{"cid": input["cid"]}, {"deleted": False}, {"approved": True}]},
+            {"_id": 0},
+        )
 
     if results:
         members = []
@@ -165,9 +167,12 @@ def getPendingMembers(info: Info) -> List[MemberType]:
 
     results = None
 
-    if role in ["cc",]:
+    if role in [
+        "cc",
+    ]:
         results = db.members.find(
-            {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0})
+            {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
+        )
 
     if results:
         members = []
@@ -185,5 +190,5 @@ queries = [
     getActiveClubs,
     getClub,
     getMembers,
-    getPendingMembers
+    getPendingMembers,
 ]

@@ -8,7 +8,6 @@ from strawberry.types.info import RootValueType
 from typing import Union, Dict, List, Optional
 from functools import cached_property
 
-from models import Sample
 from models import PyObjectId, Club, Social, Member
 
 
@@ -31,32 +30,11 @@ PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
 
-# sample object type from pydantic model with all fields exposed
-@strawberry.experimental.pydantic.type(model=Sample, all_fields=True)
-class SampleType:
-    pass
-
-
-# sample query's input type from pydantic model
-@strawberry.experimental.pydantic.input(model=Sample)
-class SampleQueryInput:
-    id: strawberry.auto
-
-
-# sample mutation's input type from pydantic model
-@strawberry.experimental.pydantic.input(model=Sample)
-class SampleMutationInput:
-    attribute: strawberry.auto
-
 
 # TYPES
-@strawberry.experimental.pydantic.type(model=Member, fields=[
-    "cid",
-    "uid",
-    "start_year",
-    "role",
-    "approved"
-])
+@strawberry.experimental.pydantic.type(
+    model=Member, fields=["cid", "uid", "start_year", "role", "approved"]
+)
 class MemberType:
     pass
 
@@ -66,35 +44,35 @@ class SocialsType:
     pass
 
 
-@strawberry.experimental.pydantic.type(Club, fields=[
-    "cid",
-    "state",
-    "category",
-    "logo",
-    "name",
-    "tagline"
-])
+@strawberry.experimental.pydantic.type(
+    Club, fields=["cid", "state", "category", "logo", "name", "tagline"]
+)
 class SimpleClubType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=Club, fields=[
-    "cid",
-    "state",
-    "category",
-    "logo",
-    "banner",
-    "name",
-    "email",
-    "tagline",
-    "description",
-    "socials"
-])
+@strawberry.experimental.pydantic.type(
+    model=Club,
+    fields=[
+        "cid",
+        "state",
+        "category",
+        "logo",
+        "banner",
+        "name",
+        "email",
+        "tagline",
+        "description",
+        "socials",
+    ],
+)
 class FullClubType:
     # socials: SocialsType
     pass
 
+
 # CLUBS INPUTS
+
 
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
@@ -106,46 +84,35 @@ class SimpleClubInput:
     cid: str
 
 
-@strawberry.experimental.pydantic.input(model=Club, fields=[
-    "cid",
-    "category",
-    "name",
-    "email"
-])
+@strawberry.experimental.pydantic.input(
+    model=Club, fields=["cid", "category", "name", "email"]
+)
 class NewClubInput:
     pass
 
 
-@strawberry.experimental.pydantic.input(model=Club, fields=[
-    "cid",
-    "name",
-    "email",
-    "category",
-    "tagline",
-    "description",
-    "socials"
-])
+@strawberry.experimental.pydantic.input(
+    model=Club,
+    fields=["cid", "name", "email", "category", "tagline", "description", "socials"],
+)
 class EditClubInput:
     banner: Optional[str] = strawberry.UNSET
     logo: Optional[str] = strawberry.UNSET
 
+
 # MEMBERS INPUTS
 
-@strawberry.experimental.pydantic.input(model=Member, fields=[
-    "cid",
-    "uid",
-    "role",
-    "start_year"
-])
+
+@strawberry.experimental.pydantic.input(
+    model=Member, fields=["cid", "uid", "role", "start_year"]
+)
 class FullMemberInput:
     rollno: Optional[int] = strawberry.UNSET
     poc: Optional[bool] = strawberry.UNSET
 
 
-@strawberry.experimental.pydantic.input(model=Member, fields=[
-    "cid",
-    "uid",
-    "start_year"
-])
+@strawberry.experimental.pydantic.input(
+    model=Member, fields=["cid", "uid", "start_year"]
+)
 class SimpleMemberInput:
     rollno: Optional[int] = strawberry.UNSET
