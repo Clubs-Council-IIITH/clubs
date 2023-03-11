@@ -14,27 +14,22 @@ from otypes import MemberType
 
 
 @strawberry.field
-def allClubs(info: Info) -> List[SimpleClubType]:
+def clubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
 
-    role = user["role"]
+    results = []
 
-    results = None
-
-    if role in ["public", "club", "slc", "slo"]:
-        results = db.clubs.find({"state": "active"})
-    elif role in ["cc"]:
+    # if admin user, return all clubs
+    if (user is not None) and (user["role"] in ["cc"]):
         results = db.clubs.find()
 
-    if results:
-        clubs = []
-        for result in results:
-            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
-        return clubs
+    # else return only active clubs
     else:
-        raise Exception("No Club Result Found")
+        results = db.clubs.find({"state": "active"})
+
+    clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
+
+    return clubs
 
 
 @strawberry.field
@@ -45,62 +40,44 @@ def deletedClubs(info: Info) -> List[SimpleClubType]:
 
     role = user["role"]
 
-    results = None
-
+    results = []
     if role in ["cc"]:
         results = db.clubs.find({"state": "deleted"})
     else:
         raise Exception("Not Authenticated to access this API")
 
-    if results:
-        clubs = []
-        for result in results:
-            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
-        return clubs
-    else:
-        raise Exception("No Club Result Found")
+    clubs = []
+    for result in results:
+        clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
 
-
-@strawberry.field
-def activeClubs(info: Info) -> List[SimpleClubType]:
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
-
-    role = user["role"]
-
-    results = None
-
-    if role in ["public", "club", "slc", "slo", "cc"]:
-        results = db.clubs.find({"state": "active"})
-
-    if results:
-        clubs = []
-        for result in results:
-            clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
-        return clubs
-    else:
-        raise Exception("No Club Result Found")
+    return clubs
 
 
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
-
-    role = user["role"]
-
     club_input = jsonable_encoder(clubInput)
 
-    result = db.clubs.find_one({"cid": club_input["cid"]})
+    result = None
+    club = db.clubs.find_one({"cid": club_input["cid"]})
 
-    if role not in ["cc"] and result["state"] == "deleted":
-        result = None
+    # check if club is deleted
+    if club["state"] == "deleted":
+        # if deleted, check if requesting user is admin
+        if (user is not None) and (user["role"] in ["cc"]):
+            result = Club.parse_obj(club)
+
+        # if not admin, raise error
+        else:
+            raise Exception("Not Authenticated")
+
+    # if not deleted, return club
+    else:
+        result = Club.parse_obj(club)
 
     if result:
-        result = Club.parse_obj(result)
         return FullClubType.from_pydantic(result)
+
     else:
         raise Exception("No Club Result Found")
 
@@ -171,9 +148,8 @@ def pendingMembers(info: Info) -> List[MemberType]:
 
 # register all queries
 queries = [
-    allClubs,
+    clubs,
     deletedClubs,
-    activeClubs,
     club,
     members,
     pendingMembers,
