@@ -48,10 +48,12 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
 @strawberry.mutation
 def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
     user = info.context.user
-    role = user["role"]
+    if user is None:
+        raise Exception("Not Authenticated")
 
     role = user["role"]
     uid = user["uid"]
+
     input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
@@ -103,6 +105,7 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
 
         result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
         return FullClubType.from_pydantic(result)
+
     else:
         raise Exception("Not Authenticated to access this API")
 
