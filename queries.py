@@ -44,6 +44,7 @@ def allClubs(info: Info) -> List[SimpleClubType]:
     return clubs
 
 
+# TODO: refactor to simplify conditional logic
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     user = info.context.user
@@ -51,6 +52,9 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
     result = None
     club = db.clubs.find_one({"cid": club_input["cid"]})
+
+    if not club:
+        raise Exception("No Club Found")
 
     # check if club is deleted
     if club["state"] == "deleted":
