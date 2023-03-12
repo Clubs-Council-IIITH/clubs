@@ -110,8 +110,8 @@ class Social(BaseModel):
     twitter: AnyHttpUrl | None
     linkedin: AnyHttpUrl | None
     discord: AnyHttpUrl | None
-    other_links: List[AnyHttpUrl] | None = Field(
-        None, unique_items=True
+    other_links: List[AnyHttpUrl] = Field(
+        [], unique_items=True
     )  # Type and URL
 
 
@@ -129,7 +129,7 @@ class Club(BaseModel):
     description: str | None = Field(
         '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600
     )
-    socials: Social | None = Field(None)
+    socials: Social = Field({})
 
     # members: List[Member] | None = Field(None)
 

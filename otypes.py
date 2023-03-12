@@ -39,9 +39,16 @@ class MemberType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=Social, all_fields=True)
+@strawberry.experimental.pydantic.type(model=Social)
 class SocialsType:
-    pass
+    website: Optional[str] = strawberry.UNSET
+    instagram: Optional[str] = strawberry.UNSET
+    facebook: Optional[str] = strawberry.UNSET
+    youtube: Optional[str] = strawberry.UNSET
+    twitter: Optional[str] = strawberry.UNSET
+    linkedin: Optional[str] = strawberry.UNSET
+    discord: Optional[str] = strawberry.UNSET
+    other_links: Optional[List[str]] = strawberry.UNSET
 
 
 @strawberry.experimental.pydantic.type(
@@ -93,7 +100,8 @@ class NewClubInput:
 
 @strawberry.experimental.pydantic.input(
     model=Club,
-    fields=["cid", "name", "email", "category", "tagline", "description", "socials"],
+    fields=["cid", "name", "email", "category",
+            "tagline", "description", "socials"],
 )
 class EditClubInput:
     banner: Optional[str] = strawberry.UNSET

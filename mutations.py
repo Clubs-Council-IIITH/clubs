@@ -58,18 +58,35 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
 
     if role in ["cc"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
-        if uid != input["cid"] and exists:
-            raise Exception("A club with this cid already exists")
+        if not exists:
+            raise Exception("A club with this cid doesn't exists")
 
         input["state"] = exists["state"]
+        input["_id"] = exists["_id"]
 
-        db.clubs.replace_one({"cid": uid}, input)
+        db.clubs.replace_one({"cid": input["cid"]}, input)
+        if "socials" in input.keys():
+            db.clubs.update_one(
+                {"cid": input["cid"]},
+                {
+                    "$set": {
+                        "socials.website": input["socials"]["website"],
+                        "socials.instagram": input["socials"]["instagram"],
+                        "socials.facebook": input["socials"]["facebook"],
+                        "socials.youtube": input["socials"]["youtube"],
+                        "socials.twitter": input["socials"]["twitter"],
+                        "socials.linkedin": input["socials"]["linkedin"],
+                        "socials.discord": input["socials"]["discord"],
+                        "socials.other_links": input["socials"]["other_links"],
+                    }
+                },
+            )
         db.clubs.update_one(
             {"cid": input["cid"]},
             {
                 "$set": {
                     "created_time": exists["created_time"],
-                    "updated_time": datetime.utcnow,
+                    "updated_time": datetime.utcnow(),
                 }
             },
         )
@@ -77,7 +94,7 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
         result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
         return FullClubType.from_pydantic(result)
 
-    elif role in ["club"] and user["uid"] == input["cid"]:
+    elif role in ["club"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
         if uid != input["cid"]:
             raise Exception("Authentication Error! (CID CHANGED)")
@@ -88,17 +105,35 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
             )
 
         if input["category"] != exists["category"]:
-            raise Exception("Only CC is allowed to change the category of club.")
+            raise Exception(
+                "Only CC is allowed to change the category of club.")
 
         input["state"] = exists["state"]
+        input["_id"] = exists["_id"]
 
         db.clubs.replace_one({"cid": uid}, input)
+        if "socials" in input.keys():
+            db.clubs.update_one(
+                {"cid": input["cid"]},
+                {
+                    "$set": {
+                        "socials.website": input["socials"]["website"],
+                        "socials.instagram": input["socials"]["instagram"],
+                        "socials.facebook": input["socials"]["facebook"],
+                        "socials.youtube": input["socials"]["youtube"],
+                        "socials.twitter": input["socials"]["twitter"],
+                        "socials.linkedin": input["socials"]["linkedin"],
+                        "socials.discord": input["socials"]["discord"],
+                        "socials.other_links": input["socials"]["other_links"],
+                    }
+                },
+            )
         db.clubs.update_one(
             {"cid": input["cid"]},
             {
                 "$set": {
                     "created_time": exists["created_time"],
-                    "updated_time": datetime.utcnow,
+                    "updated_time": datetime.utcnow(),
                 }
             },
         )
@@ -124,7 +159,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     db.clubs.update_one(
         {"cid": input["cid"]},
-        {"$set": {"state": "deleted", "updated_time": datetime.utcnow}},
+        {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
     )
 
     created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
