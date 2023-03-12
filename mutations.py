@@ -201,6 +201,30 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
 
 @strawberry.mutation
+def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    role = user["role"]
+    input = jsonable_encoder(clubInput)
+
+    if role not in ["cc"]:
+        raise Exception("Not Authenticated to access this API")
+
+    db.clubs.update_one(
+        {"cid": input["cid"]},
+        {"$set": {"state": "active", "updated_time": datetime.utcnow()}},
+    )
+
+    updateRole(input["cid"], info.context.cookies, "club")
+
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+
+    return SimpleClubType.from_pydantic(created_sample)
+
+
+@strawberry.mutation
 def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     user = info.context.user
     if user is None:
@@ -324,6 +348,7 @@ mutations = [
     createClub,
     editClub,
     deleteClub,
+    restartClub,
     createMember,
     deleteMember,
     approveMember,
