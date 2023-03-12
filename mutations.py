@@ -3,6 +3,7 @@ import strawberry
 from fastapi.encoders import jsonable_encoder
 from typing import List
 from datetime import datetime
+import requests
 
 from db import db
 
@@ -17,6 +18,34 @@ from otypes import (
     EditClubInput,
 )
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
+
+
+def updateRole(uid, cookies=None, role="club"):
+    try:
+        query = """
+                    mutation UpdateRole($roleInput: RoleInput!) {
+                        updateRole(roleInput: $roleInput)
+                    }
+                """
+        variables = {
+            "roleInput": {
+                "role": role,
+                "uid": uid,
+            }
+        }
+        if cookies:
+            result = requests.post(
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables},
+                cookies=cookies
+            )
+        else:
+            result = requests.post(
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables}
+            )
+    except:
+        pass
 
 
 @strawberry.mutation
@@ -38,6 +67,8 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
 
         created_id = db.clubs.insert_one(input).inserted_id
         created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
+
+        updateRole(input["cid"], info.context.cookies)
 
         return SimpleClubType.from_pydantic(created_sample)
 
@@ -162,12 +193,11 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
     )
 
+    updateRole(input["cid"], info.context.cookies, "public")
+
     created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
-
-
-# CHANGE POSTERs API
 
 
 @strawberry.mutation
