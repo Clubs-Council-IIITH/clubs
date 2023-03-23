@@ -57,9 +57,6 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     input = jsonable_encoder(clubInput.to_pydantic())
 
-    # TODO: Change upgrade & create time too
-    # TODO: Add user with role too, if doesn't exist
-
     if role in ["cc"]:
         exists = db.clubs.find_one({"cid": input["cid"]})
         if exists:
