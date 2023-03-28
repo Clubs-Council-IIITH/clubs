@@ -16,7 +16,7 @@ from otypes import MemberType
 # fetch all active clubs
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
-    results = db.clubs.find({"state": "active"})
+    results = db.clubs.find({"state": "active"}, {"_id": 0})
     clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
 
     return clubs
@@ -26,16 +26,15 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 def allClubs(info: Info) -> List[SimpleClubType]:
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
-
-    role = user["role"]
+        role = "public"
+    else:
+        role = user["role"]
 
     results = []
     if role in ["cc"]:
         results = db.clubs.find()
-
     else:
-        raise Exception("Not Authenticated to access this API")
+        results = db.clubs.find({"state": "active"}, {"_id": 0})
 
     clubs = []
     for result in results:
@@ -51,7 +50,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput)
 
     result = None
-    club = db.clubs.find_one({"cid": club_input["cid"]})
+    club = db.clubs.find_one({"cid": club_input["cid"]}, {"_id": 0})
 
     if not club:
         raise Exception("No Club Found")
@@ -81,9 +80,9 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
-
-    role = user["role"]
+        role="public"
+    else:
+        role = user["role"]
 
     results = None
     club_input = jsonable_encoder(clubInput)
