@@ -21,6 +21,7 @@ Query = create_type("Query", queries)
 # create mutation types
 Mutation = create_type("Mutation", mutations)
 
+
 # override context getter
 async def get_context() -> Context:
     return Context()
@@ -41,6 +42,6 @@ gql_app = GraphQLRouter(schema, context_getter=get_context)
 app = FastAPI(
     debug=DEBUG,
     title="CC Clubs Microservice",
-    desciption="Handles Data of Clubs and Members"
-    )
+    desciption="Handles Data of Clubs and Members",
+)
 app.include_router(gql_app, prefix="/graphql")

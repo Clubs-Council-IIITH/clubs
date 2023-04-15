@@ -110,9 +110,7 @@ class Social(BaseModel):
     twitter: AnyHttpUrl | None
     linkedin: AnyHttpUrl | None
     discord: AnyHttpUrl | None
-    other_links: List[AnyHttpUrl] = Field(
-        [], unique_items=True
-    )  # Type and URL
+    other_links: List[AnyHttpUrl] = Field([], unique_items=True)  # Type and URL
 
 
 class Club(BaseModel):
@@ -123,11 +121,11 @@ class Club(BaseModel):
 
     logo: str | None = Field(None)
     banner: str | None = Field(None)
-    name: str = Field(..., min_length=2, max_length=100)
+    name: str = Field(..., min_length=5, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=600
+        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=5000
     )
     socials: Social = Field({})
 
