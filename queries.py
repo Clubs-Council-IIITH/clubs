@@ -16,6 +16,12 @@ from otypes import MemberType
 # fetch all active clubs
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
+    """
+    Description: Returns all the currently active clubs.
+    Scope: Public
+    Return Type: List[SimpleClubType]
+    Input: None
+    """
     results = db.clubs.find({"state": "active"}, {"_id": 0})
     clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
 
@@ -24,6 +30,16 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
+    """
+    Description: 
+        For CC:
+            Returns all the currently active/deleted clubs.
+        For Public:
+            Returns all the currently active clubs.
+    Scope: CC (For All Clubs), Public (For Active Clubs)
+    Return Type: List[SimpleClubType]
+    Input: None
+    """
     user = info.context.user
     if user is None:
         role = "public"
@@ -46,6 +62,19 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 # TODO: refactor to simplify conditional logic
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
+    """
+    Description: Returns complete details of the club, from its club-id.
+        For CC:
+            Returns details even for deleted clubs.
+        For Public:
+            Returns details only for the active clubs.
+    Scope: Public
+    Return Type: FullClubType
+    Input: SimpleClubInput (cid)
+    Errors:
+        - cid doesn't exist
+        - if not cc and club is deleted
+    """
     user = info.context.user
     club_input = jsonable_encoder(clubInput)
 
@@ -63,7 +92,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
         # if not admin, raise error
         else:
-            raise Exception("Not Authenticated")
+            raise Exception("No Club Found")
 
     # if not deleted, return club
     else:
@@ -78,6 +107,16 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
 @strawberry.field
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
+    """
+    Description: 
+        For CC & Specific Club:
+            Returns all the non-deleted members.
+        For Public:
+            Returns all the non-deleted and approved members.
+    Scope: CC + Club (For All Members), Public (For Approved Members)
+    Return Type: List[MemberType]
+    Input: SimpleClubInput (cid)
+    """
     user = info.context.user
     if user is None:
         role="public"
@@ -118,6 +157,12 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 
 @strawberry.field
 def pendingMembers(info: Info) -> List[MemberType]:
+    """
+    Description: Returns all the non-deleted and non-approved members.
+    Scope: CC
+    Return Type: List[MemberType]
+    Input: None
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
