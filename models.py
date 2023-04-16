@@ -51,9 +51,9 @@ class EnumStates(str, Enum):
 
 @strawberry.enum
 class EnumCategories(str, Enum):
-    cultural = "CULTURAL"
-    technical = "TECHNICAL"
-    other = "OTHER"
+    cultural = "cultural"
+    technical = "technical"
+    other = "other"
 
 
 class Member(BaseModel):
@@ -113,18 +113,21 @@ class Social(BaseModel):
 
 class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(..., description="Club ID/Unique Short Name of Club")  # equivalent to club id = short name
+    cid: str = Field(
+        ..., description="Club ID/Unique Short Name of Club"
+    )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    logo: str | None = Field(None, description="Club Official Logo pic URL")
-    banner: str | None = Field(None, description="Club Long Banner pic URL")
     name: str = Field(..., min_length=5, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
+    logo: str | None = Field(None, description="Club Official Logo pic URL")
+    banner: str | None = Field(None, description="Club Long Banner pic URL")
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=5000,
-        description="Club Description"
+        '[{"type":"paragraph", "children":[{"text":""}]}]',
+        max_length=5000,
+        description="Club Description",
     )
     socials: Social = Field({}, description="Social Profile Links")
 
