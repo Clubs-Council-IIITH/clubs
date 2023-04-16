@@ -11,8 +11,7 @@ from pydantic import (
     ValidationError,
     validator,
 )
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 
 # for handling mongo ObjectIds
@@ -59,7 +58,6 @@ class EnumCategories(str, Enum):
 
 class Member(BaseModel):
     cid: str = Field(...)
-    rollno: int | None = Field(None)
     uid: str = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
@@ -115,19 +113,20 @@ class Social(BaseModel):
 
 class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(...)  # equivalent to club id = short name
+    cid: str = Field(..., description="Club ID/Unique Short Name of Club")  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    logo: str | None = Field(None)
-    banner: str | None = Field(None)
+    logo: str | None = Field(None, description="Club Official Logo pic URL")
+    banner: str | None = Field(None, description="Club Long Banner pic URL")
     name: str = Field(..., min_length=5, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=5000
+        '[{"type":"paragraph", "children":[{"text":""}]}]', max_length=5000,
+        description="Club Description"
     )
-    socials: Social = Field({})
+    socials: Social = Field({}, description="Social Profile Links")
 
     # members: List[Member] | None = Field(None)
 
