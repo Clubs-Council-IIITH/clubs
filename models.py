@@ -60,7 +60,7 @@ class Member(BaseModel):
     cid: str = Field(...)
     uid: str = Field(...)
     role: str = Field(..., min_length=1, max_length=99)
-    start_year: int = Field(default_factory=current_year, ge=2015, le=2040)
+    start_year: int = Field(..., ge=2015, le=2040)
     end_year: int | None = Field(None, ge=2015, le=2041)
     approved: bool = Field(default_factory=(lambda: 0 == 1))
     deleted: bool = Field(default_factory=(lambda: 1 == 0))
@@ -72,8 +72,8 @@ class Member(BaseModel):
     # Validators
     @validator("end_year", always=True)
     def check_end_year(cls, value, values):
-        if value == values["start_year"]:
-            return value + 1
+        if value !=None and value < values["start_year"]:
+            return values["start_year"]
         return value
 
     @validator("poc", always=True)

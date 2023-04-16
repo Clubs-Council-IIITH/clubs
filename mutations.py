@@ -233,8 +233,8 @@ def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
 
     if input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
-
-    input["start_year"] = datetime.now().year
+            
+    # input["start_year"] = datetime.now().year
     input["end_year"] = None
 
     # DB STUFF
@@ -248,7 +248,7 @@ def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
 
 
 @strawberry.mutation
-def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
+def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -259,9 +259,12 @@ def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
 
     if input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
+    
+    if input["end_year"] != None and input["end_year"] < input["start_year"]:
+        raise Exception("Invalid End Year")
 
     # DB STUFF
-    db.clubs.replace_one(
+    db.members.replace_one(
         {
             "$and": [
                 {"cid": input["cid"]},
@@ -273,9 +276,22 @@ def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
         input,
     )
 
-    updated_sample = Member.parse_obj(db.samples.find_one({"cid": uid}))
+    updated_sample = db.members.find_one(
+        {
+            "$and": [
+                {"cid": input["cid"]},
+                {"uid": input["uid"]},
+                {"start_year": input["start_year"]},
+                {"deleted": False},
+            ]
+        },
+        {"_id": 0}
+    )
 
-    return MemberType.from_pydantic(updated_sample)
+    if updated_sample == None:
+        raise Exception("No such Record")
+
+    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
 @strawberry.mutation
@@ -292,20 +308,34 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         raise Exception("Not Authenticated to access this API")
 
     # DB STUFF
-    created_id = db.clubs.update_one(
+    db.members.update_one(
         {
             "$and": [
                 {"cid": input["cid"]},
                 {"uid": input["uid"]},
+                {"role": input["role"]},
                 {"start_year": input["start_year"]},
             ]
         },
         {"$set": {"deleted": True}},
     )
 
-    created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
+    updated_sample = db.members.find_one(
+        {
+            "$and": [
+                {"cid": input["cid"]},
+                {"uid": input["uid"]},
+                {"role": input["role"]},
+                {"start_year": input["start_year"]},
+            ]
+        },
+        {"_id": 0}
+    )
 
-    return MemberType.from_pydantic(created_sample)
+    if updated_sample == None:
+        raise Exception("No such Record")
+
+    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
 @strawberry.mutation
@@ -322,21 +352,36 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         raise Exception("Not Authenticated to access this API")
 
     # DB STUFF
-    created_id = db.clubs.update_one(
+    db.members.update_one(
         {
             "$and": [
                 {"cid": input["cid"]},
                 {"uid": input["uid"]},
                 {"start_year": input["start_year"]},
+                {"role": input["role"]},
                 {"deleted": False},
             ]
         },
         {"$set": {"approved": True}},
     )
 
-    created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
+    updated_sample = db.members.find_one(
+        {
+            "$and": [
+                {"cid": input["cid"]},
+                {"uid": input["uid"]},
+                {"role": input["role"]},
+                {"start_year": input["start_year"]},
+                {"deleted": False},
+            ]
+        },
+        {"_id": 0}
+    )
 
-    return MemberType.from_pydantic(created_sample)
+    if updated_sample == None:
+        raise Exception("No such Record")
+
+    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
 # @strawberry.mutation
