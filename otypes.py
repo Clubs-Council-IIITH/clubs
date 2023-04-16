@@ -41,7 +41,7 @@ PyObjectIdType = strawberry.scalar(
 
 # TYPES
 @strawberry.experimental.pydantic.type(
-    model=Member, fields=["cid", "uid", "start_year", "role", "approved"]
+    model=Member, fields=["cid", "uid", "start_year", "end_year", "role", "approved"]
 )
 class MemberType:
     pass
@@ -108,8 +108,7 @@ class NewClubInput:
 
 @strawberry.experimental.pydantic.input(
     model=Club,
-    fields=["cid", "name", "email", "category",
-            "tagline", "description", "socials"],
+    fields=["cid", "name", "email", "category", "tagline", "description", "socials"],
 )
 class EditClubInput:
     banner: Optional[str] = strawberry.UNSET
