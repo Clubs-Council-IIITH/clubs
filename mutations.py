@@ -17,7 +17,7 @@ from otypes import (
     FullClubType,
     EditClubInput,
 )
-from otypes import FullMemberInput, SimpleMemberInput, MemberType
+from otypes import FullMemberInput, SimpleMemberInput, NewMemberInput, MemberType
 
 
 def updateRole(uid, cookies=None, role="club"):
@@ -222,7 +222,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
 
 @strawberry.mutation
-def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
+def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -234,7 +234,8 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     if input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
 
-    input["end_year"] = 1 + input["start_year"]
+    input["start_year"] = datetime.now().year
+    input["end_year"] = None
 
     # DB STUFF
     created_id = db.members.insert_one(input).inserted_id
@@ -244,6 +245,37 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     )
 
     return MemberType.from_pydantic(created_sample)
+
+
+@strawberry.mutation
+def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    role = user["role"]
+    uid = user["uid"]
+    input = jsonable_encoder(memberInput.to_pydantic())
+
+    if input["cid"] != uid and role != "club":
+        raise Exception("Not Authenticated to access this API")
+
+    # DB STUFF
+    db.clubs.replace_one(
+        {
+            "$and": [
+                {"cid": input["cid"]},
+                {"uid": input["uid"]},
+                {"start_year": input["start_year"]},
+                {"deleted": False},
+            ]
+        },
+        input,
+    )
+
+    updated_sample = Member.parse_obj(db.samples.find_one({"cid": uid}))
+
+    return MemberType.from_pydantic(updated_sample)
 
 
 @strawberry.mutation
@@ -307,38 +339,33 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     return MemberType.from_pydantic(created_sample)
 
 
-@strawberry.mutation
-def editMember(memberInput: FullMemberInput, info: Info) -> List[MemberType]:
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
+# @strawberry.mutation
+# def leaveClubMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+#     user = info.context.user
+#     if user is None:
+#         raise Exception("Not Authenticated")
 
-    role = user["role"]
-    uid = user["uid"]
-    input = jsonable_encoder(memberInput.to_pydantic())
+#     role = user["role"]
+#     uid = user["uid"]
+#     input = jsonable_encoder(memberInput.to_pydantic())
 
-    if input["cid"] != uid and role != "club":
-        raise Exception("Not Authenticated to access this API")
+#     if input["cid"] != uid and role != "club":
+#         raise Exception("Not Authenticated to access this API")
 
-    input["end_year"] = 1 + input["start_year"]
+#     created_id = db.clubs.update_one(
+#         {
+#             "$and": [
+#                 {"cid": input["cid"]},
+#                 {"uid": input["uid"]},
+#                 {"start_year": input["start_year"]},
+#                 {"deleted": False},
+#             ]
+#         },
+#         {"$set": {"end_year": datetime.now().year}},
+#     )
 
-    # DB STUFF
-    db.clubs.replace_one(
-        {
-            "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"start_year": input["start_year"]},
-                {"deleted": False},
-            ]
-        },
-        input,
-    )
-
-    updated_sample = Member.parse_obj(db.samples.find_one({"cid": uid}))
-
-    return MemberType.from_pydantic(updated_sample)
-
+#     created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
+#     return MemberType.from_pydantic(created_sample)
 
 # register all mutations
 mutations = [
