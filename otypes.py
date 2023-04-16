@@ -100,10 +100,14 @@ class SimpleClubInput:
 
 
 @strawberry.experimental.pydantic.input(
-    model=Club, fields=["cid", "category", "name", "email"]
+    model=Club, fields=["cid", "name", "email", "category"]
 )
 class NewClubInput:
-    pass
+    tagline: strawberry.auto
+    description: strawberry.auto
+    socials: strawberry.auto
+    banner: Optional[str] = strawberry.UNSET
+    logo: Optional[str] = strawberry.UNSET
 
 
 @strawberry.experimental.pydantic.input(
@@ -117,11 +121,13 @@ class EditClubInput:
 
 # MEMBERS INPUTS
 
+
 @strawberry.experimental.pydantic.input(
     model=Member, fields=["cid", "uid", "role", "start_year"]
 )
 class NewMemberInput:
     poc: Optional[bool] = strawberry.UNSET
+
 
 @strawberry.experimental.pydantic.input(
     model=Member, fields=["cid", "uid", "start_year"]

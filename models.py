@@ -72,7 +72,7 @@ class Member(BaseModel):
     # Validators
     @validator("end_year", always=True)
     def check_end_year(cls, value, values):
-        if value !=None and value < values["start_year"]:
+        if value != None and value < values["start_year"]:
             return values["start_year"]
         return value
 

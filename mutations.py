@@ -37,12 +37,11 @@ def updateRole(uid, cookies=None, role="club"):
             result = requests.post(
                 "http://gateway/graphql",
                 json={"query": query, "variables": variables},
-                cookies=cookies
+                cookies=cookies,
             )
         else:
             result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables}
+                "http://gateway/graphql", json={"query": query, "variables": variables}
             )
     except:
         pass
@@ -55,17 +54,17 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
         raise Exception("Not Authenticated")
 
     role = user["role"]
-    input = jsonable_encoder(clubInput.to_pydantic())
+    club_input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
-        exists = db.clubs.find_one({"cid": input["cid"]})
+        exists = db.clubs.find_one({"cid": club_input["cid"]})
         if exists:
             raise Exception("A club with this cid already exists")
 
-        created_id = db.clubs.insert_one(input).inserted_id
+        created_id = db.clubs.insert_one(club_input).inserted_id
         created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
 
-        updateRole(input["cid"], info.context.cookies)
+        updateRole(club_input["cid"], info.context.cookies)
 
         return SimpleClubType.from_pydantic(created_sample)
 
@@ -82,35 +81,35 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
     role = user["role"]
     uid = user["uid"]
 
-    input = jsonable_encoder(clubInput.to_pydantic())
+    club_input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
-        exists = db.clubs.find_one({"cid": input["cid"]})
+        exists = db.clubs.find_one({"cid": club_input["cid"]})
         if not exists:
             raise Exception("A club with this cid doesn't exists")
 
-        input["state"] = exists["state"]
-        input["_id"] = exists["_id"]
+        club_input["state"] = exists["state"]
+        club_input["_id"] = exists["_id"]
 
-        db.clubs.replace_one({"cid": input["cid"]}, input)
-        if "socials" in input.keys():
+        db.clubs.replace_one({"cid": club_input["cid"]}, club_input)
+        if "socials" in club_input.keys():
             db.clubs.update_one(
-                {"cid": input["cid"]},
+                {"cid": club_input["cid"]},
                 {
                     "$set": {
-                        "socials.website": input["socials"]["website"],
-                        "socials.instagram": input["socials"]["instagram"],
-                        "socials.facebook": input["socials"]["facebook"],
-                        "socials.youtube": input["socials"]["youtube"],
-                        "socials.twitter": input["socials"]["twitter"],
-                        "socials.linkedin": input["socials"]["linkedin"],
-                        "socials.discord": input["socials"]["discord"],
-                        "socials.other_links": input["socials"]["other_links"],
+                        "socials.website": club_input["socials"]["website"],
+                        "socials.instagram": club_input["socials"]["instagram"],
+                        "socials.facebook": club_input["socials"]["facebook"],
+                        "socials.youtube": club_input["socials"]["youtube"],
+                        "socials.twitter": club_input["socials"]["twitter"],
+                        "socials.linkedin": club_input["socials"]["linkedin"],
+                        "socials.discord": club_input["socials"]["discord"],
+                        "socials.other_links": club_input["socials"]["other_links"],
                     }
                 },
             )
         db.clubs.update_one(
-            {"cid": input["cid"]},
+            {"cid": club_input["cid"]},
             {
                 "$set": {
                     "created_time": exists["created_time"],
@@ -119,45 +118,47 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
             },
         )
 
-        result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+        result = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
         return FullClubType.from_pydantic(result)
 
     elif role in ["club"]:
-        exists = db.clubs.find_one({"cid": input["cid"]})
-        if uid != input["cid"]:
+        exists = db.clubs.find_one({"cid": club_input["cid"]})
+        if uid != club_input["cid"]:
             raise Exception("Authentication Error! (CID CHANGED)")
 
-        if input["name"] != exists["name"] or input["email"] != exists["email"]:
+        if (
+            club_input["name"] != exists["name"]
+            or club_input["email"] != exists["email"]
+        ):
             raise Exception(
                 "You don't have permission to change the name/email of the club. Please contact CC for it"
             )
 
-        if input["category"] != exists["category"]:
-            raise Exception(
-                "Only CC is allowed to change the category of club.")
+        if club_input["category"] != exists["category"]:
+            raise Exception("Only CC is allowed to change the category of club.")
 
-        input["state"] = exists["state"]
-        input["_id"] = exists["_id"]
+        club_input["state"] = exists["state"]
+        club_input["_id"] = exists["_id"]
 
-        db.clubs.replace_one({"cid": uid}, input)
-        if "socials" in input.keys():
+        db.clubs.replace_one({"cid": uid}, club_input)
+        if "socials" in club_input.keys():
             db.clubs.update_one(
-                {"cid": input["cid"]},
+                {"cid": club_input["cid"]},
                 {
                     "$set": {
-                        "socials.website": input["socials"]["website"],
-                        "socials.instagram": input["socials"]["instagram"],
-                        "socials.facebook": input["socials"]["facebook"],
-                        "socials.youtube": input["socials"]["youtube"],
-                        "socials.twitter": input["socials"]["twitter"],
-                        "socials.linkedin": input["socials"]["linkedin"],
-                        "socials.discord": input["socials"]["discord"],
-                        "socials.other_links": input["socials"]["other_links"],
+                        "socials.website": club_input["socials"]["website"],
+                        "socials.instagram": club_input["socials"]["instagram"],
+                        "socials.facebook": club_input["socials"]["facebook"],
+                        "socials.youtube": club_input["socials"]["youtube"],
+                        "socials.twitter": club_input["socials"]["twitter"],
+                        "socials.linkedin": club_input["socials"]["linkedin"],
+                        "socials.discord": club_input["socials"]["discord"],
+                        "socials.other_links": club_input["socials"]["other_links"],
                     }
                 },
             )
         db.clubs.update_one(
-            {"cid": input["cid"]},
+            {"cid": club_input["cid"]},
             {
                 "$set": {
                     "created_time": exists["created_time"],
@@ -166,7 +167,7 @@ def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
             },
         )
 
-        result = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+        result = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
         return FullClubType.from_pydantic(result)
 
     else:
@@ -180,19 +181,19 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         raise Exception("Not Authenticated")
 
     role = user["role"]
-    input = jsonable_encoder(clubInput)
+    club_input = jsonable_encoder(clubInput)
 
     if role not in ["cc"]:
         raise Exception("Not Authenticated to access this API")
 
     db.clubs.update_one(
-        {"cid": input["cid"]},
+        {"cid": club_input["cid"]},
         {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
     )
 
-    updateRole(input["cid"], info.context.cookies, "public")
+    updateRole(club_input["cid"], info.context.cookies, "public")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
@@ -204,19 +205,19 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         raise Exception("Not Authenticated")
 
     role = user["role"]
-    input = jsonable_encoder(clubInput)
+    club_input = jsonable_encoder(clubInput)
 
     if role not in ["cc"]:
         raise Exception("Not Authenticated to access this API")
 
     db.clubs.update_one(
-        {"cid": input["cid"]},
+        {"cid": club_input["cid"]},
         {"$set": {"state": "active", "updated_time": datetime.utcnow()}},
     )
 
-    updateRole(input["cid"], info.context.cookies, "club")
+    updateRole(club_input["cid"], info.context.cookies, "club")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": input["cid"]}))
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
@@ -229,16 +230,16 @@ def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
 
     role = user["role"]
     uid = user["uid"]
-    input = jsonable_encoder(memberInput.to_pydantic())
+    member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if input["cid"] != uid and role != "club":
+    if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
-            
-    # input["start_year"] = datetime.now().year
-    input["end_year"] = None
+
+    # member_input["start_year"] = datetime.now().year
+    member_input["end_year"] = None
 
     # DB STUFF
-    created_id = db.members.insert_one(input).inserted_id
+    created_id = db.members.insert_one(member_input).inserted_id
 
     created_sample = Member.parse_obj(
         db.members.find_one({"_id": created_id}, {"_id": 0})
@@ -255,37 +256,40 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     role = user["role"]
     uid = user["uid"]
-    input = jsonable_encoder(memberInput.to_pydantic())
+    member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if input["cid"] != uid and role != "club":
+    if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
-    
-    if input["end_year"] != None and input["end_year"] < input["start_year"]:
+
+    if (
+        member_input["end_year"] != None
+        and member_input["end_year"] < member_input["start_year"]
+    ):
         raise Exception("Invalid End Year")
 
     # DB STUFF
     db.members.replace_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"start_year": input["start_year"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"start_year": member_input["start_year"]},
                 {"deleted": False},
             ]
         },
-        input,
+        member_input,
     )
 
     updated_sample = db.members.find_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"start_year": input["start_year"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"start_year": member_input["start_year"]},
                 {"deleted": False},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
 
     if updated_sample == None:
@@ -302,19 +306,19 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     role = user["role"]
     uid = user["uid"]
-    input = jsonable_encoder(memberInput.to_pydantic())
+    member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if input["cid"] != uid and role != "club":
+    if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
 
     # DB STUFF
     db.members.update_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"role": input["role"]},
-                {"start_year": input["start_year"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"role": member_input["role"]},
+                {"start_year": member_input["start_year"]},
             ]
         },
         {"$set": {"deleted": True}},
@@ -323,13 +327,13 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     updated_sample = db.members.find_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"role": input["role"]},
-                {"start_year": input["start_year"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"role": member_input["role"]},
+                {"start_year": member_input["start_year"]},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
 
     if updated_sample == None:
@@ -346,19 +350,19 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     role = user["role"]
     uid = user["uid"]
-    input = jsonable_encoder(memberInput.to_pydantic())
+    member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if input["cid"] != uid and role != "club":
+    if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
 
     # DB STUFF
     db.members.update_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"start_year": input["start_year"]},
-                {"role": input["role"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"start_year": member_input["start_year"]},
+                {"role": member_input["role"]},
                 {"deleted": False},
             ]
         },
@@ -368,14 +372,14 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     updated_sample = db.members.find_one(
         {
             "$and": [
-                {"cid": input["cid"]},
-                {"uid": input["uid"]},
-                {"role": input["role"]},
-                {"start_year": input["start_year"]},
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+                {"role": member_input["role"]},
+                {"start_year": member_input["start_year"]},
                 {"deleted": False},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
 
     if updated_sample == None:
@@ -392,17 +396,17 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
 #     role = user["role"]
 #     uid = user["uid"]
-#     input = jsonable_encoder(memberInput.to_pydantic())
+#     member_input = jsonable_encoder(memberInput.to_pydantic())
 
-#     if input["cid"] != uid and role != "club":
+#     if member_input["cid"] != uid and role != "club":
 #         raise Exception("Not Authenticated to access this API")
 
 #     created_id = db.clubs.update_one(
 #         {
 #             "$and": [
-#                 {"cid": input["cid"]},
-#                 {"uid": input["uid"]},
-#                 {"start_year": input["start_year"]},
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"start_year": member_input["start_year"]},
 #                 {"deleted": False},
 #             ]
 #         },
