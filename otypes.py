@@ -100,12 +100,10 @@ class SimpleClubInput:
 
 
 @strawberry.experimental.pydantic.input(
-    model=Club, fields=["cid", "name", "email", "category"]
+    model=Club,
+    fields=["cid", "name", "email", "category", "tagline", "description", "socials"],
 )
 class NewClubInput:
-    tagline: strawberry.auto
-    description: strawberry.auto
-    socials: strawberry.auto
     banner: Optional[str] = strawberry.UNSET
     logo: Optional[str] = strawberry.UNSET
 
