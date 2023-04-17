@@ -24,6 +24,9 @@ CLUB MUTATIONS
 
 
 def updateRole(uid, cookies=None, role="club"):
+    """
+    Function to call the updateRole mutation
+    """
     try:
         query = """
                     mutation UpdateRole($roleInput: RoleInput!) {
@@ -52,6 +55,11 @@ def updateRole(uid, cookies=None, role="club"):
 
 @strawberry.mutation
 def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
+    """
+    Create a new Club.
+    Checks for the 'cc' role, else raises an Error.
+    Checks for uniqueness of the club id.
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -77,6 +85,9 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
 @strawberry.mutation
 def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
+    """
+    Mutation for editing of the club details either by that specific club or the cc.
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -180,6 +191,9 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
 @strawberry.mutation
 def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+    """
+    Mutation for the cc to move a club to deleted state.
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -205,6 +219,9 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
 @strawberry.mutation
 def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+    """
+    Mutation for cc to move a club from deleted state to asctive state.
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -233,7 +250,11 @@ MEMBER MUTATIONS
 """
 
 
-def non_deleted_members(member_input):
+def non_deleted_members(member_input) -> MemberType:
+    """
+    Function to return non-deleted members for a particular cid, uid
+    Only to be used in admin functions, as it return approved/non-approved members.
+    """
     updated_sample = db.members.find_one(
         {
             "$and": [
@@ -257,6 +278,9 @@ def non_deleted_members(member_input):
 
 
 def unique_roles_id(uid, cid):
+    """
+    Function to give unique ids for each of the role in roles list
+    """
     pipeline = [
         {
             "$set": {
@@ -285,6 +309,9 @@ def unique_roles_id(uid, cid):
 
 @strawberry.mutation
 def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
+    """
+    Mutation to create a new member by that specific 'club'
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -316,6 +343,9 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
 @strawberry.mutation
 def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
+    """
+    Mutation to edit an already existing member+roles of that specific 'club'
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -354,6 +384,9 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
 @strawberry.mutation
 def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    """
+    Mutation to delete an already existing member role of that specific 'club'
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -400,6 +433,9 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
 @strawberry.mutation
 def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    """
+    Mutation to approve a member role by 'cc'
+    """
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
