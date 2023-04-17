@@ -8,7 +8,7 @@ from strawberry.types.info import RootValueType
 from typing import Union, Dict, List, Optional
 from functools import cached_property
 
-from models import PyObjectId, Club, Social, Member
+from models import PyObjectId, Club, Social, Member, Roles
 
 
 # custom context class
@@ -40,8 +40,13 @@ PyObjectIdType = strawberry.scalar(
 
 
 # TYPES
+@strawberry.experimental.pydantic.type(model=Roles, all_fields=True)
+class RolesType:
+    pass
+
+
 @strawberry.experimental.pydantic.type(
-    model=Member, fields=["cid", "uid", "start_year", "end_year", "role", "approved"]
+    model=Member, fields=["cid", "uid", "roles", "poc"]
 )
 class MemberType:
     pass
@@ -110,25 +115,20 @@ class FullClubInput:
 
 # MEMBERS INPUTS
 
-
-@strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "role", "start_year"]
-)
-class NewMemberInput:
-    poc: Optional[bool] = strawberry.UNSET
+@strawberry.experimental.pydantic.input(model=Roles, fields=[ "role", "start_year", "end_year"])
+class RolesInput:
+    pass
 
 
 @strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "start_year"]
+    model=Member, fields=["cid", "uid", "roles"]
 )
 class FullMemberInput:
     poc: Optional[bool] = strawberry.UNSET
-    end_year: Optional[int] = strawberry.UNSET
-    role: Optional[str] = strawberry.UNSET
 
 
-@strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "start_year", "role"]
-)
+@strawberry.input
 class SimpleMemberInput:
-    pass
+    cid: str
+    uid: str
+    roleid: str

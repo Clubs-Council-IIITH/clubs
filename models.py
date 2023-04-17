@@ -56,18 +56,13 @@ class EnumCategories(str, Enum):
     other = "other"
 
 
-class Member(BaseModel):
-    cid: str = Field(...)
-    uid: str = Field(...)
+class Roles(BaseModel):
+    roleid: str | None = Field(None, description = "Unique Identifier for a role")
     role: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(..., ge=2015, le=2040)
     end_year: int | None = Field(None, ge=2015, le=2041)
-    approved: bool = Field(default_factory=(lambda: 0 == 1))
-    deleted: bool = Field(default_factory=(lambda: 1 == 0))
-
-    poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
-    # contact: str | None = Field(
-    #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
+    approved: bool = False
+    deleted: bool = False
 
     # Validators
     @validator("end_year", always=True)
@@ -76,12 +71,26 @@ class Member(BaseModel):
             return values["start_year"]
         return value
 
-    @validator("poc", always=True)
-    def check_current_poc(cls, value, values):
-        if value == True and values["start_year"] != datetime.now().year:
-            return False
-        return value
+    class Config:
+        arbitrary_types_allowed = True
+        max_anystr_length = 100
+        validate_assignment = True
+        extra = Extra.forbid
+        anystr_strip_whitespace = True
 
+
+class Member(BaseModel):
+    cid: str = Field(...)
+    uid: str = Field(...)
+    roles: List[Roles] = Field(...,
+                               description="List of Roles for that specific person")
+
+    poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
+
+    # contact: str | None = Field(
+    #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
+
+    # Validators
     # @validator("contact", always=True)
     # def check_poc_contact(cls, value, values):
     #     if values["poc"] == True and not value:
@@ -143,7 +152,7 @@ class Club(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        max_anystr_length = 600
+        max_anystr_length = 5001
         validate_assignment = True
         extra = Extra.forbid
         anystr_strip_whitespace = True
