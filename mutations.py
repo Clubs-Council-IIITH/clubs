@@ -18,6 +18,10 @@ from otypes import (
 )
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
 
+"""
+CLUB MUTATIONS
+"""
+
 
 def updateRole(uid, cookies=None, role="club"):
     try:
@@ -224,6 +228,34 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     return SimpleClubType.from_pydantic(created_sample)
 
 
+"""
+MEMBER MUTATIONS
+"""
+
+
+def non_deleted_members(member_input):
+    updated_sample = db.members.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"_id": 0}
+    )
+    if updated_sample == None:
+        raise Exception("No such Record")
+
+    roles = []
+    for i in updated_sample['roles']:
+        if i['deleted'] == True:
+            continue
+        roles.append(i)
+    updated_sample['roles'] = roles
+
+    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+
+
 def unique_roles_id(uid, cid):
     pipeline = [
         {
@@ -315,7 +347,24 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         }}
     )
 
-    updated_sample = db.members.find_one(
+    unique_roles_id(member_input["uid"], member_input["cid"])
+
+    return non_deleted_members(member_input)
+
+
+@strawberry.mutation
+def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    uid = user["uid"]
+    member_input = jsonable_encoder(memberInput)
+
+    if member_input["cid"] != uid and user["role"] != "club":
+        raise Exception("Not Authenticated to access this API")
+
+    existing_data = db.members.find_one(
         {
             "$and": [
                 {"cid": member_input["cid"]},
@@ -324,108 +373,74 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         },
         {"_id": 0}
     )
-    if updated_sample == None:
+    if existing_data == None:
         raise Exception("No such Record")
 
     roles = []
-    for i in updated_sample['roles']:
-        if i['deleted'] == True:
-            continue
+    for i in existing_data['roles']:
+        if i['roleid'] == member_input['roleid']:
+            i['deleted'] = True
         roles.append(i)
-    updated_sample['roles'] = roles
 
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+    # DB STUFF
+    db.members.update_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"$set": {"roles": roles}}
+    )
 
+    unique_roles_id(member_input["uid"], member_input["cid"])
 
-# @strawberry.mutation
-# def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
-#     user = info.context.user
-#     if user is None:
-#         raise Exception("Not Authenticated")
-
-#     role = user["role"]
-#     uid = user["uid"]
-#     member_input = jsonable_encoder(memberInput.to_pydantic())
-
-#     if member_input["cid"] != uid and role != "club":
-#         raise Exception("Not Authenticated to access this API")
-
-#     # DB STUFF
-#     db.members.update_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"role": member_input["role"]},
-#                 {"start_year": member_input["start_year"]},
-#             ]
-#         },
-#         {"$set": {"deleted": True}},
-#     )
-
-#     updated_sample = db.members.find_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"role": member_input["role"]},
-#                 {"start_year": member_input["start_year"]},
-#             ]
-#         },
-#         {"_id": 0},
-#     )
-
-#     if updated_sample == None:
-#         raise Exception("No such Record")
-
-#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+    return non_deleted_members(member_input)
 
 
-# @strawberry.mutation
-# def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
-#     user = info.context.user
-#     if user is None:
-#         raise Exception("Not Authenticated")
+@strawberry.mutation
+def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
 
-#     role = user["role"]
-#     uid = user["uid"]
-#     member_input = jsonable_encoder(memberInput.to_pydantic())
+    member_input = jsonable_encoder(memberInput)
 
-#     if member_input["cid"] != uid and role != "club":
-#         raise Exception("Not Authenticated to access this API")
+    if user["role"] != "cc":
+        raise Exception("Not Authenticated to access this API")
 
-#     # DB STUFF
-#     db.members.update_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"start_year": member_input["start_year"]},
-#                 {"role": member_input["role"]},
-#                 {"deleted": False},
-#             ]
-#         },
-#         {"$set": {"approved": True}},
-#     )
+    existing_data = db.members.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"_id": 0}
+    )
+    if existing_data == None:
+        raise Exception("No such Record")
 
-#     updated_sample = db.members.find_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"role": member_input["role"]},
-#                 {"start_year": member_input["start_year"]},
-#                 {"deleted": False},
-#             ]
-#         },
-#         {"_id": 0},
-#     )
+    roles = []
+    for i in existing_data['roles']:
+        if i['roleid'] == member_input['roleid']:
+            i['approved'] = True
+        roles.append(i)
 
-#     if updated_sample == None:
-#         raise Exception("No such Record")
+    # DB STUFF
+    db.members.update_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"$set": {"roles": roles}}
+    )
 
-#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+    unique_roles_id(member_input["uid"], member_input["cid"])
 
+    return non_deleted_members(member_input)
 
 # @strawberry.mutation
 # def leaveClubMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
@@ -455,6 +470,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 #     created_sample = Member.parse_obj(db.members.find_one({"_id": created_id}))
 #     return MemberType.from_pydantic(created_sample)
 
+
 # register all mutations
 mutations = [
     createClub,
@@ -463,6 +479,6 @@ mutations = [
     restartClub,
     createMember,
     editMember,
-    # deleteMember,
-    # approveMember,
+    deleteMember,
+    approveMember,
 ]
