@@ -126,32 +126,26 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     results = None
     club_input = jsonable_encoder(clubInput)
 
-    # if role in ["cc"]:
-    #     results = db.members.find(
-    #         {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-    #     )
-    # elif role in ["club"] and user["uid"] == club_input["cid"]:
-    #     results = db.members.find(
-    #         {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-    #     )
-    # else:
-    #     results = db.members.find(
-    #         {
-    #             "$and": [
-    #                 {"cid": club_input["cid"]},
-    #                 {"deleted": False},
-    #                 {"approved": True},
-    #             ]
-    #         },
-    #         {"_id": 0},
-    #     )
-
-    results = db.members.find({"cid": club_input["cid"]}, {"_id": 0},)
+    results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
 
     if results:
         members = []
         for result in results:
-            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+            roles = result['roles']
+            roles_result=[]
+
+            for i in roles:
+                if i['deleted']==True:
+                    continue
+                if not (role in ["cc"] or (role in ["club"] and user["uid"] == club_input["cid"])):
+                    if i['approved'] == False:
+                        continue
+                roles_result.append(i)
+
+            if len(roles_result) > 0:
+                result["roles"] = roles_result
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+        
         return members
     else:
         raise Exception("No Member Result Found")
