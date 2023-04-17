@@ -16,7 +16,7 @@ from otypes import (
     SimpleClubType,
     FullClubType,
 )
-from otypes import FullMemberInput, SimpleMemberInput, NewMemberInput, MemberType
+from otypes import FullMemberInput, SimpleMemberInput, MemberType
 
 
 def updateRole(uid, cookies=None, role="club"):
@@ -134,7 +134,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             )
 
         if club_input["category"] != exists["category"]:
-            raise Exception("Only CC is allowed to change the category of club.")
+            raise Exception(
+                "Only CC is allowed to change the category of club.")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -192,7 +193,8 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "public")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
+    created_sample = Club.parse_obj(
+        db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
@@ -216,13 +218,41 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "club")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
+    created_sample = Club.parse_obj(
+        db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
 
+def unique_roles_id(uid, cid):
+    pipeline = [
+        {
+            "$set": {
+                "roles": {
+                    "$map": {
+                        "input": {"$range": [0, {"$size": "$roles"}]},
+                        "in": {
+                            "$mergeObjects": [
+                                {"$arrayElemAt": ["$roles", "$$this"]},
+                                {"roleid": {"$toString":
+                                    {"$add": [{"$toLong": datetime.now()}, "$$this"]}}}
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ]
+    db.members.update_one({
+        "$and": [
+            {"cid": cid},
+            {"uid": uid},
+        ]
+    }, pipeline)
+
+
 @strawberry.mutation
-def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
+def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -234,11 +264,16 @@ def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
     if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
 
-    # member_input["start_year"] = datetime.now().year
-    member_input["end_year"] = None
-
+    if db.members.find_one({
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]}):
+        raise Exception("A record with same uid and cid already exists")
+    
     # DB STUFF
     created_id = db.members.insert_one(member_input).inserted_id
+    unique_roles_id(member_input["uid"], member_input["cid"])
 
     created_sample = Member.parse_obj(
         db.members.find_one({"_id": created_id}, {"_id": 0})
@@ -247,144 +282,144 @@ def createMember(memberInput: NewMemberInput, info: Info) -> MemberType:
     return MemberType.from_pydantic(created_sample)
 
 
-@strawberry.mutation
-def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
+# @strawberry.mutation
+# def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
+#     user = info.context.user
+#     if user is None:
+#         raise Exception("Not Authenticated")
 
-    role = user["role"]
-    uid = user["uid"]
-    member_input = jsonable_encoder(memberInput.to_pydantic())
+#     role = user["role"]
+#     uid = user["uid"]
+#     member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if member_input["cid"] != uid and role != "club":
-        raise Exception("Not Authenticated to access this API")
+#     if member_input["cid"] != uid and role != "club":
+#         raise Exception("Not Authenticated to access this API")
 
-    if (
-        member_input["end_year"] != None
-        and member_input["end_year"] < member_input["start_year"]
-    ):
-        raise Exception("Invalid End Year")
+#     if (
+#         member_input["end_year"] != None
+#         and member_input["end_year"] < member_input["start_year"]
+#     ):
+#         raise Exception("Invalid End Year")
 
-    # DB STUFF
-    db.members.replace_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"start_year": member_input["start_year"]},
-                {"deleted": False},
-            ]
-        },
-        member_input,
-    )
+#     # DB STUFF
+#     db.members.replace_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"start_year": member_input["start_year"]},
+#                 {"deleted": False},
+#             ]
+#         },
+#         member_input,
+#     )
 
-    updated_sample = db.members.find_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"start_year": member_input["start_year"]},
-                {"deleted": False},
-            ]
-        },
-        {"_id": 0},
-    )
+#     updated_sample = db.members.find_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"start_year": member_input["start_year"]},
+#                 {"deleted": False},
+#             ]
+#         },
+#         {"_id": 0},
+#     )
 
-    if updated_sample == None:
-        raise Exception("No such Record")
+#     if updated_sample == None:
+#         raise Exception("No such Record")
 
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
-
-
-@strawberry.mutation
-def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
-
-    role = user["role"]
-    uid = user["uid"]
-    member_input = jsonable_encoder(memberInput.to_pydantic())
-
-    if member_input["cid"] != uid and role != "club":
-        raise Exception("Not Authenticated to access this API")
-
-    # DB STUFF
-    db.members.update_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"role": member_input["role"]},
-                {"start_year": member_input["start_year"]},
-            ]
-        },
-        {"$set": {"deleted": True}},
-    )
-
-    updated_sample = db.members.find_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"role": member_input["role"]},
-                {"start_year": member_input["start_year"]},
-            ]
-        },
-        {"_id": 0},
-    )
-
-    if updated_sample == None:
-        raise Exception("No such Record")
-
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
-@strawberry.mutation
-def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
+# @strawberry.mutation
+# def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+#     user = info.context.user
+#     if user is None:
+#         raise Exception("Not Authenticated")
 
-    role = user["role"]
-    uid = user["uid"]
-    member_input = jsonable_encoder(memberInput.to_pydantic())
+#     role = user["role"]
+#     uid = user["uid"]
+#     member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if member_input["cid"] != uid and role != "club":
-        raise Exception("Not Authenticated to access this API")
+#     if member_input["cid"] != uid and role != "club":
+#         raise Exception("Not Authenticated to access this API")
 
-    # DB STUFF
-    db.members.update_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"start_year": member_input["start_year"]},
-                {"role": member_input["role"]},
-                {"deleted": False},
-            ]
-        },
-        {"$set": {"approved": True}},
-    )
+#     # DB STUFF
+#     db.members.update_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"role": member_input["role"]},
+#                 {"start_year": member_input["start_year"]},
+#             ]
+#         },
+#         {"$set": {"deleted": True}},
+#     )
 
-    updated_sample = db.members.find_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-                {"role": member_input["role"]},
-                {"start_year": member_input["start_year"]},
-                {"deleted": False},
-            ]
-        },
-        {"_id": 0},
-    )
+#     updated_sample = db.members.find_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"role": member_input["role"]},
+#                 {"start_year": member_input["start_year"]},
+#             ]
+#         },
+#         {"_id": 0},
+#     )
 
-    if updated_sample == None:
-        raise Exception("No such Record")
+#     if updated_sample == None:
+#         raise Exception("No such Record")
 
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+
+
+# @strawberry.mutation
+# def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+#     user = info.context.user
+#     if user is None:
+#         raise Exception("Not Authenticated")
+
+#     role = user["role"]
+#     uid = user["uid"]
+#     member_input = jsonable_encoder(memberInput.to_pydantic())
+
+#     if member_input["cid"] != uid and role != "club":
+#         raise Exception("Not Authenticated to access this API")
+
+#     # DB STUFF
+#     db.members.update_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"start_year": member_input["start_year"]},
+#                 {"role": member_input["role"]},
+#                 {"deleted": False},
+#             ]
+#         },
+#         {"$set": {"approved": True}},
+#     )
+
+#     updated_sample = db.members.find_one(
+#         {
+#             "$and": [
+#                 {"cid": member_input["cid"]},
+#                 {"uid": member_input["uid"]},
+#                 {"role": member_input["role"]},
+#                 {"start_year": member_input["start_year"]},
+#                 {"deleted": False},
+#             ]
+#         },
+#         {"_id": 0},
+#     )
+
+#     if updated_sample == None:
+#         raise Exception("No such Record")
+
+#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
 # @strawberry.mutation
@@ -422,7 +457,7 @@ mutations = [
     deleteClub,
     restartClub,
     createMember,
-    deleteMember,
-    approveMember,
-    editMember,
+    # deleteMember,
+    # approveMember,
+    # editMember,
 ]

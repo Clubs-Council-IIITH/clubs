@@ -126,25 +126,27 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     results = None
     club_input = jsonable_encoder(clubInput)
 
-    if role in ["cc"]:
-        results = db.members.find(
-            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-        )
-    elif role in ["club"] and user["uid"] == club_input["cid"]:
-        results = db.members.find(
-            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-        )
-    else:
-        results = db.members.find(
-            {
-                "$and": [
-                    {"cid": club_input["cid"]},
-                    {"deleted": False},
-                    {"approved": True},
-                ]
-            },
-            {"_id": 0},
-        )
+    # if role in ["cc"]:
+    #     results = db.members.find(
+    #         {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
+    #     )
+    # elif role in ["club"] and user["uid"] == club_input["cid"]:
+    #     results = db.members.find(
+    #         {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
+    #     )
+    # else:
+    #     results = db.members.find(
+    #         {
+    #             "$and": [
+    #                 {"cid": club_input["cid"]},
+    #                 {"deleted": False},
+    #                 {"approved": True},
+    #             ]
+    #         },
+    #         {"_id": 0},
+    #     )
+
+    results = db.members.find({"cid": club_input["cid"]}, {"_id": 0},)
 
     if results:
         members = []
@@ -155,34 +157,34 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
         raise Exception("No Member Result Found")
 
 
-@strawberry.field
-def pendingMembers(info: Info) -> List[MemberType]:
-    """
-    Description: Returns all the non-deleted and non-approved members.
-    Scope: CC
-    Return Type: List[MemberType]
-    Input: None
-    """
-    user = info.context.user
-    if user is None:
-        raise Exception("Not Authenticated")
+# @strawberry.field
+# def pendingMembers(info: Info) -> List[MemberType]:
+#     """
+#     Description: Returns all the non-deleted and non-approved members.
+#     Scope: CC
+#     Return Type: List[MemberType]
+#     Input: None
+#     """
+#     user = info.context.user
+#     if user is None:
+#         raise Exception("Not Authenticated")
 
-    role = user["role"]
+#     role = user["role"]
 
-    results = None
+#     results = None
 
-    if role in ["cc"]:
-        results = db.members.find(
-            {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
-        )
+#     if role in ["cc"]:
+#         results = db.members.find(
+#             {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
+#         )
 
-    if results:
-        members = []
-        for result in results:
-            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
-        return members
-    else:
-        raise Exception("No Member Result Found")
+#     if results:
+#         members = []
+#         for result in results:
+#             members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+#         return members
+#     else:
+#         raise Exception("No Member Result Found")
 
 
 # register all queries
@@ -191,5 +193,5 @@ queries = [
     allClubs,
     club,
     members,
-    pendingMembers,
+    # pendingMembers,
 ]
