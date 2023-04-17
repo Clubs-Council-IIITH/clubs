@@ -23,7 +23,8 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
     Input: None
     """
     results = db.clubs.find({"state": "active"}, {"_id": 0})
-    clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
+    clubs = [SimpleClubType.from_pydantic(
+        Club.parse_obj(result)) for result in results]
 
     return clubs
 
@@ -31,7 +32,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description: 
+    Description:
         For CC:
             Returns all the currently active/deleted clubs.
         For Public:
@@ -108,7 +109,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 @strawberry.field
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
-    Description: 
+    Description:
         For CC & Specific Club:
             Returns all the non-deleted members.
         For Public:
@@ -119,11 +120,10 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
     user = info.context.user
     if user is None:
-        role="public"
+        role = "public"
     else:
         role = user["role"]
 
-    results = None
     club_input = jsonable_encoder(clubInput)
 
     results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
@@ -132,10 +132,10 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
         members = []
         for result in results:
             roles = result['roles']
-            roles_result=[]
+            roles_result = []
 
             for i in roles:
-                if i['deleted']==True:
+                if i['deleted'] == True:
                     continue
                 if not (role in ["cc"] or (role in ["club"] and user["uid"] == club_input["cid"])):
                     if i['approved'] == False:
@@ -144,41 +144,47 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 
             if len(roles_result) > 0:
                 result["roles"] = roles_result
-                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
-        
+                members.append(MemberType.from_pydantic(
+                    Member.parse_obj(result)))
+
         return members
     else:
         raise Exception("No Member Result Found")
 
 
-# @strawberry.field
-# def pendingMembers(info: Info) -> List[MemberType]:
-#     """
-#     Description: Returns all the non-deleted and non-approved members.
-#     Scope: CC
-#     Return Type: List[MemberType]
-#     Input: None
-#     """
-#     user = info.context.user
-#     if user is None:
-#         raise Exception("Not Authenticated")
+@strawberry.field
+def pendingMembers(info: Info) -> List[MemberType]:
+    """
+        Description: Returns all the non-deleted and non-approved members.
+        Scope: CC
+        Return Type: List[MemberType]
+        Input: None
+    """
+    user = info.context.user
+    if user is None or user["role"] not in ["cc"]:
+        raise Exception("Not Authenticated")
 
-#     role = user["role"]
+    results = db.members.find({}, {"_id": 0})
 
-#     results = None
+    if results:
+        members = []
+        for result in results:
+            roles = result['roles']
+            roles_result = []
 
-#     if role in ["cc"]:
-#         results = db.members.find(
-#             {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
-#         )
+            for i in roles:
+                if i['deleted'] == True or i['approved'] == True:
+                    continue
+                roles_result.append(i)
 
-#     if results:
-#         members = []
-#         for result in results:
-#             members.append(MemberType.from_pydantic(Member.parse_obj(result)))
-#         return members
-#     else:
-#         raise Exception("No Member Result Found")
+            if len(roles_result) > 0:
+                result["roles"] = roles_result
+                members.append(MemberType.from_pydantic(
+                    Member.parse_obj(result)))
+
+        return members
+    else:
+        raise Exception("No Member Result Found")
 
 
 # register all queries
@@ -187,5 +193,5 @@ queries = [
     allClubs,
     club,
     members,
-    # pendingMembers,
+    pendingMembers,
 ]
