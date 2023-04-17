@@ -11,11 +11,10 @@ from db import db
 from otypes import Info
 from models import Club, Member
 from otypes import (
-    NewClubInput,
+    FullClubInput,
     SimpleClubInput,
     SimpleClubType,
     FullClubType,
-    EditClubInput,
 )
 from otypes import FullMemberInput, SimpleMemberInput, NewMemberInput, MemberType
 
@@ -48,7 +47,7 @@ def updateRole(uid, cookies=None, role="club"):
 
 
 @strawberry.mutation
-def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
+def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -73,7 +72,7 @@ def createClub(clubInput: NewClubInput, info: Info) -> SimpleClubType:
 
 
 @strawberry.mutation
-def editClub(clubInput: EditClubInput, info: Info) -> FullClubType:
+def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
