@@ -235,7 +235,7 @@ def unique_roles_id(uid, cid):
                             "$mergeObjects": [
                                 {"$arrayElemAt": ["$roles", "$$this"]},
                                 {"roleid": {"$toString":
-                                    {"$add": [{"$toLong": datetime.now()}, "$$this"]}}}
+                                            {"$add": [{"$toLong": datetime.now()}, "$$this"]}}}
                             ]
                         }
                     }
@@ -270,7 +270,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]}):
         raise Exception("A record with same uid and cid already exists")
-    
+
     # DB STUFF
     created_id = db.members.insert_one(member_input).inserted_id
     unique_roles_id(member_input["uid"], member_input["cid"])
@@ -282,54 +282,59 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     return MemberType.from_pydantic(created_sample)
 
 
-# @strawberry.mutation
-# def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
-#     user = info.context.user
-#     if user is None:
-#         raise Exception("Not Authenticated")
+@strawberry.mutation
+def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
 
-#     role = user["role"]
-#     uid = user["uid"]
-#     member_input = jsonable_encoder(memberInput.to_pydantic())
+    uid = user["uid"]
+    member_input = jsonable_encoder(memberInput.to_pydantic())
 
-#     if member_input["cid"] != uid and role != "club":
-#         raise Exception("Not Authenticated to access this API")
+    if member_input["cid"] != uid and user["role"] != "club":
+        raise Exception("Not Authenticated to access this API")
 
-#     if (
-#         member_input["end_year"] != None
-#         and member_input["end_year"] < member_input["start_year"]
-#     ):
-#         raise Exception("Invalid End Year")
+    roles = []
+    for role in member_input["roles"]:
+        if role["start_year"] > datetime.now().year:
+            role["start_year"] = datetime.now().year
+            role["end_year"] = None
+        roles.append(role)
 
-#     # DB STUFF
-#     db.members.replace_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"start_year": member_input["start_year"]},
-#                 {"deleted": False},
-#             ]
-#         },
-#         member_input,
-#     )
+    # DB STUFF
+    db.members.update_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"$set": {
+            "roles": roles,
+            "poc": member_input["poc"]
+        }}
+    )
 
-#     updated_sample = db.members.find_one(
-#         {
-#             "$and": [
-#                 {"cid": member_input["cid"]},
-#                 {"uid": member_input["uid"]},
-#                 {"start_year": member_input["start_year"]},
-#                 {"deleted": False},
-#             ]
-#         },
-#         {"_id": 0},
-#     )
+    updated_sample = db.members.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"_id": 0}
+    )
+    if updated_sample == None:
+        raise Exception("No such Record")
 
-#     if updated_sample == None:
-#         raise Exception("No such Record")
+    roles = []
+    for i in updated_sample['roles']:
+        if i['deleted'] == True:
+            continue
+        roles.append(i)
+    updated_sample['roles'] = roles
 
-#     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
+    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
 
 # @strawberry.mutation
@@ -457,7 +462,7 @@ mutations = [
     deleteClub,
     restartClub,
     createMember,
+    editMember,
     # deleteMember,
     # approveMember,
-    # editMember,
 ]

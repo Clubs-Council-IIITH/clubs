@@ -68,7 +68,7 @@ class Roles(BaseModel):
     @validator("end_year", always=True)
     def check_end_year(cls, value, values):
         if value != None and value < values["start_year"]:
-            return values["start_year"]
+            return None
         return value
 
     class Config:
