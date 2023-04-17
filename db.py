@@ -16,3 +16,9 @@ client = MongoClient(MONGO_URI)
 
 # get database
 db = client[MONGO_DATABASE]
+
+db.clubs.create_index([("cid", 1)], unique= True, name="unique_clubs")
+db.members.create_index([("cid", 1),("uid", 1)], unique= True, name="unique_members")
+# print(db.clubs.index_information())  
+# print(db.members.index_information())
+ 
