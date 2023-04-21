@@ -8,7 +8,7 @@ from strawberry.types.info import RootValueType
 from typing import Union, Dict, List, Optional
 from functools import cached_property
 
-from models import PyObjectId, Club, Social, Member
+from models import PyObjectId, Club, Social, Member, Roles
 
 
 # custom context class
@@ -40,8 +40,13 @@ PyObjectIdType = strawberry.scalar(
 
 
 # TYPES
+@strawberry.experimental.pydantic.type(model=Roles, all_fields=True)
+class RolesType:
+    pass
+
+
 @strawberry.experimental.pydantic.type(
-    model=Member, fields=["cid", "uid", "start_year", "end_year", "role", "approved"]
+    model=Member, fields=["cid", "uid", "roles", "poc"]
 )
 class MemberType:
     pass
@@ -60,7 +65,18 @@ class SocialsType:
 
 
 @strawberry.experimental.pydantic.type(
-    Club, fields=["cid", "state", "category", "logo", "name", "tagline"]
+    Club,
+    fields=[
+        "id",
+        "cid",
+        "state",
+        "category",
+        "email",
+        "logo",
+        "banner",
+        "name",
+        "tagline",
+    ],
 )
 class SimpleClubType:
     pass
@@ -69,6 +85,7 @@ class SimpleClubType:
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
+        "id",
         "cid",
         "state",
         "category",
@@ -112,23 +129,19 @@ class FullClubInput:
 
 
 @strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "role", "start_year"]
+    model=Roles, fields=["name", "start_year", "end_year"]
 )
-class NewMemberInput:
-    poc: Optional[bool] = strawberry.UNSET
+class RolesInput:
+    pass
 
 
-@strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "start_year"]
-)
+@strawberry.experimental.pydantic.input(model=Member, fields=["cid", "uid", "roles"])
 class FullMemberInput:
     poc: Optional[bool] = strawberry.UNSET
-    end_year: Optional[int] = strawberry.UNSET
-    role: Optional[str] = strawberry.UNSET
 
 
-@strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "start_year", "role"]
-)
+@strawberry.input
 class SimpleMemberInput:
-    pass
+    cid: str
+    uid: str
+    roleid: str

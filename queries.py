@@ -31,7 +31,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description: 
+    Description:
         For CC:
             Returns all the currently active/deleted clubs.
         For Public:
@@ -108,7 +108,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 @strawberry.field
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
-    Description: 
+    Description:
         For CC & Specific Club:
             Returns all the non-deleted members.
         For Public:
@@ -119,37 +119,35 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
     user = info.context.user
     if user is None:
-        role="public"
+        role = "public"
     else:
         role = user["role"]
 
-    results = None
     club_input = jsonable_encoder(clubInput)
 
-    if role in ["cc"]:
-        results = db.members.find(
-            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-        )
-    elif role in ["club"] and user["uid"] == club_input["cid"]:
-        results = db.members.find(
-            {"$and": [{"cid": club_input["cid"]}, {"deleted": False}]}, {"_id": 0}
-        )
-    else:
-        results = db.members.find(
-            {
-                "$and": [
-                    {"cid": club_input["cid"]},
-                    {"deleted": False},
-                    {"approved": True},
-                ]
-            },
-            {"_id": 0},
-        )
+    results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
 
     if results:
         members = []
         for result in results:
-            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+            roles = result["roles"]
+            roles_result = []
+
+            for i in roles:
+                if i["deleted"] == True:
+                    continue
+                if not (
+                    role in ["cc"]
+                    or (role in ["club"] and user["uid"] == club_input["cid"])
+                ):
+                    if i["approved"] == False:
+                        continue
+                roles_result.append(i)
+
+            if len(roles_result) > 0:
+                result["roles"] = roles_result
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+
         return members
     else:
         raise Exception("No Member Result Found")
@@ -164,22 +162,26 @@ def pendingMembers(info: Info) -> List[MemberType]:
     Input: None
     """
     user = info.context.user
-    if user is None:
+    if user is None or user["role"] not in ["cc"]:
         raise Exception("Not Authenticated")
 
-    role = user["role"]
-
-    results = None
-
-    if role in ["cc"]:
-        results = db.members.find(
-            {"$and": [{"approved": False}, {"deleted": False}]}, {"_id": 0}
-        )
+    results = db.members.find({}, {"_id": 0})
 
     if results:
         members = []
         for result in results:
-            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+            roles = result["roles"]
+            roles_result = []
+
+            for i in roles:
+                if i["deleted"] == True or i["approved"] == True:
+                    continue
+                roles_result.append(i)
+
+            if len(roles_result) > 0:
+                result["roles"] = roles_result
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+
         return members
     else:
         raise Exception("No Member Result Found")
