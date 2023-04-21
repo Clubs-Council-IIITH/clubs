@@ -65,7 +65,18 @@ class SocialsType:
 
 
 @strawberry.experimental.pydantic.type(
-    Club, fields=["cid", "state", "category", "logo", "name", "tagline"]
+    Club,
+    fields=[
+        "id",
+        "cid",
+        "state",
+        "category",
+        "email",
+        "logo",
+        "banner",
+        "name",
+        "tagline",
+    ],
 )
 class SimpleClubType:
     pass
@@ -74,6 +85,7 @@ class SimpleClubType:
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
+        "id",
         "cid",
         "state",
         "category",
