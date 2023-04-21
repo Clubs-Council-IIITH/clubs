@@ -149,8 +149,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             )
 
         if club_input["category"] != exists["category"]:
-            raise Exception(
-                "Only CC is allowed to change the category of club.")
+            raise Exception("Only CC is allowed to change the category of club.")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -211,8 +210,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "public")
 
-    created_sample = Club.parse_obj(
-        db.clubs.find_one({"cid": club_input["cid"]}))
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
@@ -239,8 +237,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "club")
 
-    created_sample = Club.parse_obj(
-        db.clubs.find_one({"cid": club_input["cid"]}))
+    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
     return SimpleClubType.from_pydantic(created_sample)
 
@@ -262,17 +259,17 @@ def non_deleted_members(member_input) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
     if updated_sample == None:
         raise Exception("No such Record")
 
     roles = []
-    for i in updated_sample['roles']:
-        if i['deleted'] == True:
+    for i in updated_sample["roles"]:
+        if i["deleted"] == True:
             continue
         roles.append(i)
-    updated_sample['roles'] = roles
+    updated_sample["roles"] = roles
 
     return MemberType.from_pydantic(Member.parse_obj(updated_sample))
 
@@ -290,21 +287,32 @@ def unique_roles_id(uid, cid):
                         "in": {
                             "$mergeObjects": [
                                 {"$arrayElemAt": ["$roles", "$$this"]},
-                                {"roleid": {"$toString":
-                                            {"$add": [{"$toLong": datetime.now()}, "$$this"]}}}
+                                {
+                                    "rid": {
+                                        "$toString": {
+                                            "$add": [
+                                                {"$toLong": datetime.now()},
+                                                "$$this",
+                                            ]
+                                        }
+                                    }
+                                },
                             ]
-                        }
+                        },
                     }
                 }
             }
         }
     ]
-    db.members.update_one({
-        "$and": [
-            {"cid": cid},
-            {"uid": uid},
-        ]
-    }, pipeline)
+    db.members.update_one(
+        {
+            "$and": [
+                {"cid": cid},
+                {"uid": uid},
+            ]
+        },
+        pipeline,
+    )
 
 
 @strawberry.mutation
@@ -323,11 +331,14 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     if member_input["cid"] != uid and role != "club":
         raise Exception("Not Authenticated to access this API")
 
-    if db.members.find_one({
+    if db.members.find_one(
+        {
             "$and": [
                 {"cid": member_input["cid"]},
                 {"uid": member_input["uid"]},
-            ]}):
+            ]
+        }
+    ):
         raise Exception("A record with same uid and cid already exists")
 
     # DB STUFF
@@ -371,10 +382,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"$set": {
-            "roles": roles,
-            "poc": member_input["poc"]
-        }}
+        {"$set": {"roles": roles, "poc": member_input["poc"]}},
     )
 
     unique_roles_id(member_input["uid"], member_input["cid"])
@@ -404,15 +412,15 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
     if existing_data == None:
         raise Exception("No such Record")
 
     roles = []
-    for i in existing_data['roles']:
-        if i['roleid'] == member_input['roleid']:
-            i['deleted'] = True
+    for i in existing_data["roles"]:
+        if i["rid"] == member_input["rid"]:
+            i["deleted"] = True
         roles.append(i)
 
     # DB STUFF
@@ -423,7 +431,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"$set": {"roles": roles}}
+        {"$set": {"roles": roles}},
     )
 
     unique_roles_id(member_input["uid"], member_input["cid"])
@@ -452,15 +460,15 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"_id": 0}
+        {"_id": 0},
     )
     if existing_data == None:
         raise Exception("No such Record")
 
     roles = []
-    for i in existing_data['roles']:
-        if i['roleid'] == member_input['roleid']:
-            i['approved'] = True
+    for i in existing_data["roles"]:
+        if i["rid"] == member_input["rid"]:
+            i["approved"] = True
         roles.append(i)
 
     # DB STUFF
@@ -471,12 +479,13 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
                 {"uid": member_input["uid"]},
             ]
         },
-        {"$set": {"roles": roles}}
+        {"$set": {"roles": roles}},
     )
 
     unique_roles_id(member_input["uid"], member_input["cid"])
 
     return non_deleted_members(member_input)
+
 
 # @strawberry.mutation
 # def leaveClubMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:

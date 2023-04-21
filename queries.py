@@ -23,8 +23,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
     Input: None
     """
     results = db.clubs.find({"state": "active"}, {"_id": 0})
-    clubs = [SimpleClubType.from_pydantic(
-        Club.parse_obj(result)) for result in results]
+    clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
 
     return clubs
 
@@ -131,21 +130,23 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     if results:
         members = []
         for result in results:
-            roles = result['roles']
+            roles = result["roles"]
             roles_result = []
 
             for i in roles:
-                if i['deleted'] == True:
+                if i["deleted"] == True:
                     continue
-                if not (role in ["cc"] or (role in ["club"] and user["uid"] == club_input["cid"])):
-                    if i['approved'] == False:
+                if not (
+                    role in ["cc"]
+                    or (role in ["club"] and user["uid"] == club_input["cid"])
+                ):
+                    if i["approved"] == False:
                         continue
                 roles_result.append(i)
 
             if len(roles_result) > 0:
                 result["roles"] = roles_result
-                members.append(MemberType.from_pydantic(
-                    Member.parse_obj(result)))
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
 
         return members
     else:
@@ -155,10 +156,10 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 @strawberry.field
 def pendingMembers(info: Info) -> List[MemberType]:
     """
-        Description: Returns all the non-deleted and non-approved members.
-        Scope: CC
-        Return Type: List[MemberType]
-        Input: None
+    Description: Returns all the non-deleted and non-approved members.
+    Scope: CC
+    Return Type: List[MemberType]
+    Input: None
     """
     user = info.context.user
     if user is None or user["role"] not in ["cc"]:
@@ -169,18 +170,17 @@ def pendingMembers(info: Info) -> List[MemberType]:
     if results:
         members = []
         for result in results:
-            roles = result['roles']
+            roles = result["roles"]
             roles_result = []
 
             for i in roles:
-                if i['deleted'] == True or i['approved'] == True:
+                if i["deleted"] == True or i["approved"] == True:
                     continue
                 roles_result.append(i)
 
             if len(roles_result) > 0:
                 result["roles"] = roles_result
-                members.append(MemberType.from_pydantic(
-                    Member.parse_obj(result)))
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
 
         return members
     else:

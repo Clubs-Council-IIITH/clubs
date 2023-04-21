@@ -57,8 +57,8 @@ class EnumCategories(str, Enum):
 
 
 class Roles(BaseModel):
-    roleid: str | None = Field(None, description = "Unique Identifier for a role")
-    role: str = Field(..., min_length=1, max_length=99)
+    rid: str | None = Field(None, description="Unique Identifier for a role")
+    name: str = Field(..., min_length=1, max_length=99)
     start_year: int = Field(..., ge=2015, le=2040)
     end_year: int | None = Field(None, ge=2015, le=2041)
     approved: bool = False
@@ -82,8 +82,9 @@ class Roles(BaseModel):
 class Member(BaseModel):
     cid: str = Field(...)
     uid: str = Field(...)
-    roles: List[Roles] = Field(...,
-                               description="List of Roles for that specific person")
+    roles: List[Roles] = Field(
+        ..., description="List of Roles for that specific person"
+    )
 
     poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
 
