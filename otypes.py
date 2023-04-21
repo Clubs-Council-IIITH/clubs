@@ -115,14 +115,15 @@ class FullClubInput:
 
 # MEMBERS INPUTS
 
-@strawberry.experimental.pydantic.input(model=Roles, fields=[ "role", "start_year", "end_year"])
+
+@strawberry.experimental.pydantic.input(
+    model=Roles, fields=["name", "start_year", "end_year"]
+)
 class RolesInput:
     pass
 
 
-@strawberry.experimental.pydantic.input(
-    model=Member, fields=["cid", "uid", "roles"]
-)
+@strawberry.experimental.pydantic.input(model=Member, fields=["cid", "uid", "roles"])
 class FullMemberInput:
     poc: Optional[bool] = strawberry.UNSET
 
