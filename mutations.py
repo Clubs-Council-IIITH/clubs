@@ -58,7 +58,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     """
     Create a new Club.
     Checks for the 'cc' role, else raises an Error.
-    Checks for uniqueness of the club id.
+    Checks for uniqueness of the club code.
     """
     user = info.context.user
     if user is None:
@@ -68,9 +68,15 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
-        exists = db.clubs.find_one({"cid": club_input["cid"]})
-        if exists:
+        club_input["cid"] = club_input["email"].split("@")[0]
+
+        cid_exists = db.clubs.find_one({"cid": club_input["cid"]})
+        if cid_exists:
             raise Exception("A club with this cid already exists")
+
+        code_exists = db.clubs.find_one({"code": club_input["code"]})
+        if code_exists:
+            raise Exception("A club with this short code already exists")
 
         created_id = db.clubs.insert_one(club_input).inserted_id
         created_sample = Club.parse_obj(db.clubs.find_one({"_id": created_id}))
@@ -100,7 +106,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     if role in ["cc"]:
         exists = db.clubs.find_one({"cid": club_input["cid"]})
         if not exists:
-            raise Exception("A club with this cid doesn't exists")
+            raise Exception("A club with this cid doesn't exist")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]

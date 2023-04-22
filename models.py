@@ -121,8 +121,9 @@ class Social(BaseModel):
 
 class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(
-        ..., description="Club ID/Unique Short Name of Club"
+    cid: str = Field(..., description="Club ID")
+    code: str = Field(
+        ..., description="Unique Short Code of Club"
     )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other

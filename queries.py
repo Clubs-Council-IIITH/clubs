@@ -9,7 +9,7 @@ from db import db
 from otypes import Info
 
 from models import Club, Member
-from otypes import SimpleClubType, FullClubType, SimpleClubInput
+from otypes import SimpleClubType, FullClubType, SimpleClubInput, ClubIDType
 from otypes import MemberType
 
 
@@ -59,7 +59,6 @@ def allClubs(info: Info) -> List[SimpleClubType]:
     return clubs
 
 
-# TODO: refactor to simplify conditional logic
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     """

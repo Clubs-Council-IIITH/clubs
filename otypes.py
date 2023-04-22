@@ -87,6 +87,7 @@ class SimpleClubType:
     fields=[
         "id",
         "cid",
+        "code",
         "state",
         "category",
         "logo",
@@ -103,9 +104,12 @@ class FullClubType:
     pass
 
 
+@strawberry.type
+class ClubIDType:
+    cid: str
+
+
 # CLUBS INPUTS
-
-
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
     pass
@@ -118,7 +122,7 @@ class SimpleClubInput:
 
 @strawberry.experimental.pydantic.input(
     model=Club,
-    fields=["cid", "name", "email", "category", "tagline", "description", "socials"],
+    fields=["code", "name", "email", "category", "tagline", "description", "socials"],
 )
 class FullClubInput:
     banner: Optional[str] = strawberry.UNSET
@@ -126,8 +130,6 @@ class FullClubInput:
 
 
 # MEMBERS INPUTS
-
-
 @strawberry.experimental.pydantic.input(
     model=Roles, fields=["name", "start_year", "end_year"]
 )
