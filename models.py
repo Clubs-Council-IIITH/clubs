@@ -80,6 +80,7 @@ class Roles(BaseModel):
 
 
 class Member(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(...)
     uid: str = Field(...)
     roles: List[Roles] = Field(
