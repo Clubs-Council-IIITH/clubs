@@ -9,7 +9,7 @@ from db import db
 from otypes import Info
 
 from models import Club, Member
-from otypes import SimpleClubType, FullClubType, SimpleClubInput, ClubIDType
+from otypes import SimpleClubType, FullClubType, SimpleClubInput, SimpleMemberInput
 from otypes import MemberType
 
 
@@ -105,6 +105,40 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
 
 @strawberry.field
+def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    """
+    Description:
+        Returns member details
+    Scope: Public
+    Return Type: MemberType
+    Input: SimpleMemberInput (cid, uid)
+    """
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    uid = user["uid"]
+    member_input = jsonable_encoder(memberInput)
+
+    if member_input["cid"] != uid and user["role"] != "club":
+        raise Exception("Not Authenticated to access this API")
+
+    member = db.members.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"_id": 0},
+    )
+    if member == None:
+        raise Exception("No such Record")
+
+    return MemberType.from_pydantic(Member.parse_obj(member))
+
+
+@strawberry.field
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
     Description:
@@ -191,6 +225,7 @@ queries = [
     activeClubs,
     allClubs,
     club,
+    member,
     members,
     pendingMembers,
 ]

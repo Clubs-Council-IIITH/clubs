@@ -423,6 +423,9 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     if existing_data == None:
         raise Exception("No such Record")
 
+    if "rid" not in member_input:
+        raise Exception("rid is required")
+
     roles = []
     for i in existing_data["roles"]:
         if i["rid"] == member_input["rid"]:
@@ -470,6 +473,9 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     )
     if existing_data == None:
         raise Exception("No such Record")
+
+    if "rid" not in member_input:
+        raise Exception("rid is required")
 
     roles = []
     for i in existing_data["roles"]:

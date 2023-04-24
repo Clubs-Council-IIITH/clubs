@@ -104,11 +104,6 @@ class FullClubType:
     pass
 
 
-@strawberry.type
-class ClubIDType:
-    cid: str
-
-
 # CLUBS INPUTS
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
@@ -146,4 +141,4 @@ class FullMemberInput:
 class SimpleMemberInput:
     cid: str
     uid: str
-    roleid: str
+    rid: Optional[str]
