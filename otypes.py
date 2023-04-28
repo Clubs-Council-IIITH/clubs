@@ -117,7 +117,16 @@ class SimpleClubInput:
 
 @strawberry.experimental.pydantic.input(
     model=Club,
-    fields=["code", "name", "email", "category", "tagline", "description", "socials"],
+    fields=[
+        "cid",
+        "code",
+        "name",
+        "email",
+        "category",
+        "tagline",
+        "description",
+        "socials",
+    ],
 )
 class FullClubInput:
     banner: Optional[str] = strawberry.UNSET
