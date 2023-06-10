@@ -128,6 +128,7 @@ class Club(BaseModel):
     )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
+    student_body: bool = Field(False, description="Is this a Student Body?")
 
     name: str = Field(..., min_length=5, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
