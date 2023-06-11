@@ -81,8 +81,8 @@ class Roles(BaseModel):
 
 class Member(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(...)
-    uid: str = Field(...)
+    cid: str = Field(..., description="Club ID")
+    uid: str = Field(..., description="User ID")
     roles: List[Roles] = Field(
         ..., description="List of Roles for that specific person"
     )
@@ -141,8 +141,6 @@ class Club(BaseModel):
         description="Club Description",
     )
     socials: Social = Field({}, description="Social Profile Links")
-
-    # members: List[Member] | None = Field(None)
 
     created_time: datetime = Field(
         default_factory=datetime.utcnow, allow_mutation=False
