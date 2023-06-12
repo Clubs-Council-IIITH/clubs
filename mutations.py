@@ -138,6 +138,9 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
+        updateRole(exists["cid"], role="public")
+        updateRole(club_input["cid"], role="club")
+
         result = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
         return FullClubType.from_pydantic(result)
 
