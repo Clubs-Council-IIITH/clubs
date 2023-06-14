@@ -219,9 +219,9 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "public")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
+    updated_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
-    return SimpleClubType.from_pydantic(created_sample)
+    return SimpleClubType.from_pydantic(updated_sample)
 
 
 @strawberry.mutation
@@ -246,9 +246,9 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     updateRole(club_input["cid"], info.context.cookies, "club")
 
-    created_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
+    updated_sample = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
 
-    return SimpleClubType.from_pydantic(created_sample)
+    return SimpleClubType.from_pydantic(updated_sample)
 
 
 """
