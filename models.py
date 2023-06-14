@@ -105,6 +105,8 @@ class Member(BaseModel):
         max_anystr_length = 600
         validate_assignment = True
         extra = Extra.forbid
+        json_encoders = {ObjectId: str}
+        allow_population_by_field_name = True
 
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
