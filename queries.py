@@ -160,7 +160,7 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 
     club_input = jsonable_encoder(clubInput)
 
-    if role not in ["cc"] and club_input["cid"] != "clubs":
+    if role not in ["cc"] or club_input["cid"] != "clubs":
         results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
     else:
         results = db.members.find({}, {"_id": 0})
