@@ -59,8 +59,8 @@ class EnumCategories(str, Enum):
 class Roles(BaseModel):
     rid: str | None = Field(None, description="Unique Identifier for a role")
     name: str = Field(..., min_length=1, max_length=99)
-    start_year: int = Field(..., ge=2015, le=2040)
-    end_year: int | None = Field(None, ge=2015, le=2041)
+    start_year: int = Field(..., ge=2010, le=2050)
+    end_year: int | None = Field(None, gt=2010, le=2051)
     approved: bool = False
     deleted: bool = False
 

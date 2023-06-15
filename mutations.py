@@ -349,6 +349,21 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         }
     ):
         raise Exception("A record with same uid and cid already exists")
+    
+    if len(member_input["roles"]) == 0:
+        raise Exception("Roles cannot be empty")
+    
+    for i in member_input["roles"]:
+        if i["start_year"] > i["end_year"]:
+            raise Exception("Start year cannot be greater than end year")
+    
+    roles = []
+    for role in member_input["roles"]:
+        if role["start_year"] > datetime.now().year:
+            role["start_year"] = datetime.now().year
+            role["end_year"] = None
+        roles.append(role)
+    member_input["roles"] = roles
 
     # DB STUFF
     created_id = db.members.insert_one(member_input).inserted_id
@@ -359,6 +374,8 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     )
 
     return MemberType.from_pydantic(created_sample)
+
+# TODO: Add chech for end_year >= start_year
 
 
 @strawberry.mutation
@@ -375,6 +392,13 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     if member_input["cid"] != uid and user["role"] != "club":
         raise Exception("Not Authenticated to access this API")
+    
+    if len(member_input["roles"]) == 0:
+        raise Exception("Roles cannot be empty")
+    
+    for i in member_input["roles"]:
+        if i["start_year"] > i["end_year"]:
+            raise Exception("Start year cannot be greater than end year")
 
     roles = []
     for role in member_input["roles"]:
