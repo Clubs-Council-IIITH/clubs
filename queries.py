@@ -109,7 +109,7 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     """
     Description:
         Returns member details
-    Scope: Public
+    Scope: CC & Specific Club
     Return Type: MemberType
     Input: SimpleMemberInput (cid, uid)
     """
@@ -120,7 +120,7 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     uid = user["uid"]
     member_input = jsonable_encoder(memberInput)
 
-    if member_input["cid"] != uid and user["role"] != "club":
+    if (member_input["cid"] != uid or user["role"] != "club") and user["role"] != "cc":
         raise Exception("Not Authenticated to access this API")
 
     member = db.members.find_one(
@@ -142,8 +142,10 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     """
     Description:
-        For CC & Specific Club:
+        For CC:
             Returns all the non-deleted members.
+        For Specific Club:
+            Returns all the non-deleted members of that club.
         For Public:
             Returns all the non-deleted and approved members.
     Scope: CC + Club (For All Members), Public (For Approved Members)
