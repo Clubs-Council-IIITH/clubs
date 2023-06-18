@@ -104,17 +104,17 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
-        exists = db.clubs.find_one({"cid": club_input["cid"]})
+        exists = db.clubs.find_one({"code": club_input["code"]})
         if not exists:
-            raise Exception("A club with this cid doesn't exist")
+            raise Exception("A club with this code doesn't exist")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
 
-        db.clubs.replace_one({"cid": club_input["cid"]}, club_input)
+        db.clubs.replace_one({"code": club_input["code"]}, club_input)
         if "socials" in club_input.keys():
             db.clubs.update_one(
-                {"cid": club_input["cid"]},
+                {"code": club_input["code"]},
                 {
                     "$set": {
                         "socials.website": club_input["socials"]["website"],
@@ -129,7 +129,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                 },
             )
         db.clubs.update_one(
-            {"cid": club_input["cid"]},
+            {"code": club_input["code"]},
             {
                 "$set": {
                     "created_time": exists["created_time"],
@@ -138,10 +138,11 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
-        updateRole(exists["cid"], role="public")
-        updateRole(club_input["cid"], role="club")
+        if exists["cid"] != club_input["cid"]:
+            updateRole(exists["cid"], info.context.cookies, role="public")
+            updateRole(club_input["cid"], info.context.cookies, role="club")
 
-        result = Club.parse_obj(db.clubs.find_one({"cid": club_input["cid"]}))
+        result = Club.parse_obj(db.clubs.find_one({"code": club_input["code"]}))
         return FullClubType.from_pydantic(result)
 
     elif role in ["club"]:
