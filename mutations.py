@@ -328,7 +328,7 @@ def unique_roles_id(uid, cid):
 @strawberry.mutation
 def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     """
-    Mutation to create a new member by that specific 'club'
+    Mutation to create a new member by that specific 'club' or cc
     """
     user = info.context.user
     if user is None:
@@ -338,7 +338,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     uid = user["uid"]
     member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if member_input["cid"] != uid and role != "club":
+    if (member_input["cid"] != uid or user["role"] != "club") and user["role"] != "cc":
         raise Exception("Not Authenticated to access this API")
 
     if db.members.find_one(
@@ -391,7 +391,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     uid = user["uid"]
     member_input = jsonable_encoder(memberInput.to_pydantic())
 
-    if member_input["cid"] != uid and user["role"] != "club":
+    if (member_input["cid"] != uid or user["role"] != "club") and user["role"] != "cc":
         raise Exception("Not Authenticated to access this API")
     
     if len(member_input["roles"]) == 0:
