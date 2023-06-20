@@ -355,7 +355,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         raise Exception("Roles cannot be empty")
     
     for i in member_input["roles"]:
-        if i["start_year"] > i["end_year"]:
+        if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
     
     roles = []
@@ -376,7 +376,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     return MemberType.from_pydantic(created_sample)
 
-# TODO: Add chech for end_year >= start_year
+# TODO: Add check for end_year >= start_year
 
 
 @strawberry.mutation
