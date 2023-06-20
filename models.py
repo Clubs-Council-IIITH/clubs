@@ -126,7 +126,7 @@ class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(..., description="Club ID")
     code: str = Field(
-        ..., description="Unique Short Code of Club"
+        ..., description="Unique Short Code of Club", max_length=15, min_length=2
     )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
@@ -138,8 +138,8 @@ class Club(BaseModel):
     banner: str | None = Field(None, description="Club Long Banner pic URL")
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        '[{"type":"paragraph", "children":[{"text":""}]}]',
-        max_length=5000,
+        '{ "md": "", "html": "" }',
+        max_length=9999,
         description="Club Description",
     )
     socials: Social = Field({}, description="Social Profile Links")
@@ -156,7 +156,7 @@ class Club(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        max_anystr_length = 5001
+        max_anystr_length = 10000
         validate_assignment = True
         extra = Extra.forbid
         anystr_strip_whitespace = True
