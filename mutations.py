@@ -461,7 +461,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
             }
         )
 
-        return non_deleted_members(member_input)
+        return MemberType.from_pydantic(Member.parse_obj(existing_data))
 
     roles = []
     for i in existing_data["roles"]:
