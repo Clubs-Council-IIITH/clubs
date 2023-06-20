@@ -427,7 +427,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 @strawberry.mutation
 def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     """
-    Mutation to delete an already existing member role of that specific 'club'
+    Mutation to delete an already existing member (role) of that specific 'club'
     """
     user = info.context.user
     if user is None:
@@ -452,7 +452,16 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         raise Exception("No such Record")
 
     if "rid" not in member_input:
-        raise Exception("rid is required")
+        db.members.update_one(
+            {
+                "$and": [
+                    {"cid": member_input["cid"]},
+                    {"uid": member_input["uid"]},
+                ]
+            }
+        )
+
+        return non_deleted_members(member_input)
 
     roles = []
     for i in existing_data["roles"]:
