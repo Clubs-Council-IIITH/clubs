@@ -69,6 +69,7 @@ class SocialsType:
     fields=[
         "id",
         "cid",
+        "code",
         "state",
         "category",
         "student_body",
