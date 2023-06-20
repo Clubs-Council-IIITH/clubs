@@ -436,7 +436,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     uid = user["uid"]
     member_input = jsonable_encoder(memberInput)
 
-    if member_input["cid"] != uid and user["role"] != "club":
+    if (member_input["cid"] != uid or user["role"] != "club") and user["role"] != "cc":
         raise Exception("Not Authenticated to access this API")
 
     existing_data = db.members.find_one(
@@ -451,8 +451,8 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     if existing_data == None:
         raise Exception("No such Record")
 
-    if "rid" not in member_input:
-        db.members.update_one(
+    if "rid" not in member_input or not member_input["rid"]:
+        db.members.delete_one(
             {
                 "$and": [
                     {"cid": member_input["cid"]},
