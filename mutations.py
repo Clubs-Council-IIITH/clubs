@@ -350,14 +350,14 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         }
     ):
         raise Exception("A record with same uid and cid already exists")
-    
+
     if len(member_input["roles"]) == 0:
         raise Exception("Roles cannot be empty")
-    
+
     for i in member_input["roles"]:
         if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
-    
+
     roles = []
     for role in member_input["roles"]:
         if role["start_year"] > datetime.now().year:
@@ -376,6 +376,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     return MemberType.from_pydantic(created_sample)
 
+
 # TODO: Add check for end_year >= start_year
 
 
@@ -393,12 +394,12 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     if (member_input["cid"] != uid or user["role"] != "club") and user["role"] != "cc":
         raise Exception("Not Authenticated to access this API")
-    
+
     if len(member_input["roles"]) == 0:
         raise Exception("Roles cannot be empty")
-    
+
     for i in member_input["roles"]:
-        if i["start_year"] > i["end_year"]:
+        if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
 
     roles = []
