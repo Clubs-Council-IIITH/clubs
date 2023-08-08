@@ -108,7 +108,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     """
     Description:
-        Returns member details
+        Returns member details for a specific club
     Scope: CC & Specific Club
     Return Type: MemberType
     Input: SimpleMemberInput (cid, uid)
@@ -136,6 +136,45 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         raise Exception("No such Record")
 
     return MemberType.from_pydantic(Member.parse_obj(member))
+
+@strawberry.field
+def memberRoles(uid: str, info: Info) -> List[MemberType]:
+    """
+    Description:
+        Returns member roles from each club
+    Scope: CC & Specific Club
+    Return Type: uid (str)
+    Input: SimpleMemberInput (cid, uid, roles)
+    """
+    user = info.context.user
+    if user is None:
+        role = "public"
+    else:
+        role = user["role"]
+    
+    results = db.members.find({"uid": uid}, {"_id": 0})
+
+    if not results:
+        raise Exception("No Member Result/s Found")
+    
+    members = []
+    for result in results:
+        roles = result["roles"]
+        roles_result = []
+    
+        for i in roles:
+            if i["deleted"] == True:
+                continue
+            if role != "cc":
+                if i["approved"] == False:
+                    continue
+            roles_result.append(i)
+        
+        if len(roles_result) > 0:
+            result["roles"] = roles_result
+            members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+
+    return members
 
 
 @strawberry.field
@@ -188,7 +227,7 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
 
         return members
     else:
-        raise Exception("No Member Result Found")
+        raise Exception("No Member Result/s Found")
 
 
 @strawberry.field
@@ -222,7 +261,7 @@ def pendingMembers(info: Info) -> List[MemberType]:
 
         return members
     else:
-        raise Exception("No Member Result Found")
+        raise Exception("No Member Result/s Found")
 
 
 # register all queries
@@ -231,6 +270,7 @@ queries = [
     allClubs,
     club,
     member,
+    memberRoles,
     members,
     pendingMembers,
 ]
