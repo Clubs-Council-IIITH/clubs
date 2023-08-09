@@ -89,6 +89,10 @@ class Member(BaseModel):
 
     poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
 
+    @validator("uid", pre=True)
+    def transform_uid(cls, v):
+        return v.lower()
+
     # contact: str | None = Field(
     #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
