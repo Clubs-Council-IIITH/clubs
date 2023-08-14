@@ -358,12 +358,18 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
 
-    roles = []
+    roles0 = []
     for role in member_input["roles"]:
         if role["start_year"] > datetime.now().year:
             role["start_year"] = datetime.now().year
             role["end_year"] = None
+        roles0.append(role)
+    
+    roles = []
+    for role in roles0:
+        role["approved"] = user["role"] == "cc"
         roles.append(role)
+    
     member_input["roles"] = roles
 
     # DB STUFF
