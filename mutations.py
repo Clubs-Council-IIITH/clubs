@@ -518,12 +518,12 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     if existing_data == None:
         raise Exception("No such Record")
 
-    if "rid" not in member_input:
-        raise Exception("rid is required")
+    # if "rid" not in member_input:
+    #     raise Exception("rid is required")
 
     roles = []
     for i in existing_data["roles"]:
-        if i["rid"] == member_input["rid"]:
+        if not member_input["rid"] or i["rid"] == member_input["rid"]:
             i["approved"] = True
         roles.append(i)
 
