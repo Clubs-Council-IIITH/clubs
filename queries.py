@@ -12,6 +12,9 @@ from models import Club, Member
 from otypes import SimpleClubType, FullClubType, SimpleClubInput, SimpleMemberInput
 from otypes import MemberType
 
+"""
+Club Queries
+"""
 
 # fetch all active clubs
 @strawberry.field
@@ -103,6 +106,11 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     else:
         raise Exception("No Club Result Found")
 
+
+
+"""
+Member Queries
+"""
 
 @strawberry.field
 def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
@@ -251,7 +259,7 @@ def pendingMembers(info: Info) -> List[MemberType]:
             roles_result = []
 
             for i in roles:
-                if i["deleted"] == True or i["approved"] == True:
+                if i["deleted"] or i["approved"] or i["rejected"]:
                     continue
                 roles_result.append(i)
 

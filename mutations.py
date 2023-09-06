@@ -260,7 +260,7 @@ MEMBER MUTATIONS
 def non_deleted_members(member_input) -> MemberType:
     """
     Function to return non-deleted members for a particular cid, uid
-    Only to be used in admin functions, as it return approved/non-approved members.
+    Only to be used in admin functions, as it returns both approved/non-approved members.
     """
     updated_sample = db.members.find_one(
         {
@@ -367,7 +367,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     
     roles = []
     for role in roles0:
-        role["approved"] = user["role"] == "cc"
+        role["approved"] = (user["role"] == "cc")
         roles.append(role)
     
     member_input["roles"] = roles
@@ -408,11 +408,16 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
 
-    roles = []
+    roles0 = []
     for role in member_input["roles"]:
         if role["start_year"] > datetime.now().year:
             role["start_year"] = datetime.now().year
             role["end_year"] = None
+        roles0.append(role)
+    
+    roles = []
+    for role in roles0:
+        role["approved"] = (user["role"] == "cc")
         roles.append(role)
 
     # DB STUFF
@@ -525,6 +530,58 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     for i in existing_data["roles"]:
         if not member_input["rid"] or i["rid"] == member_input["rid"]:
             i["approved"] = True
+            i["rejected"] = False
+        roles.append(i)
+
+    # DB STUFF
+    db.members.update_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"$set": {"roles": roles}},
+    )
+
+    unique_roles_id(member_input["uid"], member_input["cid"])
+
+    return non_deleted_members(member_input)
+
+@strawberry.mutation
+def rejectMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
+    """
+    Mutation to reject a member role by 'cc'
+    """
+    user = info.context.user
+    if user is None:
+        raise Exception("Not Authenticated")
+
+    member_input = jsonable_encoder(memberInput)
+
+    if user["role"] != "cc":
+        raise Exception("Not Authenticated to access this API")
+
+    existing_data = db.members.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        },
+        {"_id": 0},
+    )
+    if existing_data == None:
+        raise Exception("No such Record")
+
+    # if "rid" not in member_input:
+    #     raise Exception("rid is required")
+
+    roles = []
+    for i in existing_data["roles"]:
+        if not member_input["rid"] or i["rid"] == member_input["rid"]:
+            i["approved"] = False
+            i["rejected"] = True
         roles.append(i)
 
     # DB STUFF
@@ -582,4 +639,5 @@ mutations = [
     editMember,
     deleteMember,
     approveMember,
+    rejectMember,
 ]
