@@ -62,6 +62,7 @@ class Roles(BaseModel):
     start_year: int = Field(..., ge=2010, le=2050)
     end_year: int | None = Field(None, gt=2010, le=2051)
     approved: bool = False
+    rejected: bool = False
     deleted: bool = False
 
     # Validators
@@ -70,6 +71,11 @@ class Roles(BaseModel):
         if value != None and value < values["start_year"]:
             return None
         return value
+    
+    @validator("rejected", always=True)
+    def check_status(cls, value, values):
+        if values["approved"] == True and values["rejected"] == True:
+            raise ValueError("Role cannot be both approved and rejected")
 
     class Config:
         arbitrary_types_allowed = True
