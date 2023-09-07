@@ -74,7 +74,7 @@ class Roles(BaseModel):
     
     @validator("rejected", always=True)
     def check_status(cls, value, values):
-        if values["approved"] == True and values["rejected"] == True:
+        if values["approved"] == True and value == True:
             raise ValueError("Role cannot be both approved and rejected")
 
     class Config:

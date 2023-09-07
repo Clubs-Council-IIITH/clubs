@@ -251,6 +251,7 @@ def pendingMembers(info: Info) -> List[MemberType]:
         raise Exception("Not Authenticated")
 
     results = db.members.find({}, {"_id": 0})
+    print(results)
 
     if results:
         members = []
