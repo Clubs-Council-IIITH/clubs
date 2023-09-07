@@ -76,6 +76,7 @@ class Roles(BaseModel):
     def check_status(cls, value, values):
         if values["approved"] == True and value == True:
             raise ValueError("Role cannot be both approved and rejected")
+        return value
 
     class Config:
         arbitrary_types_allowed = True

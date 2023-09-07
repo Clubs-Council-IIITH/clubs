@@ -251,13 +251,14 @@ def pendingMembers(info: Info) -> List[MemberType]:
         raise Exception("Not Authenticated")
 
     results = db.members.find({}, {"_id": 0})
-    print(results)
 
     if results:
         members = []
         for result in results:
             roles = result["roles"]
             roles_result = []
+
+            print(roles)
 
             for i in roles:
                 if i["deleted"] or i["approved"] or i["rejected"]:
