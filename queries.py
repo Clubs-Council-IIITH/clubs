@@ -16,6 +16,7 @@ from otypes import MemberType
 Club Queries
 """
 
+
 # fetch all active clubs
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
@@ -107,10 +108,10 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         raise Exception("No Club Result Found")
 
 
-
 """
 Member Queries
 """
+
 
 @strawberry.field
 def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
@@ -145,6 +146,7 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     return MemberType.from_pydantic(Member.parse_obj(member))
 
+
 @strawberry.field
 def memberRoles(uid: str, info: Info) -> List[MemberType]:
     """
@@ -159,17 +161,17 @@ def memberRoles(uid: str, info: Info) -> List[MemberType]:
         role = "public"
     else:
         role = user["role"]
-    
+
     results = db.members.find({"uid": uid}, {"_id": 0})
 
     if not results:
         raise Exception("No Member Result/s Found")
-    
+
     members = []
     for result in results:
         roles = result["roles"]
         roles_result = []
-    
+
         for i in roles:
             if i["deleted"] == True:
                 continue
@@ -177,7 +179,7 @@ def memberRoles(uid: str, info: Info) -> List[MemberType]:
                 if i["approved"] == False:
                     continue
             roles_result.append(i)
-        
+
         if len(roles_result) > 0:
             result["roles"] = roles_result
             members.append(MemberType.from_pydantic(Member.parse_obj(result)))
@@ -234,6 +236,61 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
                 members.append(MemberType.from_pydantic(Member.parse_obj(result)))
 
         return members
+
+    else:
+        raise Exception("No Member Result/s Found")
+
+
+@strawberry.field
+def currentMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
+    """
+    Description:
+        For CC:
+            Returns all the current non-deleted members.
+        For Specific Club:
+            Returns all the current non-deleted members of that club.
+        For Public:
+            Returns all the current non-deleted and approved members.
+    Scope: CC + Club (For All Members), Public (For Approved Members)
+    Return Type: List[MemberType]
+    Input: SimpleClubInput (cid)
+    """
+    user = info.context.user
+    if user is None:
+        role = "public"
+    else:
+        role = user["role"]
+
+    club_input = jsonable_encoder(clubInput)
+
+    if role not in ["cc"] or club_input["cid"] != "clubs":
+        results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
+    else:
+        results = db.members.find({}, {"_id": 0})
+
+    if results:
+        members = []
+        for result in results:
+            roles = result["roles"]
+            roles_result = []
+
+            for i in roles:
+                if i["deleted"] == True or i["end_year"] is not None:
+                    continue
+                if not (
+                    role in ["cc"]
+                    or (role in ["club"] and user["uid"] == club_input["cid"])
+                ):
+                    if i["approved"] == False:
+                        continue
+                roles_result.append(i)
+
+            if len(roles_result) > 0:
+                result["roles"] = roles_result
+                members.append(MemberType.from_pydantic(Member.parse_obj(result)))
+
+        return members
+
     else:
         raise Exception("No Member Result/s Found")
 
@@ -282,5 +339,6 @@ queries = [
     member,
     memberRoles,
     members,
+    currentMembers,
     pendingMembers,
 ]
