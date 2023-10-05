@@ -82,7 +82,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput)
 
     result = None
-    club = db.clubs.find_one({"cid": club_input["cid"]}, {"_id": 0})
+    club = db.clubs.find_one({"cid": club_input["cid"].lower()}, {"_id": 0})
 
     if not club:
         raise Exception("No Club Found")
