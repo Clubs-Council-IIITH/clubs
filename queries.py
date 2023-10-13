@@ -310,8 +310,6 @@ def pendingMembers(info: Info) -> List[MemberType]:
             roles = result["roles"]
             roles_result = []
 
-            print(roles)
-
             for i in roles:
                 if i["deleted"] or i["approved"] or i["rejected"]:
                     continue
