@@ -3,12 +3,13 @@ from bson import ObjectId
 from datetime import datetime
 from enum import Enum
 from pydantic import (
-    field_validator, 
+    field_validator,
     ConfigDict,
     BaseModel,
     Field,
     EmailStr,
     AnyHttpUrl,
+    ValidationInfo,
     ValidationError,
     validator,
 )
@@ -75,14 +76,14 @@ class Roles(BaseModel):
 
     # Validators
     @field_validator("end_year")
-    def check_end_year(cls, value, values):
-        if value != None and value < values["start_year"]:
+    def check_end_year(cls, value, info: ValidationInfo):
+        if value != None and value < info.data["start_year"]:
             return None
         return value
     
     @field_validator("rejected")
-    def check_status(cls, value, values):
-        if values["approved"] == True and value == True:
+    def check_status(cls, value, info: ValidationInfo):
+        if info.data["approved"] == True and value == True:
             raise ValueError("Role cannot be both approved and rejected")
         return value
     
