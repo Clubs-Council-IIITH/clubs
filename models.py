@@ -3,22 +3,31 @@ from bson import ObjectId
 from datetime import datetime
 from enum import Enum
 from pydantic import (
+    field_validator, 
+    ConfigDict,
     BaseModel,
-    Extra,
     Field,
     EmailStr,
     AnyHttpUrl,
     ValidationError,
     validator,
 )
-from typing import List, Optional
+from pydantic_core import core_schema
+from typing import Any, List
 
 
 # for handling mongo ObjectIds
 class PyObjectId(ObjectId):
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler):
+        return core_schema.union_schema(
+            [
+                # check if it's an instance first before doing any further work
+                core_schema.is_instance_schema(ObjectId),
+                core_schema.no_info_plain_validator_function(cls.validate),
+            ],
+            serialization=core_schema.to_string_ser_schema(),
+        )
 
     @classmethod
     def validate(cls, v):
@@ -27,9 +36,8 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
+    def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
-
 
 def iiit_email_only(v: str) -> str:
     valid_domains = ["@iiit.ac.in", "@students.iiit.ac.in", "@research.iiit.ac.in"]
@@ -66,24 +74,27 @@ class Roles(BaseModel):
     deleted: bool = False
 
     # Validators
-    @validator("end_year", always=True)
+    @field_validator("end_year")
     def check_end_year(cls, value, values):
         if value != None and value < values["start_year"]:
             return None
         return value
     
-    @validator("rejected", always=True)
+    @field_validator("rejected")
     def check_status(cls, value, values):
         if values["approved"] == True and value == True:
             raise ValueError("Role cannot be both approved and rejected")
         return value
-
-    class Config:
-        arbitrary_types_allowed = True
-        max_anystr_length = 100
-        validate_assignment = True
-        extra = Extra.forbid
-        anystr_strip_whitespace = True
+    
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        str_max_length=100, 
+        validate_assignment=True, 
+        validate_default=True,
+        validate_return=True,
+        extra="forbid", 
+        str_strip_whitespace=True
+        )
 
 
 class Member(BaseModel):
@@ -96,41 +107,54 @@ class Member(BaseModel):
 
     poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
 
-    @validator("uid", pre=True)
+    @field_validator("uid", mode="before")
+    @classmethod
     def transform_uid(cls, v):
         return v.lower()
-
+    
     # contact: str | None = Field(
     #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
     # Validators
-    # @validator("contact", always=True)
+    # @validator("contact")
     # def check_poc_contact(cls, value, values):
     #     if values["poc"] == True and not value:
     #         raise ValueError("POC Contact Number should be added")
     #     return value
 
-    class Config:
-        arbitrary_types_allowed = True
-        anystr_strip_whitespace = True
-        max_anystr_length = 600
-        validate_assignment = True
-        extra = Extra.forbid
-        json_encoders = {ObjectId: str}
-        allow_population_by_field_name = True
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        str_strip_whitespace=True, 
+        str_max_length=600, 
+        validate_assignment=True,
+        validate_default=True,
+        validate_return=True,
+        extra="forbid", 
+        json_encoders={ObjectId: str}, 
+        populate_by_name=True
+    )
 
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
 
 class Social(BaseModel):
-    website: AnyHttpUrl | None
-    instagram: AnyHttpUrl | None
-    facebook: AnyHttpUrl | None
-    youtube: AnyHttpUrl | None
-    twitter: AnyHttpUrl | None
-    linkedin: AnyHttpUrl | None
-    discord: AnyHttpUrl | None
-    other_links: List[AnyHttpUrl] = Field([], unique_items=True)  # Type and URL
+    website: AnyHttpUrl | None = None
+    instagram: AnyHttpUrl | None = None
+    facebook: AnyHttpUrl | None = None
+    youtube: AnyHttpUrl | None = None
+    twitter: AnyHttpUrl | None = None
+    linkedin: AnyHttpUrl | None = None
+    discord: AnyHttpUrl | None = None
+    other_links: List[AnyHttpUrl] = Field([])  # Type and URL
+
+    @field_validator("other_links")
+    @classmethod
+    def validate_unique_links(cls, value):
+        if len(value) != len(set(value)):
+            raise ValueError("Duplicate URLs are not allowed in 'other_links'")
+        return value
 
 
 class Club(BaseModel):
@@ -156,21 +180,26 @@ class Club(BaseModel):
     socials: Social = Field({}, description="Social Profile Links")
 
     created_time: datetime = Field(
-        default_factory=datetime.utcnow, allow_mutation=False
+        default_factory=datetime.utcnow, frozen=True
     )
     updated_time: datetime = Field(default_factory=datetime.utcnow)
 
     # Validator
     _check_email = validator("email", allow_reuse=True)(iiit_email_only)
-
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        max_anystr_length = 10000
-        validate_assignment = True
-        extra = Extra.forbid
-        anystr_strip_whitespace = True
+    
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(
+        populate_by_name=True, 
+        arbitrary_types_allowed=True, 
+        json_encoders={ObjectId: str}, 
+        str_max_length=10000, 
+        validate_assignment=True, 
+        validate_default=True,
+        validate_return=True,
+        extra="forbid", 
+        str_strip_whitespace=True
+    )
 
 
 # TO ADD CLUB SUBSCRIPTION MODEL - v2
