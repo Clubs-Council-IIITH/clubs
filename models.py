@@ -62,6 +62,7 @@ class EnumStates(str, Enum):
 class EnumCategories(str, Enum):
     cultural = "cultural"
     technical = "technical"
+    affinity = "affinity"
     other = "other"
 
 
