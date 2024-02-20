@@ -40,11 +40,7 @@ schema = strawberry.federation.Schema(
 DEBUG = getenv("SERVICES_DEBUG", "False").lower() in ("true", "1", "t")
 
 # serve API with FastAPI router
-gql_app = GraphQLRouter(
-    schema, 
-    graphiql=True,
-    context_getter=get_context
-)
+gql_app = GraphQLRouter(schema, graphiql=True, context_getter=get_context)
 app = FastAPI(
     debug=DEBUG,
     title="CC Clubs Microservice",

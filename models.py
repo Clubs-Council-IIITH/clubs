@@ -10,7 +10,6 @@ from pydantic import (
     EmailStr,
     AnyHttpUrl,
     ValidationInfo,
-    ValidationError,
     validator,
 )
 from pydantic_core import core_schema
@@ -39,6 +38,7 @@ class PyObjectId(ObjectId):
     @classmethod
     def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
+
 
 def iiit_email_only(v: str) -> str:
     valid_domains = ["@iiit.ac.in", "@students.iiit.ac.in", "@research.iiit.ac.in"]
@@ -78,25 +78,25 @@ class Roles(BaseModel):
     # Validators
     @field_validator("end_year")
     def check_end_year(cls, value, info: ValidationInfo):
-        if value != None and value < info.data["start_year"]:
+        if value is not None and value < info.data["start_year"]:
             return None
         return value
-    
+
     @field_validator("rejected")
     def check_status(cls, value, info: ValidationInfo):
-        if info.data["approved"] == True and value == True:
+        if info.data["approved"] is True and value is True:
             raise ValueError("Role cannot be both approved and rejected")
         return value
-    
+
     model_config = ConfigDict(
-        arbitrary_types_allowed=True, 
-        str_max_length=100, 
-        validate_assignment=True, 
+        arbitrary_types_allowed=True,
+        str_max_length=100,
+        validate_assignment=True,
         validate_default=True,
         validate_return=True,
-        extra="forbid", 
-        str_strip_whitespace=True
-        )
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
 
 
 class Member(BaseModel):
@@ -113,7 +113,7 @@ class Member(BaseModel):
     @classmethod
     def transform_uid(cls, v):
         return v.lower()
-    
+
     # contact: str | None = Field(
     #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
 
@@ -127,15 +127,15 @@ class Member(BaseModel):
     # TODO[pydantic]: The following keys were removed: `json_encoders`.
     # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     model_config = ConfigDict(
-        arbitrary_types_allowed=True, 
-        str_strip_whitespace=True, 
-        str_max_length=600, 
+        arbitrary_types_allowed=True,
+        str_strip_whitespace=True,
+        str_max_length=600,
         validate_assignment=True,
         validate_default=True,
         validate_return=True,
-        extra="forbid", 
-        json_encoders={ObjectId: str}, 
-        populate_by_name=True
+        extra="forbid",
+        json_encoders={ObjectId: str},
+        populate_by_name=True,
     )
 
     # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
@@ -181,26 +181,24 @@ class Club(BaseModel):
     )
     socials: Social = Field({}, description="Social Profile Links")
 
-    created_time: datetime = Field(
-        default_factory=datetime.utcnow, frozen=True
-    )
+    created_time: datetime = Field(default_factory=datetime.utcnow, frozen=True)
     updated_time: datetime = Field(default_factory=datetime.utcnow)
 
     # Validator
     _check_email = validator("email", allow_reuse=True)(iiit_email_only)
-    
+
     # TODO[pydantic]: The following keys were removed: `json_encoders`.
     # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     model_config = ConfigDict(
-        populate_by_name=True, 
-        arbitrary_types_allowed=True, 
-        json_encoders={ObjectId: str}, 
-        str_max_length=10000, 
-        validate_assignment=True, 
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+        str_max_length=10000,
+        validate_assignment=True,
         validate_default=True,
         validate_return=True,
-        extra="forbid", 
-        str_strip_whitespace=True
+        extra="forbid",
+        str_strip_whitespace=True,
     )
 
 
