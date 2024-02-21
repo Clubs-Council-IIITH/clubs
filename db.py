@@ -7,7 +7,7 @@ from pymongo import MongoClient
 MONGO_URI = "mongodb://{}:{}@mongo:{}/".format(
     getenv("MONGO_USERNAME", default="username"),
     getenv("MONGO_PASSWORD", default="password"),
-    getenv("MONGO_PORT", default="27017")
+    getenv("MONGO_PORT", default="27017"),
 )
 MONGO_DATABASE = getenv("MONGO_DATABASE", default="default")
 
@@ -19,9 +19,11 @@ db = client[MONGO_DATABASE]
 
 # TODO: document and properly handle error
 try:
-    db.clubs.create_index([("cid", 1)], unique= True, name="unique_clubs")
-    db.members.create_index([("cid", 1),("uid", 1)], unique= True, name="unique_members")
-    print(db.clubs.index_information())  
+    db.clubs.create_index([("cid", 1)], unique=True, name="unique_clubs")
+    db.members.create_index(
+        [("cid", 1), ("uid", 1)], unique=True, name="unique_members"
+    )
+    print(db.clubs.index_information())
     print(db.members.index_information())
-except:
+except Exception:
     pass

@@ -1,7 +1,6 @@
 import strawberry
 
 from fastapi.encoders import jsonable_encoder
-from typing import List
 from datetime import datetime
 import requests
 
@@ -49,8 +48,10 @@ def updateRole(uid, cookies=None, role="club"):
             result = requests.post(
                 "http://gateway/graphql", json={"query": query, "variables": variables}
             )
-    except:
-        pass
+        
+        return result.json()
+    except Exception:
+        return None
 
 
 @strawberry.mutation
@@ -107,6 +108,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         exists = db.clubs.find_one({"code": club_input["code"]})
         if not exists:
             raise Exception("A club with this code doesn't exist")
+        if not exists:
+            raise Exception("A club with this code doesn't exist")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -147,6 +150,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     elif role in ["club"]:
         exists = db.clubs.find_one({"cid": club_input["cid"]})
+        if not exists:
+            raise Exception("A club with this cid doesn't exist")
         if uid != club_input["cid"]:
             raise Exception("Authentication Error! (CID CHANGED)")
 
@@ -271,12 +276,12 @@ def non_deleted_members(member_input) -> MemberType:
         },
         {"_id": 0},
     )
-    if updated_sample == None:
+    if updated_sample is None:
         raise Exception("No such Record")
 
     roles = []
     for i in updated_sample["roles"]:
-        if i["deleted"] == True:
+        if i["deleted"] is True:
             continue
         roles.append(i)
     updated_sample["roles"] = roles
@@ -364,12 +369,12 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
             role["start_year"] = datetime.now().year
             role["end_year"] = None
         roles0.append(role)
-    
+
     roles = []
     for role in roles0:
-        role["approved"] = (user["role"] == "cc")
+        role["approved"] = user["role"] == "cc"
         roles.append(role)
-    
+
     member_input["roles"] = roles
 
     # DB STUFF
@@ -414,10 +419,10 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
             role["start_year"] = datetime.now().year
             role["end_year"] = None
         roles0.append(role)
-    
+
     roles = []
     for role in roles0:
-        role["approved"] = (user["role"] == "cc")
+        role["approved"] = user["role"] == "cc"
         roles.append(role)
 
     # DB STUFF
@@ -460,7 +465,7 @@ def deleteMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         },
         {"_id": 0},
     )
-    if existing_data == None:
+    if existing_data is None:
         raise Exception("No such Record")
 
     if "rid" not in member_input or not member_input["rid"]:
@@ -520,7 +525,7 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         },
         {"_id": 0},
     )
-    if existing_data == None:
+    if existing_data is None:
         raise Exception("No such Record")
 
     # if "rid" not in member_input:
@@ -548,6 +553,7 @@ def approveMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
 
     return non_deleted_members(member_input)
 
+
 @strawberry.mutation
 def rejectMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
     """
@@ -571,7 +577,7 @@ def rejectMember(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         },
         {"_id": 0},
     )
-    if existing_data == None:
+    if existing_data is None:
         raise Exception("No such Record")
 
     # if "rid" not in member_input:

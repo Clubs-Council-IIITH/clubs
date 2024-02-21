@@ -141,7 +141,7 @@ def member(memberInput: SimpleMemberInput, info: Info) -> MemberType:
         },
         {"_id": 0},
     )
-    if member == None:
+    if member is None:
         raise Exception("No such Record")
 
     return MemberType.from_pydantic(Member.parse_obj(member))
@@ -173,10 +173,10 @@ def memberRoles(uid: str, info: Info) -> List[MemberType]:
         roles_result = []
 
         for i in roles:
-            if i["deleted"] == True:
+            if i["deleted"] is True:
                 continue
             if role != "cc":
-                if i["approved"] == False:
+                if i["approved"] is False:
                     continue
             roles_result.append(i)
 
@@ -221,13 +221,13 @@ def members(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
             roles_result = []
 
             for i in roles:
-                if i["deleted"] == True:
+                if i["deleted"] is True:
                     continue
                 if not (
                     role in ["cc"]
                     or (role in ["club"] and user["uid"] == club_input["cid"])
                 ):
-                    if i["approved"] == False:
+                    if i["approved"] is False:
                         continue
                 roles_result.append(i)
 
@@ -247,7 +247,7 @@ def currentMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
     Description:
         For Everyone:
             Returns all the current non-deleted and approved members of the given clubid.
-    
+
     Scope: Anyone (Non-Admin Function)
     Return Type: List[MemberType]
     Input: SimpleClubInput (cid)
@@ -257,13 +257,13 @@ def currentMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
         role = "public"
     else:
         role = user["role"]
-    
+
     club_input = jsonable_encoder(clubInput)
 
     if club_input["cid"] == "clubs":
         if role != "cc":
             raise Exception("Not Authenticated")
-        
+
         results = db.members.find({}, {"_id": 0})
     else:
         results = db.members.find({"cid": club_input["cid"]}, {"_id": 0})
@@ -275,9 +275,9 @@ def currentMembers(clubInput: SimpleClubInput, info: Info) -> List[MemberType]:
             roles_result = []
 
             for i in roles:
-                if i["deleted"] == True or i["end_year"] is not None:
+                if i["deleted"] is True or i["end_year"] is not None:
                     continue
-                if i["approved"] == False:
+                if i["approved"] is False:
                     continue
                 roles_result.append(i)
 
