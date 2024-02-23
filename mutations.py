@@ -48,7 +48,7 @@ def updateRole(uid, cookies=None, role="club"):
             result = requests.post(
                 "http://gateway/graphql", json={"query": query, "variables": variables}
             )
-        
+
         return result.json()
     except Exception:
         return None
