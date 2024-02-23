@@ -34,5 +34,11 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Apply Linting & Formatting Fixes
+      
+      - name: Remove Linting Branch
+        run: |
+          if git rev-parse --verify linting >/dev/null 2>&1; then
+            git push origin --delete linting
+          fi
 
   
