@@ -16,14 +16,25 @@ client = MongoClient(MONGO_URI)
 
 # get database
 db = client[MONGO_DATABASE]
+clubsdb = db.clubs
+membersdb = db.members
 
-# TODO: document and properly handle error
-try:
-    db.clubs.create_index([("cid", 1)], unique=True, name="unique_clubs")
-    db.members.create_index(
-        [("cid", 1), ("uid", 1)], unique=True, name="unique_members"
-    )
-    print(db.clubs.index_information())
-    print(db.members.index_information())
-except Exception:
-    pass
+# check if the clubs index exists
+if "unique_clubs" in clubsdb.index_information():
+    print("The clubs index exists.")
+else:
+    # create the index
+    clubsdb.create_index([("cid", 1)], unique=True, name="unique_clubs")
+    print("The clubs index was created.")
+
+print(clubsdb.index_information())
+
+# check if the members index exists
+if "unique_members" in membersdb.index_information():
+    print("The members index exists.")
+else:
+    # create the index
+    membersdb.create_index([("cid", 1), ("uid", 1)], unique=True, name="unique_members")
+    print("The members index was created.")
+
+print(membersdb.index_information())
