@@ -11,10 +11,10 @@ from models import PyObjectId
 from otypes import Context, PyObjectIdType
 
 # import all queries and mutations
-from subgraphs.clubs.queries_clubs import queries as queries_clubs
-from subgraphs.clubs.queries_members import queries as queries_members
-from subgraphs.clubs.mutations_clubs import mutations as mutations_clubs
-from subgraphs.clubs.mutations_members import mutations as mutations_members
+from queries_clubs import queries as queries_clubs
+from queries_members import queries as queries_members
+from mutations_clubs import mutations as mutations_clubs
+from mutations_members import mutations as mutations_members
 
 
 # check whether running in debug mode
