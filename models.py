@@ -3,14 +3,13 @@ from bson import ObjectId
 from datetime import datetime
 from enum import Enum
 from pydantic import (
-    field_validator,
-    ConfigDict,
-    BaseModel,
-    Field,
-    EmailStr,
     AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
     ValidationInfo,
-    validator,
 )
 from pydantic_core import core_schema
 from typing import Any, List
@@ -114,16 +113,6 @@ class Member(BaseModel):
     def transform_uid(cls, v):
         return v.lower()
 
-    # contact: str | None = Field(
-    #     None, regex=r"((\+91)|(0))?(-)?\s*?(91)?\s*?([6-9]{1}\d{2})((-?\s*?(\d{3})-?\s*?(\d{4}))|((\d{2})-?\s*?(\d{5})))")
-
-    # Validators
-    # @validator("contact")
-    # def check_poc_contact(cls, value, values):
-    #     if values["poc"] == True and not value:
-    #         raise ValueError("POC Contact Number should be added")
-    #     return value
-
     # TODO[pydantic]: The following keys were removed: `json_encoders`.
     # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     model_config = ConfigDict(
@@ -185,10 +174,10 @@ class Club(BaseModel):
     updated_time: datetime = Field(default_factory=datetime.utcnow)
 
     # Validator
-    _check_email = validator("email", allow_reuse=True)(iiit_email_only)
+    @field_validator("email", mode="before")
+    def _check_email(cls, v):
+        return iiit_email_only(v)
 
-    # TODO[pydantic]: The following keys were removed: `json_encoders`.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,

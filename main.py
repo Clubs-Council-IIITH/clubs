@@ -11,16 +11,21 @@ from models import PyObjectId
 from otypes import Context, PyObjectIdType
 
 # import all queries and mutations
-from queries import queries
-from mutations import mutations
+from queries_clubs import queries as queries_clubs
+from queries_members import queries as queries_members
+from mutations_clubs import mutations as mutations_clubs
+from mutations_members import mutations as mutations_members
+
 
 # check whether running in debug mode
 DEBUG = int(getenv("GLOBAL_DEBUG", 0))
 
 # create query types
+queries = queries_clubs + queries_members
 Query = create_type("Query", queries)
 
 # create mutation types
+mutations = mutations_clubs + mutations_members
 Mutation = create_type("Mutation", mutations)
 
 
