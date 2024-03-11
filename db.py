@@ -35,7 +35,9 @@ try:
         print("The members index exists.")
     else:
         # create the index
-        membersdb.create_index([("cid", 1), ("uid", 1)], unique=True, name="unique_members")
+        membersdb.create_index(
+            [("cid", 1), ("uid", 1)], unique=True, name="unique_members"
+        )
         print("The members index was created.")
 
     print(membersdb.index_information())
