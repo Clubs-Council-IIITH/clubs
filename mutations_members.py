@@ -163,17 +163,48 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         if i["end_year"] and i["start_year"] > i["end_year"]:
             raise Exception("Start year cannot be greater than end year")
 
-    roles0 = []
+    member_ref = membersdb.find_one(
+        {
+            "$and": [
+                {"cid": member_input["cid"]},
+                {"uid": member_input["uid"]},
+            ]
+        }
+    )
+
+    if member_ref is None:
+        raise Exception("No such Record!")
+    
+    member_roles = member_ref["roles"].copy()
+
+    roles = []
     for role in member_input["roles"]:
         if role["start_year"] > datetime.now().year:
             role["start_year"] = datetime.now().year
             role["end_year"] = None
-        roles0.append(role)
+        role_new = role.copy()
 
-    roles = []
-    for role in roles0:
-        role["approved"] = user["role"] == "cc"
-        roles.append(role)
+        # if role's start_year, end_year, name is same as existing role, then keep the existing approved status
+        found_existing_role = False
+        for i in member_roles:
+            if (
+                i["start_year"] == role_new["start_year"]
+                and i["end_year"] == role_new["end_year"]
+                and i["name"] == role_new["name"]
+            ):
+                role_new["approved"] = i["approved"]
+                role_new["rejected"] = i["rejected"]
+                role_new["deleted"] = i["deleted"]
+
+                found_existing_role = True
+
+                # Remove the existing role from member_roles
+                member_roles.remove(i)
+                break
+
+        if not found_existing_role:
+            role_new["approved"] = user["role"] == "cc"
+        roles.append(role_new)
 
     # DB STUFF
     membersdb.update_one(
