@@ -164,7 +164,7 @@ class Club(BaseModel):
     banner: str | None = Field(None, description="Club Long Banner pic URL")
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
-        'No Description Provided!',
+        "No Description Provided!",
         max_length=9999,
         description="Club Description",
     )
