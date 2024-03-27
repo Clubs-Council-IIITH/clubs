@@ -9,78 +9,11 @@ from db import membersdb
 from otypes import Info
 from models import Member
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
+from utils import non_deleted_members, unique_roles_id, getUser
 
 """
 MEMBER MUTATIONS
 """
-
-
-def non_deleted_members(member_input) -> MemberType:
-    """
-    Function to return non-deleted members for a particular cid, uid
-    Only to be used in admin functions, as it returns both approved/non-approved members.
-    """
-    updated_sample = membersdb.find_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-            ]
-        },
-        {"_id": 0},
-    )
-    if updated_sample is None:
-        raise Exception("No such Record")
-
-    roles = []
-    for i in updated_sample["roles"]:
-        if i["deleted"] is True:
-            continue
-        roles.append(i)
-    updated_sample["roles"] = roles
-
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
-
-
-def unique_roles_id(uid, cid):
-    """
-    Function to give unique ids for each of the role in roles list
-    """
-    pipeline = [
-        {
-            "$set": {
-                "roles": {
-                    "$map": {
-                        "input": {"$range": [0, {"$size": "$roles"}]},
-                        "in": {
-                            "$mergeObjects": [
-                                {"$arrayElemAt": ["$roles", "$$this"]},
-                                {
-                                    "rid": {
-                                        "$toString": {
-                                            "$add": [
-                                                {"$toLong": datetime.now()},
-                                                "$$this",
-                                            ]
-                                        }
-                                    }
-                                },
-                            ]
-                        },
-                    }
-                }
-            }
-        }
-    ]
-    membersdb.update_one(
-        {
-            "$and": [
-                {"cid": cid},
-                {"uid": uid},
-            ]
-        },
-        pipeline,
-    )
 
 
 @strawberry.mutation
@@ -109,6 +42,11 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     ):
         raise Exception("A record with same uid and cid already exists")
 
+    # Check whether this uid is valid or not
+    userMember = getUser(member_input["uid"], info.context.cookies)
+    if userMember is None:
+        raise Exception("Invalid User ID")
+    
     if len(member_input["roles"]) == 0:
         raise Exception("Roles cannot be empty")
 
