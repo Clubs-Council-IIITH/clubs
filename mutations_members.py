@@ -176,7 +176,7 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         raise Exception("No such Record!")
     else:
         member_ref = Member.parse_obj(member_ref)
-    
+
     member_roles = member_ref.roles
 
     roles = []
