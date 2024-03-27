@@ -174,8 +174,10 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
 
     if member_ref is None:
         raise Exception("No such Record!")
+    else:
+        member_ref = Member.parse_obj(member_ref)
     
-    member_roles = member_ref["roles"].copy()
+    member_roles = member_ref.roles
 
     roles = []
     for role in member_input["roles"]:
@@ -188,13 +190,13 @@ def editMember(memberInput: FullMemberInput, info: Info) -> MemberType:
         found_existing_role = False
         for i in member_roles:
             if (
-                i["start_year"] == role_new["start_year"]
-                and i["end_year"] == role_new["end_year"]
-                and i["name"] == role_new["name"]
+                i.start_year == role_new["start_year"]
+                and i.end_year == role_new["end_year"]
+                and i.name == role_new["name"]
             ):
-                role_new["approved"] = i["approved"]
-                role_new["rejected"] = i["rejected"]
-                role_new["deleted"] = i["deleted"]
+                role_new["approved"] = i.approved
+                role_new["rejected"] = i.rejected
+                role_new["deleted"] = i.deleted
 
                 found_existing_role = True
 
