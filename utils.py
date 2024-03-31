@@ -6,6 +6,7 @@ from db import membersdb
 from otypes import MemberType
 from models import Member
 
+
 def non_deleted_members(member_input) -> MemberType:
     """
     Function to return non-deleted members for a particular cid, uid
@@ -72,6 +73,7 @@ def unique_roles_id(uid, cid):
         },
         pipeline,
     )
+
 
 def getUser(uid, cookies=None):
     """

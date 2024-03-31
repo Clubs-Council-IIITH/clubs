@@ -46,7 +46,7 @@ def createMember(memberInput: FullMemberInput, info: Info) -> MemberType:
     userMember = getUser(member_input["uid"], info.context.cookies)
     if userMember is None:
         raise Exception("Invalid User ID")
-    
+
     if len(member_input["roles"]) == 0:
         raise Exception("Roles cannot be empty")
 
