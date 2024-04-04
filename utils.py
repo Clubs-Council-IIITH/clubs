@@ -152,3 +152,35 @@ def unique_roles_id(uid, cid):
         },
         pipeline,
     )
+
+
+def getUser(uid, cookies=None):
+    """
+    Function to get a particular user details
+    """
+    try:
+        query = """
+            query GetUserProfile($userInput: UserInput!) {
+                userProfile(userInput: $userInput) {
+                    firstName
+                    lastName
+                    email
+                    rollno
+                }
+            }
+        """
+        variable = {"userInput": {"uid": uid}}
+        if cookies:
+            request = requests.post(
+                "http://gateway/graphql",
+                json={"query": query, "variables": variable},
+                cookies=cookies,
+            )
+        else:
+            request = requests.post(
+                "http://gateway/graphql", json={"query": query, "variables": variable}
+            )
+
+        return request.json()["data"]["userProfile"]
+    except Exception:
+        return None
