@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime
 
 from db import membersdb
+from utils import unique_roles_id, non_deleted_members
 
 # import all models and types
 from otypes import Info

@@ -2,9 +2,9 @@ import strawberry
 
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime
-import requests
 
 from db import clubsdb
+from utils import update_role, update_events_cid, update_members_cid, getUser
 
 # import all models and types
 from otypes import Info
@@ -19,38 +19,6 @@ from otypes import (
 """
 CLUB MUTATIONS
 """
-
-
-def updateRole(uid, cookies=None, role="club"):
-    """
-    Function to call the updateRole mutation
-    """
-    try:
-        query = """
-                    mutation UpdateRole($roleInput: RoleInput!) {
-                        updateRole(roleInput: $roleInput)
-                    }
-                """
-        variables = {
-            "roleInput": {
-                "role": role,
-                "uid": uid,
-            }
-        }
-        if cookies:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-                cookies=cookies,
-            )
-        else:
-            result = requests.post(
-                "http://gateway/graphql", json={"query": query, "variables": variables}
-            )
-
-        return result.json()
-    except Exception:
-        return None
 
 
 @strawberry.mutation
@@ -73,6 +41,11 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         cid_exists = clubsdb.find_one({"cid": club_input["cid"]})
         if cid_exists:
             raise Exception("A club with this cid already exists")
+        
+        # Check whether this cid is valid or not
+        clubMember = getUser(club_input["cid"], info.context.cookies)
+        if clubMember is None:
+            raise Exception("Invalid Club ID")
 
         code_exists = clubsdb.find_one({"code": club_input["code"]})
         if code_exists:
@@ -81,7 +54,8 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         created_id = clubsdb.insert_one(club_input).inserted_id
         created_sample = Club.parse_obj(clubsdb.find_one({"_id": created_id}))
 
-        updateRole(club_input["cid"], info.context.cookies)
+        if not update_role(club_input["cid"], info.context.cookies):
+            raise Exception("Error in updating the role for the club")
 
         return SimpleClubType.from_pydantic(created_sample)
 
@@ -107,8 +81,11 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         exists = clubsdb.find_one({"code": club_input["code"]})
         if not exists:
             raise Exception("A club with this code doesn't exist")
-        if not exists:
-            raise Exception("A club with this code doesn't exist")
+        
+        # Check whether this cid is valid or not
+        clubMember = getUser(club_input["cid"], info.context.cookies)
+        if clubMember is None:
+            raise Exception("Invalid Club ID")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -141,18 +118,25 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
 
         if exists["cid"] != club_input["cid"]:
-            updateRole(exists["cid"], info.context.cookies, role="public")
-            updateRole(club_input["cid"], info.context.cookies, role="club")
+            return1 = update_role(exists["cid"], info.context.cookies, role="public")
+            return2 = update_role(club_input["cid"], info.context.cookies, role="club")
+            return3 = update_events_cid(
+                exists["cid"], club_input["cid"], cookies=info.context.cookies
+            )
+            return4 = update_members_cid(exists["cid"], club_input["cid"])
+            if not return1 or not return2 or not return3 or not return4:
+                raise Exception("Error in updating the role/cid.")
 
         result = Club.parse_obj(clubsdb.find_one({"code": club_input["code"]}))
         return FullClubType.from_pydantic(result)
 
     elif role in ["club"]:
+        if uid != club_input["cid"]:
+            raise Exception("Authentication Error! (CLUB ID CHANGED)")
+
         exists = clubsdb.find_one({"cid": club_input["cid"]})
         if not exists:
             raise Exception("A club with this cid doesn't exist")
-        if uid != club_input["cid"]:
-            raise Exception("Authentication Error! (CID CHANGED)")
 
         if (
             club_input["name"] != exists["name"]
@@ -222,7 +206,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
     )
 
-    updateRole(club_input["cid"], info.context.cookies, "public")
+    update_role(club_input["cid"], info.context.cookies, "public")
 
     updated_sample = Club.parse_obj(clubsdb.find_one({"cid": club_input["cid"]}))
 
@@ -249,7 +233,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         {"$set": {"state": "active", "updated_time": datetime.utcnow()}},
     )
 
-    updateRole(club_input["cid"], info.context.cookies, "club")
+    update_role(club_input["cid"], info.context.cookies, "club")
 
     updated_sample = Club.parse_obj(clubsdb.find_one({"cid": club_input["cid"]}))
 
