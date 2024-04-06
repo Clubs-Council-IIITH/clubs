@@ -54,11 +54,9 @@ def update_events_cid(old_cid, new_cid, cookies=None):
                     }
                 """
         variables = {
-            "eventsCidInput": {
-                "oldCid": old_cid,
-                "newCid": new_cid,
-                "interCommunicationSecret": inter_communication_secret,
-            }
+            "oldCid": old_cid,
+            "newCid": new_cid,
+            "interCommunicationSecret": inter_communication_secret,
         }
         if cookies:
             result = requests.post(
