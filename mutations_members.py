@@ -10,7 +10,7 @@ from utils import unique_roles_id, non_deleted_members
 from otypes import Info
 from models import Member
 from otypes import FullMemberInput, SimpleMemberInput, MemberType
-from utils import non_deleted_members, unique_roles_id, getUser
+from utils import getUser
 
 """
 MEMBER MUTATIONS
