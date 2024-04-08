@@ -16,8 +16,8 @@ def update_role(uid, cookies=None, role="club"):
     """
     try:
         query = """
-                    mutation UpdateRole($roleInput: RoleInput!, $interCommunicationSecret: String) {
-                        updateRole(roleInput: $roleInput, interCommunicationSecret: $interCommunicationSecret)
+                    mutation UpdateRole($roleInput: RoleInput!) {
+                        updateRole(roleInput: $roleInput)
                     }
                 """
         variables = {
