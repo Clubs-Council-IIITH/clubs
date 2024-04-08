@@ -138,6 +138,7 @@ class Social(BaseModel):
     twitter: AnyHttpUrl | None = None
     linkedin: AnyHttpUrl | None = None
     discord: AnyHttpUrl | None = None
+    whatsapp: AnyHttpUrl | None = None
     other_links: List[AnyHttpUrl] = Field([])  # Type and URL
 
     @field_validator("other_links")

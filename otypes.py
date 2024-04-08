@@ -61,6 +61,7 @@ class SocialsType:
     twitter: Optional[str] = strawberry.UNSET
     linkedin: Optional[str] = strawberry.UNSET
     discord: Optional[str] = strawberry.UNSET
+    whatsapp: Optional[str] = strawberry.UNSET
     other_links: Optional[List[str]] = strawberry.UNSET
 
 

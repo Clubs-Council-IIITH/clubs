@@ -103,6 +103,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                         "socials.twitter": club_input["socials"]["twitter"],
                         "socials.linkedin": club_input["socials"]["linkedin"],
                         "socials.discord": club_input["socials"]["discord"],
+                        "socials.whatsapp": club_input["socials"]["whatsapp"],
                         "socials.other_links": club_input["socials"]["other_links"],
                     }
                 },
@@ -165,6 +166,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                         "socials.twitter": club_input["socials"]["twitter"],
                         "socials.linkedin": club_input["socials"]["linkedin"],
                         "socials.discord": club_input["socials"]["discord"],
+                        "socials.whatsapp": club_input["socials"]["whatsapp"],
                         "socials.other_links": club_input["socials"]["other_links"],
                     }
                 },
