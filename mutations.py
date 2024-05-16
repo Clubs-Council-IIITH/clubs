@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime
 
 from db import clubsdb
-from utils import update_role, update_events_cid, update_members_cid, getUser
+from utils import update_role, update_events_members_cid, getUser
 
 # import all models and types
 from otypes import Info
@@ -15,10 +15,6 @@ from otypes import (
     FullClubType,
     SimpleClubType,
 )
-
-"""
-CLUB MUTATIONS
-"""
 
 
 @strawberry.mutation
@@ -121,11 +117,10 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         if exists["cid"] != club_input["cid"]:
             return1 = update_role(exists["cid"], info.context.cookies, role="public")
             return2 = update_role(club_input["cid"], info.context.cookies, role="club")
-            return3 = update_events_cid(
+            return3 = update_events_members_cid(
                 exists["cid"], club_input["cid"], cookies=info.context.cookies
             )
-            return4 = update_members_cid(exists["cid"], club_input["cid"])
-            if not return1 or not return2 or not return3 or not return4:
+            if not return1 or not return2 or not return3:
                 raise Exception("Error in updating the role/cid.")
 
         result = Club.parse_obj(clubsdb.find_one({"code": club_input["code"]}))

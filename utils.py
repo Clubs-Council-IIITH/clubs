@@ -1,11 +1,5 @@
 import requests
-from datetime import datetime
 import os
-
-from db import membersdb
-
-from models import Member
-from otypes import MemberType
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
@@ -43,10 +37,11 @@ def update_role(uid, cookies=None, role="club"):
         return None
 
 
-def update_events_cid(old_cid, new_cid, cookies=None):
+def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     """
-    Function to call the updateEventsCid mutation
+    Function to call the updateEventsCid & updateMembersCid mutation
     """
+    return1, return2 = None, None
     try:
         query = """
                     mutation UpdateEventsCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
@@ -69,87 +64,40 @@ def update_events_cid(old_cid, new_cid, cookies=None):
                 "http://gateway/graphql", json={"query": query, "variables": variables}
             )
 
-        return result.json()
+        return1 = result.json()
     except Exception:
-        return None
-
-
-def update_members_cid(old_cid, new_cid):
-    updation = {
-        "$set": {
-            "cid": new_cid,
-        }
-    }
-    upd_ref = membersdb.update_many({"cid": old_cid}, updation)
-    return upd_ref.modified_count
-
-
-def non_deleted_members(member_input) -> MemberType:
-    """
-    Function to return non-deleted members for a particular cid, uid
-    Only to be used in admin functions, as it returns both approved/non-approved members.
-    """
-    updated_sample = membersdb.find_one(
-        {
-            "$and": [
-                {"cid": member_input["cid"]},
-                {"uid": member_input["uid"]},
-            ]
-        },
-        {"_id": 0},
-    )
-    if updated_sample is None:
-        raise Exception("No such Record")
-
-    roles = []
-    for i in updated_sample["roles"]:
-        if i["deleted"] is True:
-            continue
-        roles.append(i)
-    updated_sample["roles"] = roles
-
-    return MemberType.from_pydantic(Member.parse_obj(updated_sample))
-
-
-def unique_roles_id(uid, cid):
-    """
-    Function to give unique ids for each of the role in roles list
-    """
-    pipeline = [
-        {
-            "$set": {
-                "roles": {
-                    "$map": {
-                        "input": {"$range": [0, {"$size": "$roles"}]},
-                        "in": {
-                            "$mergeObjects": [
-                                {"$arrayElemAt": ["$roles", "$$this"]},
-                                {
-                                    "rid": {
-                                        "$toString": {
-                                            "$add": [
-                                                {"$toLong": datetime.now()},
-                                                "$$this",
-                                            ]
-                                        }
-                                    }
-                                },
-                            ]
-                        },
+        return False
+    
+    try:
+        query = """
+                    mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
+                        updateMembersCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
                     }
-                }
-            }
+                """
+        variables = {
+            "oldCid": old_cid,
+            "newCid": new_cid,
+            "interCommunicationSecret": inter_communication_secret,
         }
-    ]
-    membersdb.update_one(
-        {
-            "$and": [
-                {"cid": cid},
-                {"uid": uid},
-            ]
-        },
-        pipeline,
-    )
+        if cookies:
+            result = requests.post(
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables},
+                cookies=cookies,
+            )
+        else:
+            result = requests.post(
+                "http://gateway/graphql", json={"query": query, "variables": variables}
+            )
+
+        return2 = result.json()
+    except Exception:
+        return False
+
+    if return1 and return2:
+        return True
+    else:
+        return False
 
 
 def getUser(uid, cookies=None):
