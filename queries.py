@@ -11,10 +11,6 @@ from otypes import Info
 from models import Club
 from otypes import SimpleClubType, FullClubType, SimpleClubInput
 
-"""
-Club Queries
-"""
-
 
 # fetch all active clubs
 @strawberry.field

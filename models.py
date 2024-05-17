@@ -9,7 +9,6 @@ from pydantic import (
     EmailStr,
     Field,
     field_validator,
-    ValidationInfo,
 )
 from pydantic_core import core_schema
 from typing import Any, List
@@ -63,71 +62,6 @@ class EnumCategories(str, Enum):
     technical = "technical"
     affinity = "affinity"
     other = "other"
-
-
-class Roles(BaseModel):
-    rid: str | None = Field(None, description="Unique Identifier for a role")
-    name: str = Field(..., min_length=1, max_length=99)
-    start_year: int = Field(..., ge=2010, le=2050)
-    end_year: int | None = Field(None, gt=2010, le=2051)
-    approved: bool = False
-    rejected: bool = False
-    deleted: bool = False
-
-    # Validators
-    @field_validator("end_year")
-    def check_end_year(cls, value, info: ValidationInfo):
-        if value is not None and value < info.data["start_year"]:
-            return None
-        return value
-
-    @field_validator("rejected")
-    def check_status(cls, value, info: ValidationInfo):
-        if info.data["approved"] is True and value is True:
-            raise ValueError("Role cannot be both approved and rejected")
-        return value
-
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        str_max_length=100,
-        validate_assignment=True,
-        validate_default=True,
-        validate_return=True,
-        extra="forbid",
-        str_strip_whitespace=True,
-    )
-
-
-class Member(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    cid: str = Field(..., description="Club ID")
-    uid: str = Field(..., description="User ID")
-    roles: List[Roles] = Field(
-        ..., description="List of Roles for that specific person"
-    )
-
-    poc: bool = Field(default_factory=(lambda: 0 == 1), description="Club POC")
-
-    @field_validator("uid", mode="before")
-    @classmethod
-    def transform_uid(cls, v):
-        return v.lower()
-
-    # TODO[pydantic]: The following keys were removed: `json_encoders`.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        str_strip_whitespace=True,
-        str_max_length=600,
-        validate_assignment=True,
-        validate_default=True,
-        validate_return=True,
-        extra="forbid",
-        json_encoders={ObjectId: str},
-        populate_by_name=True,
-    )
-
-    # Separate Coordinator & other members roles option in frontend, for better filtering for all_members_query
 
 
 class Social(BaseModel):
@@ -192,5 +126,5 @@ class Club(BaseModel):
     )
 
 
-# TO ADD CLUB SUBSCRIPTION MODEL - v2
+# TODO: ADD CLUB SUBSCRIPTION MODEL - v2
 # ADD Descriptions for non-direct fields

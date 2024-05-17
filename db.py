@@ -17,7 +17,6 @@ client = MongoClient(MONGO_URI)
 # get database
 db = client[MONGO_DATABASE]
 clubsdb = db.clubs
-membersdb = db.members
 
 try:
     # check if the clubs index exists
@@ -29,17 +28,5 @@ try:
         print("The clubs index was created.")
 
     print(clubsdb.index_information())
-
-    # check if the members index exists
-    if "unique_members" in membersdb.index_information():
-        print("The members index exists.")
-    else:
-        # create the index
-        membersdb.create_index(
-            [("cid", 1), ("uid", 1)], unique=True, name="unique_members"
-        )
-        print("The members index was created.")
-
-    print(membersdb.index_information())
 except Exception:
     pass

@@ -8,7 +8,7 @@ from strawberry.types.info import RootValueType
 from typing import Union, Dict, List, Optional
 from functools import cached_property
 
-from models import PyObjectId, Club, Social, Member, Roles
+from models import PyObjectId, Club, Social
 
 
 # custom context class
@@ -40,18 +40,6 @@ PyObjectIdType = strawberry.scalar(
 
 
 # TYPES
-@strawberry.experimental.pydantic.type(model=Roles, all_fields=True)
-class RolesType:
-    pass
-
-
-@strawberry.experimental.pydantic.type(
-    model=Member, fields=["id", "cid", "uid", "roles", "poc"]
-)
-class MemberType:
-    pass
-
-
 @strawberry.experimental.pydantic.type(model=Social)
 class SocialsType:
     website: Optional[str] = strawberry.UNSET
@@ -136,23 +124,3 @@ class SimpleClubInput:
 class FullClubInput:
     banner: Optional[str] = strawberry.UNSET
     logo: Optional[str] = strawberry.UNSET
-
-
-# MEMBERS INPUTS
-@strawberry.experimental.pydantic.input(
-    model=Roles, fields=["name", "start_year", "end_year"]
-)
-class RolesInput:
-    pass
-
-
-@strawberry.experimental.pydantic.input(model=Member, fields=["cid", "uid", "roles"])
-class FullMemberInput:
-    poc: Optional[bool] = strawberry.UNSET
-
-
-@strawberry.input
-class SimpleMemberInput:
-    cid: str
-    uid: str
-    rid: Optional[str]

@@ -13,15 +13,5 @@ Contains code for queries, mutations, types and models for the clubs data and se
 _URL_ -> http://clubs/graphql (For using in single gateway)
 
 > ### QUERIES
-#### Club
-- 
-
-#### Members
-- 
 
 > ### MUTATIONS
-#### Club
-- 
-
-#### Members
-- 
