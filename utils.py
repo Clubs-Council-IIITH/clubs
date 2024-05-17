@@ -67,7 +67,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
         return1 = result.json()
     except Exception:
         return False
-    
+
     try:
         query = """
                     mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
