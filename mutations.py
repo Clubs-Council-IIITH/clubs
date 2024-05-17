@@ -41,7 +41,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         # Check whether this cid is valid or not
         clubMember = getUser(club_input["cid"], info.context.cookies)
         if clubMember is None:
-            raise Exception("Invalid Club ID")
+            raise Exception("Invalid Club ID/Club Email")
 
         code_exists = clubsdb.find_one({"code": club_input["code"]})
         if code_exists:
@@ -81,7 +81,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         # Check whether this cid is valid or not
         clubMember = getUser(club_input["cid"], info.context.cookies)
         if clubMember is None:
-            raise Exception("Invalid Club ID")
+            raise Exception("Invalid Club ID/Club Email")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
