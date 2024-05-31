@@ -1,15 +1,13 @@
-import strawberry
-
-from fastapi.encoders import jsonable_encoder
 from typing import List
 
+import strawberry
+from fastapi.encoders import jsonable_encoder
+
 from db import clubsdb
+from models import Club
 
 # import all models and types
-from otypes import Info
-
-from models import Club
-from otypes import SimpleClubType, FullClubType, SimpleClubInput
+from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 
 
 # fetch all active clubs
@@ -22,7 +20,10 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
     Input: None
     """
     results = clubsdb.find({"state": "active"}, {"_id": 0})
-    clubs = [SimpleClubType.from_pydantic(Club.parse_obj(result)) for result in results]
+    clubs = [
+        SimpleClubType.from_pydantic(Club.parse_obj(result))
+        for result in results
+    ]
 
     return clubs
 

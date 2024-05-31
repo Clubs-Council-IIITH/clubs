@@ -1,7 +1,9 @@
-import strawberry
-from bson import ObjectId
 from datetime import datetime
 from enum import Enum
+from typing import Any, List
+
+import strawberry
+from bson import ObjectId
 from pydantic import (
     AnyHttpUrl,
     BaseModel,
@@ -11,7 +13,6 @@ from pydantic import (
     field_validator,
 )
 from pydantic_core import core_schema
-from typing import Any, List
 
 
 # for handling mongo ObjectIds
@@ -39,7 +40,11 @@ class PyObjectId(ObjectId):
 
 
 def iiit_email_only(v: str) -> str:
-    valid_domains = ["@iiit.ac.in", "@students.iiit.ac.in", "@research.iiit.ac.in"]
+    valid_domains = [
+        "@iiit.ac.in",
+        "@students.iiit.ac.in",
+        "@research.iiit.ac.in",
+    ]
     if any(valid_domain in v for valid_domain in valid_domains):
         return v.lower()
 
@@ -87,7 +92,10 @@ class Club(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(..., description="Club ID")
     code: str = Field(
-        ..., description="Unique Short Code of Club", max_length=15, min_length=2
+        ...,
+        description="Unique Short Code of Club",
+        max_length=15,
+        min_length=2,
     )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
@@ -105,7 +113,9 @@ class Club(BaseModel):
     )
     socials: Social = Field({}, description="Social Profile Links")
 
-    created_time: datetime = Field(default_factory=datetime.utcnow, frozen=True)
+    created_time: datetime = Field(
+        default_factory=datetime.utcnow, frozen=True
+    )
     updated_time: datetime = Field(default_factory=datetime.utcnow)
 
     # Validator

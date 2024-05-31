@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
@@ -29,7 +30,8 @@ def update_role(uid, cookies=None, role="club"):
             )
         else:
             result = requests.post(
-                "http://gateway/graphql", json={"query": query, "variables": variables}
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables},
             )
 
         return result.json()
@@ -61,7 +63,8 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
             )
         else:
             result = requests.post(
-                "http://gateway/graphql", json={"query": query, "variables": variables}
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables},
             )
 
         return1 = result.json()
@@ -87,7 +90,8 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
             )
         else:
             result = requests.post(
-                "http://gateway/graphql", json={"query": query, "variables": variables}
+                "http://gateway/graphql",
+                json={"query": query, "variables": variables},
             )
 
         return2 = result.json()
@@ -124,7 +128,8 @@ def getUser(uid, cookies=None):
             )
         else:
             request = requests.post(
-                "http://gateway/graphql", json={"query": query, "variables": variable}
+                "http://gateway/graphql",
+                json={"query": query, "variables": variable},
             )
 
         return request.json()["data"]["userProfile"]
