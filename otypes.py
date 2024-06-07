@@ -1,14 +1,13 @@
 import json
-import strawberry
+from functools import cached_property
+from typing import Dict, List, Optional, Union
 
+import strawberry
 from strawberry.fastapi import BaseContext
 from strawberry.types import Info as _Info
 from strawberry.types.info import RootValueType
 
-from typing import Union, Dict, List, Optional
-from functools import cached_property
-
-from models import PyObjectId, Club, Social
+from models import Club, PyObjectId, Social
 
 
 # custom context class

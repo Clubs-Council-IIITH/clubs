@@ -1,20 +1,20 @@
-import strawberry
-
-from fastapi.encoders import jsonable_encoder
 from datetime import datetime
 
+import strawberry
+from fastapi.encoders import jsonable_encoder
+
 from db import clubsdb
-from utils import update_role, update_events_members_cid, getUser
+from models import Club
 
 # import all models and types
-from otypes import Info
-from models import Club
 from otypes import (
     FullClubInput,
-    SimpleClubInput,
     FullClubType,
+    Info,
+    SimpleClubInput,
     SimpleClubType,
 )
+from utils import getUser, update_events_members_cid, update_role
 
 
 @strawberry.mutation
@@ -63,7 +63,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     """
     Mutation for editing of the club details either by that specific club or the cc.
-    """
+    """  # noqa: E501
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -93,14 +93,18 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                 {
                     "$set": {
                         "socials.website": club_input["socials"]["website"],
-                        "socials.instagram": club_input["socials"]["instagram"],
+                        "socials.instagram": club_input["socials"][
+                            "instagram"
+                        ],
                         "socials.facebook": club_input["socials"]["facebook"],
                         "socials.youtube": club_input["socials"]["youtube"],
                         "socials.twitter": club_input["socials"]["twitter"],
                         "socials.linkedin": club_input["socials"]["linkedin"],
                         "socials.discord": club_input["socials"]["discord"],
                         "socials.whatsapp": club_input["socials"]["whatsapp"],
-                        "socials.other_links": club_input["socials"]["other_links"],
+                        "socials.other_links": club_input["socials"][
+                            "other_links"
+                        ],
                     }
                 },
             )
@@ -115,8 +119,12 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
 
         if exists["cid"] != club_input["cid"]:
-            return1 = update_role(exists["cid"], info.context.cookies, role="public")
-            return2 = update_role(club_input["cid"], info.context.cookies, role="club")
+            return1 = update_role(
+                exists["cid"], info.context.cookies, role="public"
+            )
+            return2 = update_role(
+                club_input["cid"], info.context.cookies, role="club"
+            )
             return3 = update_events_members_cid(
                 exists["cid"], club_input["cid"], cookies=info.context.cookies
             )
@@ -139,11 +147,13 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             or club_input["email"] != exists["email"]
         ):
             raise Exception(
-                "You don't have permission to change the name/email of the club. Please contact CC for it"
+                "You don't have permission to change the name/email of the club. Please contact CC for it"  # noqa: E501
             )
 
         if club_input["category"] != exists["category"]:
-            raise Exception("Only CC is allowed to change the category of club.")
+            raise Exception(
+                "Only CC is allowed to change the category of club."
+            )
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -155,14 +165,18 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                 {
                     "$set": {
                         "socials.website": club_input["socials"]["website"],
-                        "socials.instagram": club_input["socials"]["instagram"],
+                        "socials.instagram": club_input["socials"][
+                            "instagram"
+                        ],
                         "socials.facebook": club_input["socials"]["facebook"],
                         "socials.youtube": club_input["socials"]["youtube"],
                         "socials.twitter": club_input["socials"]["twitter"],
                         "socials.linkedin": club_input["socials"]["linkedin"],
                         "socials.discord": club_input["socials"]["discord"],
                         "socials.whatsapp": club_input["socials"]["whatsapp"],
-                        "socials.other_links": club_input["socials"]["other_links"],
+                        "socials.other_links": club_input["socials"][
+                            "other_links"
+                        ],
                     }
                 },
             )
@@ -205,7 +219,9 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     update_role(club_input["cid"], info.context.cookies, "public")
 
-    updated_sample = Club.parse_obj(clubsdb.find_one({"cid": club_input["cid"]}))
+    updated_sample = Club.parse_obj(
+        clubsdb.find_one({"cid": club_input["cid"]})
+    )
 
     return SimpleClubType.from_pydantic(updated_sample)
 
@@ -232,7 +248,9 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     update_role(club_input["cid"], info.context.cookies, "club")
 
-    updated_sample = Club.parse_obj(clubsdb.find_one({"cid": club_input["cid"]}))
+    updated_sample = Club.parse_obj(
+        clubsdb.find_one({"cid": club_input["cid"]})
+    )
 
     return SimpleClubType.from_pydantic(updated_sample)
 
