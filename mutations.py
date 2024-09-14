@@ -48,7 +48,9 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
             raise Exception("A club with this short code already exists")
 
         created_id = clubsdb.insert_one(club_input).inserted_id
-        created_sample = Club.parse_obj(clubsdb.find_one({"_id": created_id}))
+        created_sample = Club.model_validate(
+            clubsdb.find_one({"_id": created_id})
+        )
 
         if not update_role(club_input["cid"], info.context.cookies):
             raise Exception("Error in updating the role for the club")
@@ -131,7 +133,9 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             if not return1 or not return2 or not return3:
                 raise Exception("Error in updating the role/cid.")
 
-        result = Club.parse_obj(clubsdb.find_one({"code": club_input["code"]}))
+        result = Club.model_validate(
+            clubsdb.find_one({"code": club_input["code"]})
+        )
         return FullClubType.from_pydantic(result)
 
     elif role in ["club"]:
@@ -190,7 +194,9 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
-        result = Club.parse_obj(clubsdb.find_one({"cid": club_input["cid"]}))
+        result = Club.model_validate(
+            clubsdb.find_one({"cid": club_input["cid"]})
+        )
         return FullClubType.from_pydantic(result)
 
     else:
@@ -219,7 +225,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     update_role(club_input["cid"], info.context.cookies, "public")
 
-    updated_sample = Club.parse_obj(
+    updated_sample = Club.model_validate(
         clubsdb.find_one({"cid": club_input["cid"]})
     )
 
@@ -248,7 +254,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     update_role(club_input["cid"], info.context.cookies, "club")
 
-    updated_sample = Club.parse_obj(
+    updated_sample = Club.model_validate(
         clubsdb.find_one({"cid": club_input["cid"]})
     )
 

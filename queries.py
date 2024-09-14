@@ -21,7 +21,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
     """
     results = clubsdb.find({"state": "active"}, {"_id": 0})
     clubs = [
-        SimpleClubType.from_pydantic(Club.parse_obj(result))
+        SimpleClubType.from_pydantic(Club.model_validate(result))
         for result in results
     ]
 
@@ -54,7 +54,7 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
     clubs = []
     for result in results:
-        clubs.append(SimpleClubType.from_pydantic(Club.parse_obj(result)))
+        clubs.append(SimpleClubType.from_pydantic(Club.model_validate(result)))
 
     return clubs
 
@@ -87,7 +87,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     if club["state"] == "deleted":
         # if deleted, check if requesting user is admin
         if (user is not None) and (user["role"] in ["cc"]):
-            result = Club.parse_obj(club)
+            result = Club.model_validate(club)
 
         # if not admin, raise error
         else:
@@ -95,7 +95,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
     # if not deleted, return club
     else:
-        result = Club.parse_obj(club)
+        result = Club.model_validate(club)
 
     if result:
         return FullClubType.from_pydantic(result)
