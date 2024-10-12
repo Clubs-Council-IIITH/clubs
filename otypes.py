@@ -64,6 +64,7 @@ class SocialsType:
         "email",
         "logo",
         "banner",
+        "banner_square",
         "name",
         "tagline",
     ],
@@ -83,6 +84,7 @@ class SimpleClubType:
         "student_body",
         "logo",
         "banner",
+        "banner_square",
         "name",
         "email",
         "tagline",
@@ -121,5 +123,6 @@ class SimpleClubInput:
     ],
 )
 class FullClubInput:
-    banner: Optional[str] = strawberry.UNSET
     logo: Optional[str] = strawberry.UNSET
+    banner: Optional[str] = strawberry.UNSET
+    banner_square: Optional[str] = strawberry.UNSET

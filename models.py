@@ -105,6 +105,9 @@ class Club(BaseModel):
     email: EmailStr = Field(...)  # Optional but required
     logo: str | None = Field(None, description="Club Official Logo pic URL")
     banner: str | None = Field(None, description="Club Long Banner pic URL")
+    banner_square: str | None = Field(
+        None, description="Club Square Banner pic URL"
+    )
     tagline: str | None = Field(None, min_length=2, max_length=200)
     description: str | None = Field(
         "No Description Provided!",
