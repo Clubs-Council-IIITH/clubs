@@ -13,6 +13,11 @@ from pydantic import (
     field_validator,
 )
 from pydantic_core import core_schema
+from pytz import timezone
+
+
+def create_utc_time():
+    return datetime.now(timezone("UTC"))
 
 
 # for handling mongo ObjectIds
@@ -117,9 +122,9 @@ class Club(BaseModel):
     socials: Social = Field({}, description="Social Profile Links")
 
     created_time: datetime = Field(
-        default_factory=datetime.utcnow, frozen=True
+        default_factory=create_utc_time, frozen=True
     )
-    updated_time: datetime = Field(default_factory=datetime.utcnow)
+    updated_time: datetime = Field(default_factory=create_utc_time)
 
     # Validator
     @field_validator("email", mode="before")
