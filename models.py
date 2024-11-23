@@ -1,19 +1,29 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, List
+from typing import Annotated, Any, List
 
 import strawberry
 from bson import ObjectId
 from pydantic import (
-    AnyHttpUrl,
     BaseModel,
+    BeforeValidator,
     ConfigDict,
     EmailStr,
     Field,
+    HttpUrl,
+    TypeAdapter,
     field_validator,
 )
 from pydantic_core import core_schema
 from pytz import timezone
+
+http_url_adapter = TypeAdapter(HttpUrl)
+HttpUrlString = Annotated[
+    str,
+    BeforeValidator(
+        lambda value: str(http_url_adapter.validate_python(value))
+    ),
+]
 
 
 def create_utc_time():
@@ -75,15 +85,15 @@ class EnumCategories(str, Enum):
 
 
 class Social(BaseModel):
-    website: AnyHttpUrl | None = None
-    instagram: AnyHttpUrl | None = None
-    facebook: AnyHttpUrl | None = None
-    youtube: AnyHttpUrl | None = None
-    twitter: AnyHttpUrl | None = None
-    linkedin: AnyHttpUrl | None = None
-    discord: AnyHttpUrl | None = None
-    whatsapp: AnyHttpUrl | None = None
-    other_links: List[AnyHttpUrl] = Field([])  # Type and URL
+    website: HttpUrlString | None = None
+    instagram: HttpUrlString | None = None
+    facebook: HttpUrlString | None = None
+    youtube: HttpUrlString | None = None
+    twitter: HttpUrlString | None = None
+    linkedin: HttpUrlString | None = None
+    discord: HttpUrlString | None = None
+    whatsapp: HttpUrlString | None = None
+    other_links: List[HttpUrlString] = Field([])  # Type and URL
 
     @field_validator("other_links")
     @classmethod
