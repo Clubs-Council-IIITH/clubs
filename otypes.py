@@ -73,6 +73,9 @@ class SimpleClubType:
     pass
 
 
+# TODO: Remove student_body from SimpleClubType and FullClubType
+
+
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
@@ -116,7 +119,6 @@ class SimpleClubInput:
         "name",
         "email",
         "category",
-        "student_body",
         "tagline",
         "description",
         "socials",

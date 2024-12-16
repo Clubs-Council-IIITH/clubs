@@ -81,6 +81,8 @@ class EnumCategories(str, Enum):
     cultural = "cultural"
     technical = "technical"
     affinity = "affinity"
+    slo = "slo"
+    body = "body"
     other = "other"
 
 
@@ -114,6 +116,8 @@ class Club(BaseModel):
     )  # equivalent to club id = short name
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
+
+    # TODO: Remove this field
     student_body: bool = Field(False, description="Is this a Student Body?")
 
     name: str = Field(..., min_length=5, max_length=100)
