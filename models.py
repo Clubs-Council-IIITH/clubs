@@ -81,7 +81,7 @@ class EnumCategories(str, Enum):
     cultural = "cultural"
     technical = "technical"
     affinity = "affinity"
-    slo = "slo"
+    admin = "admin"
     body = "body"
     other = "other"
 
