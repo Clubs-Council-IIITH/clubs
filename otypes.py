@@ -60,7 +60,6 @@ class SocialsType:
         "code",
         "state",
         "category",
-        "student_body",
         "email",
         "logo",
         "banner",
@@ -72,10 +71,6 @@ class SocialsType:
 class SimpleClubType:
     pass
 
-
-# TODO: Remove student_body from SimpleClubType and FullClubType
-
-
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
@@ -84,7 +79,6 @@ class SimpleClubType:
         "code",
         "state",
         "category",
-        "student_body",
         "logo",
         "banner",
         "banner_square",
