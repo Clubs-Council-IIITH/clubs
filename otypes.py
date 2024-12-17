@@ -71,6 +71,7 @@ class SocialsType:
 class SimpleClubType:
     pass
 
+
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
