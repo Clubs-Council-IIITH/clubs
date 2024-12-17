@@ -60,7 +60,6 @@ class SocialsType:
         "code",
         "state",
         "category",
-        "student_body",
         "email",
         "logo",
         "banner",
@@ -72,7 +71,6 @@ class SocialsType:
 class SimpleClubType:
     pass
 
-
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
@@ -81,7 +79,6 @@ class SimpleClubType:
         "code",
         "state",
         "category",
-        "student_body",
         "logo",
         "banner",
         "banner_square",
@@ -116,7 +113,6 @@ class SimpleClubInput:
         "name",
         "email",
         "category",
-        "student_body",
         "tagline",
         "description",
         "socials",
