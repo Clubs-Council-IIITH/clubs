@@ -54,7 +54,6 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
     Returns:
         List[SimpleClubType]: List of all clubs.
-
     """
     user = info.context.user
     if user is None:
