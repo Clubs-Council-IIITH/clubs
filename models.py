@@ -117,9 +117,6 @@ class Club(BaseModel):
     state: EnumStates = EnumStates.active
     category: EnumCategories = EnumCategories.other
 
-    # TODO: Remove this field
-    student_body: bool = Field(False, description="Is this a Student Body?")
-
     name: str = Field(..., min_length=5, max_length=100)
     email: EmailStr = Field(...)  # Optional but required
     logo: str | None = Field(None, description="Club Official Logo pic URL")
