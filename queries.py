@@ -1,3 +1,15 @@
+"""
+Query Resolvers
+
+This file contains the 3 different query resolvers.
+each resolves a different query, each providing a different set of information.
+
+Resolvers:
+    activeClubs: Returns all the currently active clubs.
+    allClubs: Returns a specific club.
+    clubs: Returns all the clubs.
+"""
+
 from typing import List
 
 import strawberry
@@ -14,11 +26,20 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description: Returns all the currently active clubs.
-    Scope: Public
-    Return Type: List[SimpleClubType]
-    Input: None
+    For Active Clubs
+
+    Returns all the currently active clubs
+
+    Inputs:
+        info (Info): Contains the user details.
+
+    Accessibility: 
+        Public.
+
+    Returns : 
+        List[SimpleClubType] : Returns a list of all the currently active clubs.
     """
+
     results = clubsdb.find({"state": "active"}, {"_id": 0})
     clubs = [
         SimpleClubType.from_pydantic(Club.model_validate(result))
@@ -31,14 +52,20 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description:
-        For CC:
-            Returns all the currently active/deleted clubs.
-        For Public:
-            Returns all the currently active clubs.
-    Scope: CC (For All Clubs), Public (For Active Clubs)
-    Return Type: List[SimpleClubType]
-    Input: None
+    For All Clubs
+
+    This method returns a list of all the clubs.
+    For CC it returns details even for deleted clubs.
+    For public users it returns only the active clubs.
+    
+    Inputs:
+        info (Info): Contains the user details.
+
+    Accessibility:
+        Public(partial access), CC(Full Access).
+    
+    Returns :
+        List[SimpleClubType] : Returns a list of all the clubs.
     """
     user = info.context.user
     if user is None:
@@ -62,17 +89,25 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     """
-    Description: Returns complete details of the club, from its club-id.
-        For CC:
-            Returns details even for deleted clubs.
-        For Public:
-            Returns details only for the active clubs.
-    Scope: Public
-    Return Type: FullClubType
-    Input: SimpleClubInput (cid)
-    Errors:
-        - cid doesn't exist
-        - if not cc and club is deleted
+    For Specific Club
+
+    This method returns a specific club.
+    For users with role 'cc', it returns details even for a deleted club.
+    For public users it returns info only if it is an active club.
+
+    Inputs:
+        clubInput (SimpleClubInput): Contains the club id of the club to be searched.
+        info (Info): Contains the user details.
+
+    Accessibility:
+            Public(partial access), CC(Full Access).
+
+    Returns:
+        FullClubType: Returns the club details.
+    
+    Raises Exceptions:
+        No club Found: If a club with the given club id is not found.
+        No Club Result Found: If the club is deleted and requesting user does not have a role of 'cc'.
     """
     user = info.context.user
     club_input = jsonable_encoder(clubInput)
