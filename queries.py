@@ -1,13 +1,5 @@
 """
-Query Resolvers
-
-This file contains the 3 different query resolvers.
-each resolves a different query, each providing a different set of information.
-
-Resolvers:
-    activeClubs: Returns all the currently active clubs.
-    allClubs: Returns a specific club.
-    clubs: Returns all the clubs.
+Queries for Clubs
 """
 
 from typing import List
@@ -26,20 +18,17 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
     """
-    For Active Clubs
+    Fetches all the currently active clubs.
+    
+    Args:
+        info (Info): User metadata and cookies.
 
-    Returns all the currently active clubs
+    Rajinikanth:
+        This method has public access and can be accessed by anyone.
 
-    Inputs:
-        info (Info): Contains the user details.
-
-    Accessibility: 
-        Public.
-
-    Returns : 
-        List[SimpleClubType] : Returns a list of all the currently active clubs.
+    Returns:
+        List[SimpleClubType]: List of active clubs.
     """
-
     results = clubsdb.find({"state": "active"}, {"_id": 0})
     clubs = [
         SimpleClubType.from_pydantic(Club.model_validate(result))
@@ -52,20 +41,20 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
     """
-    For All Clubs
+    Fetches all the clubs
 
-    This method returns a list of all the clubs.
-    For CC it returns details even for deleted clubs.
-    For public users it returns only the active clubs.
-    
-    Inputs:
-        info (Info): Contains the user details.
+    This method returns all the clubs when accessed CC.
+    When accessed by public, it returns only the active clubs.
 
-    Accessibility:
-        Public(partial access), CC(Full Access).
-    
-    Returns :
-        List[SimpleClubType] : Returns a list of all the clubs.
+    Args:
+        info (Info): User metadata and cookies.
+
+    Rajinikanth:
+        Access to both public and CC(Clubs Council).
+
+    Returns:
+        List[SimpleClubType]: List of all clubs.
+
     """
     user = info.context.user
     if user is None:
@@ -89,25 +78,24 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     """
-    For Specific Club
+    Fetches all Club Details of a club
 
-    This method returns a specific club.
-    For users with role 'cc', it returns details even for a deleted club.
-    For public users it returns info only if it is an active club.
+    Used to get all the details of a deleted/active club by its cid.
+    Returns deleted clubs also for CC and not for public.
 
-    Inputs:
-        clubInput (SimpleClubInput): Contains the club id of the club to be searched.
-        info (Info): Contains the user details.
+    Args:
+        clubInput (SimpleClubInput): The club cid.
+        info (Info): User metadata and cookies.
 
-    Accessibility:
-            Public(partial access), CC(Full Access).
+    Rajinikanth:
+        Access to both public and CC(Clubs Council).
 
     Returns:
-        FullClubType: Returns the club details.
-    
-    Raises Exceptions:
-        No club Found: If a club with the given club id is not found.
-        No Club Result Found: If the club is deleted and requesting user does not have a role of 'cc'.
+        FullClubType: Contains all the club details.
+
+    Raises:
+        Exception: If the club is not found.
+        Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
     club_input = jsonable_encoder(clubInput)

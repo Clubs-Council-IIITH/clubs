@@ -1,9 +1,3 @@
-"""
-Helper functions
-
-This file contains methods which make queries and mutations to different microservices within the backend.
-"""
-
 import os
 
 import requests
@@ -13,23 +7,19 @@ inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
 def update_role(uid, cookies=None, role="club"):
     """
-    Updates Role of a user
+    Function to call the updateRole mutation
 
-    This function is used to update the role of a user.
-    It makes a mutation to the Users Microservice.
-    Which is resolved by the updateRole function.
-    Updating a user's role to 'club'(or 'cc','slo','slc') makes the user a member of the club or committee.
+    Makes a mutation resolved by the `updateRole` method from Users Microservice.
+    Used to change a user's role field.
 
-    Inputs:
-        uid (str): The uid(User id) of the user whose role is to be changed.
-        cookies (dict): The cookies of the user.(Default: None)
-        role (str): The role to be updated to.(Default: 'club')
-    
+    Args:
+        uid (str): User ID.
+        cookies (dict): Cookies from the request. Defaults to None.
+        role (str): Role of the user to be updated to. Defaults to 'club'.
+
     Returns:
-        result of the mutation if successful.
-        else returns None.
+        dict: Response from the mutation.
     """
-    
     try:
         query = """
                     mutation UpdateRole($roleInput: RoleInput!) {
@@ -62,24 +52,22 @@ def update_role(uid, cookies=None, role="club"):
 
 def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     """
-    Function to change the cid of events and members of a club
+    Function to call the updateEventsCid & updateMembersCid mutation
 
-    It is used when a club changes their cid.
-    It makes 2 mutations one to the Events and another to the Members Microservice.
-    Which are resolved by the updateEventsCid and updateMembersCid functions.
-    They change the club's cid in all the events and members of the club.
+    Makes a mutation resolved by the `updateEventsCid` method from Events Microservice.
+    Makes another mutation resolved by the `updateMembersCid` method from Members Microservice.
+    Used when club changes its cid to change its members and events data accordingly.
 
-    Inputs:
-        old_cid (str): The old cid of the club.
-        new_cid (str): The new cid of the club.
-        cookies (dict): The cookies of the user.(Default: None)
+    Args:
+        old_cid (str): Old CID of the club.
+        new_cid (str): New CID of the club.
+        cookies (dict): Cookies from the request.
 
     Returns:
-        True if both mutations are successful.
-        else returns False.
+        bool: True if both mutations are successful, False otherwise.
     """
-
     return1, return2 = None, None
+    # Update Events CID
     try:
         query = """
                     mutation UpdateEventsCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
@@ -107,6 +95,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     except Exception:
         return False
 
+    # Update Members CID
     try:
         query = """
                     mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
@@ -142,21 +131,18 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
 
 def getUser(uid, cookies=None):
     """
-    Function to get a user's details
+    Function to get a particular user details
 
-    This function is used to fetch a specific user's details.
-    It makes a query to the Users Microservice.
-    Which is resolved by the userProfile function.
+    Makes a query resolved by the `userProfile` method from Users Microservice.
+    Used to get a users details.
 
-    Inputs:
-        uid (str): The uid of the user whose details are to be fetched.
-        cookies (dict): The cookies of the user.(Default: None)
-    
+    Args:
+        uid (str): User ID of the user to be fetched.
+        cookies (dict): Cookies from the request. Defaults to None.
+
     Returns:
-        The user's details if successful.
-        else returns None.
+        dict: User details as a result of the query.
     """
-
     try:
         query = """
             query GetUserProfile($userInput: UserInput!) {

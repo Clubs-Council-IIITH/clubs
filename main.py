@@ -1,9 +1,16 @@
 """
-Final Setup
+Main module for the Clubs Microservice.
 
-This file is used to setup the final schema for the subgraph.
-It imports the resolvers from the queries and mutations files and creates a final GraphQL schema.
-It sets up the Fast API for the Clubs Microservice.
+This module sets up the FastAPI application and integrates the Strawberry GraphQL schema.
+It includes the configuration for queries, mutations, and context.
+
+Environment Variables:
+    GLOBAL_DEBUG (str): Enables or disables debug mode. Defaults to "False".
+
+Attributes:
+    DEBUG (bool): Indicates whether the application is running in debug mode.
+    gql_app (GraphQLRouter): The GraphQL router for handling GraphQL requests.
+    app (FastAPI): The FastAPI application instance.
 """
 
 from os import getenv
@@ -28,7 +35,7 @@ Query = create_type("Query", queries)
 Mutation = create_type("Mutation", mutations)
 
 
-# override context getter
+# Returns The custom context by overriding the context getter.
 async def get_context() -> Context:
     return Context()
 

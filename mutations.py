@@ -1,7 +1,5 @@
 """
-Mutation Resolvers
-
-Contains mutation resolvers that create, edit, delete and restart a club
+Mutations for Clubs
 """
 
 from datetime import datetime
@@ -26,31 +24,26 @@ from utils import getUser, update_events_members_cid, update_role
 @strawberry.mutation
 def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     """
-    Create a new Club.
+    Mutation for creation of a new club.
 
-    This resolver/method creates a new club.
-    For a new club to be created, prior to the creation a user with a uid same as the cid of the club should exist.
-    This user account will be the account of the club.
-    Any changes or autherization for actions regarding the club are provided to this account.
-    This user profile only exists on the database and not on LDAP.
-    
-    Iputs:
-        clubInput (FullClubInput): Used to take input almost all the fields of the Club Schema.
-        info (Info): Contains the user details.
-    
-    Accessibility:
-        Only CC can create a club.
+    Args:
+        clubInput (FullClubInput): Full details of the club.
+        info (Info): User metadata and cookies.
 
     Returns:
-        SimpleClubType: Returns the created club.
+        SimpleClubType: Details of the created club.
 
-    Raises Exception:
-        Not Authenticated or Not Authenticated to access this API : If the user is not a CC.
-        Club Already Exists : If a club with the same cid already exists.
-        Invalid Club ID/Club Email : If there does not exist a user with the same cid or email.
-        A club with the same code already exists : If a club with the same code already exists.
+    Rajinikanth:
+        Access to only CC(Clubs Council).
+
+    Raises:
+        Exception: Not Authenticated
+        Exception: A club with this cid already exists
+        Exception: A club with this short code already exists
+        Exception: Invalid Club ID/Club Email
+        Exception: Error in updating the role for the club
+        Exception: Not Authenticated to access this API
     """
-
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -65,7 +58,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         if cid_exists:
             raise Exception("A club with this cid already exists")
 
-        # Check whether there exists a user with the same cid or email
+        # Check whether this cid is valid or not
         clubMember = getUser(club_input["cid"], info.context.cookies)
         if clubMember is None:
             raise Exception("Invalid Club ID/Club Email")
@@ -91,40 +84,33 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 @strawberry.mutation
 def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     """
-    Edit a club.
+    Mutation for editing of the club details either by that specific club or the cc
 
-    This resolver/method edits a club.
-    editing of the club details is allowed to be done either by that specific club or the cc.
-    CC can edit any club details.
-    the Club can edit only few details.
-    If user role is ‘cc’
-        If the current and the new cid(Club id) are different then this method changes the role of the user with uid same as the old cid to ‘public’ and changes the role of the user with the same uid as the new cid to ‘club’.
-        And then calls the update_events_members_cid method with the old cid and the new cid.
-    If the user role is ‘club’
-        Does not let the user change the name, email, category of the club.
+    This method is used for editing the club details.
+    CC can edit any club details, but the club can only edit its own details.
+    Only CC can change a clubs name/email and category.
 
-    Inputs:
-        clubInput (FullClubInput): Used to take input almost all the fields of the Club Schema.
-        info (Info): Contains the user details.
 
-    Accessibility:
-        CC(Full Access), club(Partial Access).
+    Args:
+        clubInput (FullClubInput): Full details of the club to be updated to.
+        Info (Info): User metadata and cookies.
 
     Returns:
-        FullClubType: Returns the edited club's details.
+        FullClubType: Full Details of the edited club.
 
-    Raises Exception:
-        Not Authenticated or Not Authenticated to access this API : If the user is not a CC or not a member of the club.
-        For CC:
-            A club with this code doesn't exist : If a club with the same code does not exist.
-            Invalid Club ID/Club Email : If there does not exist a user with the same cid or email.
-        For club:
-            Authentication Error! (CLUB ID CHANGED) : If the user's uid and the clubs cid are not the same.
-            Club Does Not Exist : If the club with the given cid does not exist.
-            Only CC can edit the club details: If the user is not a CC and trying to change name, email, category of the club.
-            
+    Rajinikanth:
+        Access to both clubs and CC(Clubs Council).
+
+    Raises:
+        Exception: Not Authenticated.
+        Exception: A club with this code does not exist.
+        Exception: Invalid Club ID/Club Email.
+        Exception: Error in updating the role/cid.
+        Exception: Authentication Error! (CLUB ID CHANGED).
+        Exception: You dont have permission to change the name/email of the club. Please contact CC for it.
+        Exception: Only CC is allowed to change the category of club.
+        Exception: Not Authenticated to access this API.      
     """  # noqa: E501
-
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -243,6 +229,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                     }
                 },
             )
+
+        # also autofills the updated time
         clubsdb.update_one(
             {"cid": club_input["cid"]},
             {
@@ -265,24 +253,22 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 @strawberry.mutation
 def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     """
-    Delete a club.
+    Mutation for the cc to move a club to deleted state.
 
-    This method changes a club's state to "deleted".
+    Args:
+        clubInput (SimpleClubInput): The club cid.
+        info (Info): User metadata and cookies.
 
-    Input:
-        clubInput (SimpleClubIput): contains the club's information(its cid).
-        info (Info): An Info object containing the user's information.
-
-    Accessibility:
-        Only CC.
-    
     Returns:
-        SimpleClubType: The updated club's information.
+        SimpleClubType: Details of the deleted club.
 
-    Raises Exception:
-        Not Authenticated: If the user is not authenticated.
+    Rajinikanth:
+        Access to only CC(Clubs Council).
+
+    Raises:
+        Exception: Not Authenticated.
+        Exception: Not Authenticated to access this API.
     """
-
     user = info.context.user
     if user is None:
         raise Exception("Not Authenticated")
@@ -293,6 +279,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     if role not in ["cc"]:
         raise Exception("Not Authenticated to access this API")
 
+    # also autofills the updated time
     clubsdb.update_one(
         {"cid": club_input["cid"]},
         {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
@@ -310,22 +297,21 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 @strawberry.mutation
 def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     """
-    Restart a club.
+    Mutation for cc to move a club from deleted state to active state.
 
-    This method is similar to deleteClub but changes the state of the club to "active".
-
-    Input:
-        clubInput (SimpleClubIput): contains the club's information(its cid).
-        info (Info): An Info object containing the user's information.
-    
-    Accessibility:
-        Only CC.
+    Args:
+        clubInput (SimpleClubInput): The club cid.
+        info (Info): User metadata and cookies.
 
     Returns:
-        SimpleClubType: The updated club's information.
+        SimpleClubType: Details of the restarted clubs cid.
 
-    Raises Exception:
-        Not Authenticated: If the user is not authenticated.
+    Rajinikanth:
+        Access to only CC(Clubs Council).
+
+    Raises:
+        Exception: Not Authenticated.
+        Exception: Not Authenticated to access this API.
     """
     user = info.context.user
     if user is None:
@@ -337,6 +323,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     if role not in ["cc"]:
         raise Exception("Not Authenticated to access this API")
 
+    # also autofills the updated time
     clubsdb.update_one(
         {"cid": club_input["cid"]},
         {"$set": {"state": "active", "updated_time": datetime.utcnow()}},

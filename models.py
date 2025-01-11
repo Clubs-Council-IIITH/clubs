@@ -1,14 +1,3 @@
-"""
-Data Models for Clubs Microservice
-
-This file decides what and how the Club information is stored in its MongoDB document.
-It creates many custom data types for this purpose.
-
-It defines the following models:
-    Club: Represents a Club.
-    Socials: Represents Social Media Links of a Club.
-"""
-
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, List
@@ -28,8 +17,9 @@ from pydantic import (
 from pydantic_core import core_schema
 from pytz import timezone
 
-
-# A custom  type for HttpUrls that validates the URL when assigned a value and converts it to a string.
+"""
+Annotated type and validator for HTTP URLs to be stored as strings.
+"""
 http_url_adapter = TypeAdapter(HttpUrl)
 HttpUrlString = Annotated[
     str,
@@ -38,33 +28,22 @@ HttpUrlString = Annotated[
     ),
 ]
 
-# method that returns the current UTC(timezone) time
+
 def create_utc_time():
+    """
+    Returns the current time according to UTC timezone.
+    """
     return datetime.now(timezone("UTC"))
 
+
+# for handling mongo ObjectIds
 class PyObjectId(ObjectId):
     """
-    MongoDB ObjectId handler
-
-    This class contains clasmethods to validate and serialize ObjectIds.
-    ObjectIds of documents under the Clubs collection are stored under the 'id' field.
+    Class for handling MongoDB document ObjectIds for 'id' fields in Models.
     """
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler):
-        """
-        Defines custom schema for Pydantic validation
-
-        This method is used to define the schema for the Pydantic model.
-
-        Inputs:
-            source_type (Any): The source type.
-            handler: The handler.
-
-        Returns:
-            dict: The schema for the Pydantic model.
-        """
-
         return core_schema.union_schema(
             [
                 # check if it's an instance first before doing any further work
@@ -76,53 +55,25 @@ class PyObjectId(ObjectId):
 
     @classmethod
     def validate(cls, v):
-        """
-        Validates the given ObjectId
-
-        Inputs:
-            v (Any): The value to validate.
-
-        Returns:
-            ObjectId: The validated ObjectId.
-
-        Raises:
-            ValueError: If the given value is not a valid ObjectId.
-        """
-        
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, field_schema):
-        """
-        Generates JSON schema
-
-        This method is used to generate the JSON schema for the Pydantic model.
-
-        Inputs:
-            field_schema (dict): The field schema.
-        """
-        
         field_schema.update(type="string")
 
 
 def iiit_email_only(v: str) -> str:
     """
-    Email validator for IIIT-H emails
+    Validates emails according to the valid forms.
 
-    This function validates the given email address according to valid IIIT-H email formats.
-
-    Inputs:
-        v (str): The email address to validate.
+    Args:
+        v (str): Email to be validated.
 
     Returns:
-            str: The validated email address in lower case.
-
-    Raises:
-        ValueError: If the given email address is not a valid IIIT-H email.        
+        str: Valid Email.
     """
-
     valid_domains = [
         "@iiit.ac.in",
         "@students.iiit.ac.in",
@@ -135,24 +86,20 @@ def iiit_email_only(v: str) -> str:
 
 
 def current_year() -> int:
-    """
-    Returns the current year
-
-    Returns:
-        int: The current year.
-    """
-
+    """Returns the current year."""
     return datetime.now().year
 
-# Enum for the status of a Club(active or deleted)
+
 @strawberry.enum
 class EnumStates(str, Enum):
+    """Enum for state of the club."""
     active = "active"
     deleted = "deleted"
 
-# Enum for the categories of a Club(cultural, technical, affinity or other)
+
 @strawberry.enum
 class EnumCategories(str, Enum):
+    """Enum for category of the club."""
     cultural = "cultural"
     technical = "technical"
     affinity = "affinity"
@@ -161,27 +108,19 @@ class EnumCategories(str, Enum):
 
 class Social(BaseModel):
     """
-    Social Media Links Model
+    Model for storing social handles of a Club
 
-    This class atrributes represent the social media links of a Club.
-    It also checks for duplicate URLs in the 'other_links' field.
-    All the attributes are optional and use the HttpUrlString type to validate and store the URLs.
-
-    Atrributes:
-        website (HttpUrlString | None): The website URL of the Club.
-        instagram (HttpUrlString | None): The Instagram URL of the Club.
-        facebook (HttpUrlString | None): The Facebook URL of the Club.
-        youtube (HttpUrlString | None): The YouTube URL of the Club.
-        twitter (HttpUrlString | None): The Twitter URL of the Club.
-        linkedin (HttpUrlString | None): The LinkedIn URL of the Club.
-        discord (HttpUrlString | None): The Discord URL of the Club.
-        whatsapp (HttpUrlString | None): The WhatsApp URL of the Club.
-        other_links (List[HttpUrlString]): The other social media links of the Club.
-
-    Raises:
-        ValueError: If duplicate URLs are found in the 'other_links' field.
+    Attributes:
+        website (HttpUrlString | None): Club Website URL.
+        instagram (HttpUrlString | None): Club Instagram handle.
+        facebook (HttpUrlString | None): Club Facebook .
+        youtube (HttpUrlString | None): Club YouTube handle.
+        twitter (HttpUrlString | None): Club Twitter handle.
+        linkedin (HttpUrlString | None): Club LinkedIn handle.
+        discord (HttpUrlString | None): Club Discord handle.
+        whatsapp (HttpUrlString | None): Club WhatsApp handle.
+        other_links (List[HttpUrlString]): List of other social handles and URLs
     """
-
     website: HttpUrlString | None = None
     instagram: HttpUrlString | None = None
     facebook: HttpUrlString | None = None
@@ -195,6 +134,9 @@ class Social(BaseModel):
     @field_validator("other_links")
     @classmethod
     def validate_unique_links(cls, value):
+        """
+        Validates that the URLs in 'other_links' are unique.
+        """
         if len(value) != len(set(value)):
             raise ValueError("Duplicate URLs are not allowed in 'other_links'")
         return value
@@ -202,31 +144,26 @@ class Social(BaseModel):
 
 class Club(BaseModel):
     """
-    Club Model
-
-    This class represents a Club.
-    Its attributes store all the details of a Club.
-    It also validates the email address of the Club using the iiit_email_only method.
+    Model for storing Club details.
 
     Attributes:
-        id (PyObjectId): Stores the ObjectId of the Club's document in MongoDB.Uses the PyObjectId class.
-        cid (str): The unique identifier of the Club.
-        code (str): The unique short code of the Club.
-        state (EnumStates): The state of the Club.Uses the EnumStates enum.
-        category (EnumCategories): The category of the Club.Uses the EnumCategories enum.
-        student_body (bool): Whether the Club is a Student Body or not.
-        name (str): The name of the Club.
-        email (EmailStr): The email address of the Club.
-        logo (str | None): The URL of the Club's official logo.
-        banner (str | None): The URL of the Club's official banner.
-        banner_square (str | None): The URL of the Club's official square banner.
-        tagline (str): The tagline of the Club.
-        description (str): The description of the Club.
-        social (Social): The social media links of the Club.Uses the Social class.
-        created_time (datetime): The date and time when the Club was created.Uses the current_utc_time method.
-        updated_time (datetime): The date and time when the Club was last updated.
+        id (PyObjectId): Unique ObjectId of the document of the Club.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (EnumStates): State of the Club.
+        category (EnumCategories): Category of the Club.
+        student_body (bool): Is this a Student Body?
+        name (str): Name of the Club.
+        email (EmailStr): Email of the Club.
+        logo (str | None): Club Official Logo.
+        banner (str | None): Club Long Banner.
+        banner_square (str | None): Club Square Banner.
+        tagline (str | None): Tagline of the Club.
+        description (str | None): Club Description.
+        socials (Social): Social Handles of the Club.
+        created_time (datetime): Time of creation of the Club.
+        updated_time (datetime): Time of last update to the Club.
     """
-
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(..., description="Club ID")
     code: str = Field(

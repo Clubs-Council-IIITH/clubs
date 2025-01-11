@@ -1,20 +1,5 @@
 """
-Types and Inputs
-
-It contains both Inputs and Types for taking inputs and returning outputs.
-It also contains the Context class which is used to pass the user details to the resolvers.
-
-Types:
-    Info : used to pass the user details to the resolvers.
-    PyObjectId : used to return ObjectId of a document.
-    SocialType : used to return Social handles, if they are present.
-    SimpleClubType : used to return only few fields defined within the Club schema.
-    FullClubType : used to return almost all the fields within the Club Schema.
-
-Inputs
-    SocialsInput : used to take Social handles as input.All of its fields are optional to fill.
-    SimpleClubInput : used to take club id as input.
-    FullClubInput : used to take almost all the fields within the Club Schema as input.
+Types and Inputs for clubs subgraph
 """
 
 import json
@@ -32,23 +17,10 @@ from models import Club, PyObjectId, Social
 # custom context class
 class Context(BaseContext):
     """
-    To pass user details
-
-    This class is used to pass the user details to the resolvers.
-    It will be used through the Info type.
+    Class provides user metadata and cookies from request headers.
     """
-
     @cached_property
     def user(self) -> Union[Dict, None]:
-        """
-        Returns User Details
-        
-        It will be used in the resolvers to check the user details.
-
-        Returns:
-            user (Dict): Contains User Details.
-        """
-        
         if not self.request:
             return None
 
@@ -57,15 +29,6 @@ class Context(BaseContext):
 
     @cached_property
     def cookies(self) -> Union[Dict, None]:
-        """
-        Returns Cookies Details
-
-        It will be used in the resolvers to check the cookies details.
-
-        Returns:
-            cookies (Dict): Contains Cookies Details.
-        """
-
         if not self.request:
             return None
 
@@ -73,10 +36,10 @@ class Context(BaseContext):
         return cookies
 
 
-# custom info type
+"""custom info type for user metadata"""
 Info = _Info[Context, RootValueType]
 
-# serialize PyObjectId as a scalar type
+"""A scalar type by serializing PyObjectId"""
 PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
@@ -86,12 +49,8 @@ PyObjectIdType = strawberry.scalar(
 @strawberry.experimental.pydantic.type(model=Social)
 class SocialsType:
     """
-    Type for Social Handles
-
-    This type is used to return Social handles, if they are present.
-    All of its fields(Attributes) are optional to fill and defaultly set to UNSET.
+    Type for return of social media handles of a club.
     """
-
     website: Optional[str] = strawberry.UNSET
     instagram: Optional[str] = strawberry.UNSET
     facebook: Optional[str] = strawberry.UNSET
@@ -121,10 +80,12 @@ class SocialsType:
     ],
 )
 class SimpleClubType:
+    """
+    Type for return of user-provided club details except social handles.
+    """
     pass
 
-# This type is used to return almost all the fields within the Club Schema.
-# except created and updated time fields.
+
 @strawberry.experimental.pydantic.type(
     model=Club,
     fields=[
@@ -145,6 +106,7 @@ class SimpleClubType:
     ],
 )
 class FullClubType:
+    """Type for return of all user-provided club details."""
     # socials: SocialsType
     pass
 
@@ -152,11 +114,13 @@ class FullClubType:
 # CLUBS INPUTS
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
+    """Type for input of social media handles of a club."""
     pass
 
 
 @strawberry.input
 class SimpleClubInput:
+    """Type for input of cid(Club id) of a club."""
     cid: str
 
 
@@ -176,13 +140,8 @@ class SimpleClubInput:
 )
 class FullClubInput:
     """
-    Full Club Details Input
-
-    This class is used to take almost all the fields within the Club Schema as input.
-    It does not take created and updated time fields as input.
-    logo, banner, banner_square fields are optional to fill.
+    Type for input of all user-provided club details, pictures are optional to fill.
     """
-
     logo: Optional[str] = strawberry.UNSET
     banner: Optional[str] = strawberry.UNSET
     banner_square: Optional[str] = strawberry.UNSET

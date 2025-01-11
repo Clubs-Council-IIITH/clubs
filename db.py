@@ -1,10 +1,8 @@
 """
-MongoDB Initialization Module
+MongoDB Initialization Module.
 
-This module sets up a connection to a MongoDB database and ensures that the required indexes are created.
-This module connects to the MongoDB database using environment variables for authentication.
-Ensures that a `unique_clubs` index is present on the `cid` field in the clubs collection.
-It specifically exports the clubs collection of the database.
+This module sets up the connection to the MongoDB database.
+It ensures that the required indexes are created.
 
 Environment Variables:
     `MONGO_USERNAME` (str): MongoDB username. Defaults to "username".
@@ -12,13 +10,19 @@ Environment Variables:
     `MONGO_PORT` (str): MongoDB port. Defaults to "27017".
     `MONGO_DATABASE` (str): MongoDB database name. Defaults to "default".
 
+Attributes:
+    MONGO_URI (str): MongoDB URI.
+    MONGO_DATABASE (str): MongoDB database name.
+    client (MongoClient): MongoDB client.
+    db (Database): MongoDB database.
+    clubsdb (Collection): MongoDB collection for clubs.
 """
 
 from os import getenv
 
 from pymongo import MongoClient
 
-# get mongodb URI and database name from environment variables
+# get mongodb URI and database name from environment variale
 MONGO_URI = "mongodb://{}:{}@mongo:{}/".format(
     getenv("MONGO_USERNAME", default="username"),
     getenv("MONGO_PASSWORD", default="password"),
