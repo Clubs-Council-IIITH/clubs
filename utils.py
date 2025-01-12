@@ -170,3 +170,32 @@ def getUser(uid, cookies=None):
         return request.json()["data"]["userProfile"]
     except Exception:
         return None
+
+
+def delete_file(filename):
+    response = requests.post(
+        "http://files/delete-file",
+        params={
+            "filename": filename,
+            "inter_communication_secret": inter_communication_secret,
+        },
+    )
+
+    if response.status_code != 200:
+        raise Exception(response.text)
+
+    return response.text
+
+
+def check_remove_old_file(old_obj, new_obj, name="logo"):
+    old_file = old_obj.get(name)
+    new_file = new_obj.get(name)
+
+    if old_file and new_file and old_file != new_file:
+        try:
+            delete_file(old_file)
+        except Exception as e:
+            print(f"Error in deleting old {name} file: {e}")
+            return False
+
+    return True

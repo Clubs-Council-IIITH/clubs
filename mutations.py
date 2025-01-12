@@ -8,7 +8,7 @@ import strawberry
 from fastapi.encoders import jsonable_encoder
 
 from db import clubsdb
-from models import Club
+from models import Club, create_utc_time
 
 # import all models and types
 from otypes import (
@@ -18,7 +18,12 @@ from otypes import (
     SimpleClubInput,
     SimpleClubType,
 )
-from utils import getUser, update_events_members_cid, update_role
+from utils import (
+    check_remove_old_file,
+    getUser,
+    update_events_members_cid,
+    update_role,
+)
 
 
 @strawberry.mutation
@@ -133,6 +138,10 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
 
+        check_remove_old_file(exists, club_input, "logo")
+        check_remove_old_file(exists, club_input, "banner")
+        check_remove_old_file(exists, club_input, "banner_square")
+
         clubsdb.replace_one({"code": club_input["code"]}, club_input)
         if "socials" in club_input.keys():
             clubsdb.update_one(
@@ -160,7 +169,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             {
                 "$set": {
                     "created_time": exists["created_time"],
-                    "updated_time": datetime.utcnow(),
+                    "updated_time": create_utc_time(),
                 }
             },
         )
@@ -207,6 +216,10 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
 
+        check_remove_old_file(exists, club_input, "logo")
+        check_remove_old_file(exists, club_input, "banner")
+        check_remove_old_file(exists, club_input, "banner_square")
+
         clubsdb.replace_one({"cid": uid}, club_input)
         if "socials" in club_input.keys():
             clubsdb.update_one(
@@ -236,7 +249,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             {
                 "$set": {
                     "created_time": exists["created_time"],
-                    "updated_time": datetime.utcnow(),
+                    "updated_time": create_utc_time(),
                 }
             },
         )
@@ -282,7 +295,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     # also autofills the updated time
     clubsdb.update_one(
         {"cid": club_input["cid"]},
-        {"$set": {"state": "deleted", "updated_time": datetime.utcnow()}},
+        {"$set": {"state": "deleted", "updated_time": create_utc_time()}},
     )
 
     update_role(club_input["cid"], info.context.cookies, "public")
@@ -326,7 +339,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     # also autofills the updated time
     clubsdb.update_one(
         {"cid": club_input["cid"]},
-        {"$set": {"state": "active", "updated_time": datetime.utcnow()}},
+        {"$set": {"state": "active", "updated_time": create_utc_time()}},
     )
 
     update_role(club_input["cid"], info.context.cookies, "club")
