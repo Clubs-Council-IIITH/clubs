@@ -17,7 +17,7 @@ from models import Club, PyObjectId, Social
 # custom context class
 class Context(BaseContext):
     """
-    Class provides user metadata and cookies from request headers.
+    Class provides user metadata and cookies from request headers, has methods for doing this.
     """
     @cached_property
     def user(self) -> Union[Dict, None]:
@@ -36,10 +36,10 @@ class Context(BaseContext):
         return cookies
 
 
-"""custom info type for user metadata"""
+"""custom info Type for user metadata"""
 Info = _Info[Context, RootValueType]
 
-"""A scalar type by serializing PyObjectId"""
+"""A scalar Type by serializing PyObjectId used for id field"""
 PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
@@ -49,7 +49,7 @@ PyObjectIdType = strawberry.scalar(
 @strawberry.experimental.pydantic.type(model=Social)
 class SocialsType:
     """
-    Type for return of social media handles of a club.
+    Type used for return of social media handles of a club.
     """
     website: Optional[str] = strawberry.UNSET
     instagram: Optional[str] = strawberry.UNSET
@@ -80,7 +80,7 @@ class SocialsType:
 )
 class SimpleClubType:
     """
-    Type for return of user-provided club details except social handles.
+    Type used for return of user-provided club details except social handles.
     """
     pass
 
@@ -104,7 +104,7 @@ class SimpleClubType:
     ],
 )
 class FullClubType:
-    """Type for return of all user-provided club details."""
+    """Type used for return of all user-provided club details."""
     # socials: SocialsType
     pass
 
@@ -112,13 +112,13 @@ class FullClubType:
 # CLUBS INPUTS
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
-    """Type for input of social media handles of a club."""
+    """Input used for input of social media handles of a club."""
     pass
 
 
 @strawberry.input
 class SimpleClubInput:
-    """Type for input of cid(Club id) of a club."""
+    """Input used for input of cid(Club id) of a club."""
     cid: str
 
 
@@ -137,7 +137,7 @@ class SimpleClubInput:
 )
 class FullClubInput:
     """
-    Type for input of all user-provided club details, pictures are optional to fill.
+    Input used for input of all user-provided club details, pictures are optional to fill.
     """
     logo: Optional[str] = strawberry.UNSET
     banner: Optional[str] = strawberry.UNSET

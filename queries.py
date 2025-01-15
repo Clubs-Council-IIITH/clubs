@@ -18,13 +18,10 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
     """
-    Fetches all the currently active clubs.
+    Fetches all the currently active clubs and is accessible to all.
     
     Args:
         info (Info): User metadata and cookies.
-
-    Rajinikanth:
-        This method has public access and can be accessed by anyone.
 
     Returns:
         List[SimpleClubType]: List of active clubs.
@@ -45,12 +42,10 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
     This method returns all the clubs when accessed CC.
     When accessed by public, it returns only the active clubs.
+    Access to both public and CC(Clubs Council).
 
     Args:
         info (Info): User metadata and cookies.
-
-    Rajinikanth:
-        Access to both public and CC(Clubs Council).
 
     Returns:
         List[SimpleClubType]: List of all clubs.
@@ -81,13 +76,11 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
     Used to get all the details of a deleted/active club by its cid.
     Returns deleted clubs also for CC and not for public.
+    Accessible to both public and CC(Clubs Council).
 
     Args:
         clubInput (SimpleClubInput): The club cid.
         info (Info): User metadata and cookies.
-
-    Rajinikanth:
-        Access to both public and CC(Clubs Council).
 
     Returns:
         FullClubType: Contains all the club details.

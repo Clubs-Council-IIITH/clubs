@@ -29,7 +29,7 @@ from utils import (
 @strawberry.mutation
 def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     """
-    Mutation for creation of a new club.
+    Mutation for creation of a new club by CC.
 
     Args:
         clubInput (FullClubInput): Full details of the club.
@@ -37,9 +37,6 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
     Returns:
         SimpleClubType: Details of the created club.
-
-    Rajinikanth:
-        Access to only CC(Clubs Council).
 
     Raises:
         Exception: Not Authenticated
@@ -102,9 +99,6 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     Returns:
         FullClubType: Full Details of the edited club.
-
-    Rajinikanth:
-        Access to both clubs and CC(Clubs Council).
 
     Raises:
         Exception: Not Authenticated.
@@ -275,9 +269,6 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     Returns:
         SimpleClubType: Details of the deleted club.
 
-    Rajinikanth:
-        Access to only CC(Clubs Council).
-
     Raises:
         Exception: Not Authenticated.
         Exception: Not Authenticated to access this API.
@@ -318,9 +309,6 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
     Returns:
         SimpleClubType: Details of the restarted clubs cid.
-
-    Rajinikanth:
-        Access to only CC(Clubs Council).
 
     Raises:
         Exception: Not Authenticated.

@@ -69,7 +69,10 @@ def iiit_email_only(v: str) -> str:
     Validates emails according to the valid forms.
 
     Args:
-        v (str): Email to be validated.
+        v (str): The Email to be validated.
+
+    Raises:
+        ValueError: If email is not valid.
 
     Returns:
         str: Valid Email.
@@ -136,9 +139,6 @@ class Social(BaseModel):
     @field_validator("other_links")
     @classmethod
     def validate_unique_links(cls, value):
-        """
-        Validates that the URLs in 'other_links' are unique.
-        """
         if len(value) != len(set(value)):
             raise ValueError("Duplicate URLs are not allowed in 'other_links'")
         return value
