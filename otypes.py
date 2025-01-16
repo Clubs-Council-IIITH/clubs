@@ -39,7 +39,7 @@ class Context(BaseContext):
 """custom info Type for user metadata"""
 Info = _Info[Context, RootValueType]
 
-"""A scalar Type by serializing PyObjectId used for id field"""
+"""A scalar Type for serializing PyObjectId, used for id field"""
 PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
