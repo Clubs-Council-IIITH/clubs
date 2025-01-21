@@ -96,6 +96,7 @@ def current_year() -> int:
 @strawberry.enum
 class EnumStates(str, Enum):
     """Enum for state of the club."""
+
     active = "active"
     deleted = "deleted"
 
@@ -103,6 +104,7 @@ class EnumStates(str, Enum):
 @strawberry.enum
 class EnumCategories(str, Enum):
     """Enum for category of the club."""
+
     cultural = "cultural"
     technical = "technical"
     affinity = "affinity"
@@ -126,6 +128,7 @@ class Social(BaseModel):
         whatsapp (HttpUrlString | None): Club WhatsApp handle. Defaults to None.
         other_links (List[HttpUrlString]): List of other social handles and URLs
     """
+
     website: HttpUrlString | None = None
     instagram: HttpUrlString | None = None
     facebook: HttpUrlString | None = None
@@ -166,6 +169,7 @@ class Club(BaseModel):
         created_time (datetime): Time of creation of the Club.
         updated_time (datetime): Time of last update to the Club.
     """
+
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(..., description="Club ID")
     code: str = Field(

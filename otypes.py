@@ -19,6 +19,7 @@ class Context(BaseContext):
     """
     Class provides user metadata and cookies from request headers, has methods for doing this.
     """
+
     @cached_property
     def user(self) -> Union[Dict, None]:
         if not self.request:
@@ -51,6 +52,7 @@ class SocialsType:
     """
     Type used for return of social media handles of a club.
     """
+
     website: Optional[str] = strawberry.UNSET
     instagram: Optional[str] = strawberry.UNSET
     facebook: Optional[str] = strawberry.UNSET
@@ -82,6 +84,7 @@ class SimpleClubType:
     """
     Type used for return of user-provided club details except social handles.
     """
+
     pass
 
 
@@ -104,7 +107,10 @@ class SimpleClubType:
     ],
 )
 class FullClubType:
-    """Type used for return of all user-provided club details."""
+    """
+    Type used for return of all user-provided club details.
+    """
+
     # socials: SocialsType
     pass
 
@@ -112,13 +118,19 @@ class FullClubType:
 # CLUBS INPUTS
 @strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
-    """Input used for input of social media handles of a club."""
+    """
+    Input used for input of social media handles of a club.
+    """
+
     pass
 
 
 @strawberry.input
 class SimpleClubInput:
-    """Input used for input of cid(Club id) of a club."""
+    """
+    Input used for input of cid(Club id) of a club.
+    """
+
     cid: str
 
 
@@ -139,6 +151,7 @@ class FullClubInput:
     """
     Input used for input of all user-provided club details, pictures are optional to fill.
     """
+
     logo: Optional[str] = strawberry.UNSET
     banner: Optional[str] = strawberry.UNSET
     banner_square: Optional[str] = strawberry.UNSET

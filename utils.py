@@ -175,10 +175,10 @@ def getUser(uid, cookies=None):
 def delete_file(filename):
     """
     Method for deleting a file from the files microservice
-    
+
     Args:
         filename (str): Name of the file to be deleted
-    
+
     Returns:
         Response from the files microservice
     """
@@ -199,7 +199,7 @@ def delete_file(filename):
 def check_remove_old_file(old_obj, new_obj, name="logo"):
     """
     Method to remove old files.
-    
+
     Args:
         old_obj (dict): Old object containing the old file
         new_obj (dict): New object containing the new file

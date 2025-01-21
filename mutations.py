@@ -2,8 +2,6 @@
 Mutations for Clubs
 """
 
-from datetime import datetime
-
 import strawberry
 from fastapi.encoders import jsonable_encoder
 
@@ -108,7 +106,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         Exception: Authentication Error! (CLUB ID CHANGED).
         Exception: You dont have permission to change the name/email of the club. Please contact CC for it.
         Exception: Only CC is allowed to change the category of club.
-        Exception: Not Authenticated to access this API.      
+        Exception: Not Authenticated to access this API.
     """  # noqa: E501
     user = info.context.user
     if user is None:

@@ -19,7 +19,7 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 def activeClubs(info: Info) -> List[SimpleClubType]:
     """
     Fetches all the currently active clubs and is accessible to all.
-    
+
     Args:
         info (Info): User metadata and cookies.
 
