@@ -116,14 +116,14 @@ class Social(BaseModel):
     Model for storing social handles of a Club
 
     Attributes:
-        website (HttpUrlString | None): Club Website URL.
-        instagram (HttpUrlString | None): Club Instagram handle.
-        facebook (HttpUrlString | None): Club Facebook .
-        youtube (HttpUrlString | None): Club YouTube handle.
-        twitter (HttpUrlString | None): Club Twitter handle.
-        linkedin (HttpUrlString | None): Club LinkedIn handle.
-        discord (HttpUrlString | None): Club Discord handle.
-        whatsapp (HttpUrlString | None): Club WhatsApp handle.
+        website (HttpUrlString | None): Club Website URL. Defaults to None.
+        instagram (HttpUrlString | None): Club Instagram handle. Defaults to None.
+        facebook (HttpUrlString | None): Club Facebook. Defaults to None.
+        youtube (HttpUrlString | None): Club YouTube handle. Defaults to None.
+        twitter (HttpUrlString | None): Club Twitter handle. Defaults to None.
+        linkedin (HttpUrlString | None): Club LinkedIn handle. Defaults to None.
+        discord (HttpUrlString | None): Club Discord handle. Defaults to None.
+        whatsapp (HttpUrlString | None): Club WhatsApp handle. Defaults to None.
         other_links (List[HttpUrlString]): List of other social handles and URLs
     """
     website: HttpUrlString | None = None
@@ -157,11 +157,11 @@ class Club(BaseModel):
         student_body (bool): Is this a Student Body?
         name (str): Name of the Club.
         email (EmailStr): Email of the Club.
-        logo (str | None): Club Official Logo.
-        banner (str | None): Club Long Banner.
-        banner_square (str | None): Club Square Banner.
-        tagline (str | None): Tagline of the Club.
-        description (str | None): Club Description.
+        logo (str | None): Club Official Logo. Defaults to None.
+        banner (str | None): Club Long Banner. Defaults to None.
+        banner_square (str | None): Club Square Banner. Defaults to None.
+        tagline (str | None): Tagline of the Club. Defaults to None.
+        description (str | None): Club Description. Defaults to None.
         socials (Social): Social Handles of the Club.
         created_time (datetime): Time of creation of the Club.
         updated_time (datetime): Time of last update to the Club.

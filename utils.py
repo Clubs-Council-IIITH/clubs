@@ -61,7 +61,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     Args:
         old_cid (str): Old CID of the club.
         new_cid (str): New CID of the club.
-        cookies (dict): Cookies from the request.
+        cookies (dict): Cookies from the request. Defaults to None.
 
     Returns:
         bool: True if both mutations are successful, False otherwise.
@@ -173,6 +173,15 @@ def getUser(uid, cookies=None):
 
 
 def delete_file(filename):
+    """
+    Method for deleting a file from the files microservice
+    
+    Args:
+        filename (str): Name of the file to be deleted
+    
+    Returns:
+        Response from the files microservice
+    """
     response = requests.post(
         "http://files/delete-file",
         params={
@@ -188,6 +197,17 @@ def delete_file(filename):
 
 
 def check_remove_old_file(old_obj, new_obj, name="logo"):
+    """
+    Method to remove old files.
+    
+    Args:
+        old_obj (dict): Old object containing the old file
+        new_obj (dict): New object containing the new file
+        name (str): Name of the file to be removed. Defaults to "logo" as mostly they are images of club logo's
+
+    Returns:
+        bool: True if the old file is removed, False otherwise
+    """
     old_file = old_obj.get(name)
     new_file = new_obj.get(name)
 
