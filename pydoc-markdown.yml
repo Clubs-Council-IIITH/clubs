@@ -17,6 +17,20 @@ renderer:
     - title: Home
       name: index
       source: README.md
-    - title: API Documentation
+    - title: Main
       contents:
-        - '*'
+        - 'main'
+        - 'db'
+    - title: Models
+      contents:
+        - 'models'
+        - 'otypes'
+    - title: Mutations
+      contents:
+        - 'mutations'
+    - title: Queries
+      contents:
+        - 'queries'
+    - title: Utils
+      contents:
+        - 'utils'
