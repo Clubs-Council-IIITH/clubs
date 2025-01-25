@@ -17,8 +17,8 @@ from models import Club, PyObjectId, Social
 # custom context class
 class Context(BaseContext):
     """
-    Class provides user metadata and cookies from request headers, has methods for
-    doing this.
+    Class provides user metadata and cookies from request headers, has 
+    methods for doing this.
     """
 
     @cached_property
@@ -150,8 +150,8 @@ class SimpleClubInput:
 )
 class FullClubInput:
     """
-    Input used for input of all user-provided club details, pictures are optional
-    to fill.
+    Input used for input of all user-provided club details, pictures are 
+    optional to fill.
     """
 
     logo: Optional[str] = strawberry.UNSET
