@@ -9,7 +9,8 @@ def update_role(uid, cookies=None, role="club"):
     """
     Function to call the updateRole mutation
 
-    Makes a mutation resolved by the `updateRole` method from Users Microservice.
+    Makes a mutation resolved by the `updateRole` method from Users
+    Microservice.
     Used to change a user's role field.
 
     Args:
@@ -54,9 +55,12 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     """
     Function to call the updateEventsCid & updateMembersCid mutation
 
-    Makes a mutation resolved by the `updateEventsCid` method from Events Microservice.
-    Makes another mutation resolved by the `updateMembersCid` method from Members Microservice.
-    Used when club changes its cid to change its members and events data accordingly.
+    Makes a mutation resolved by the `updateEventsCid` method from Events
+    Microservice.
+    Makes another mutation resolved by the `updateMembersCid` method from
+    Members Microservice.
+    Used when club changes its cid to change its members and events data
+    accordingly.
 
     Args:
         old_cid (str): Old CID of the club.
@@ -203,7 +207,8 @@ def check_remove_old_file(old_obj, new_obj, name="logo"):
     Args:
         old_obj (dict): Old object containing the old file
         new_obj (dict): New object containing the new file
-        name (str): Name of the file to be removed. Defaults to "logo" as mostly they are images of club logo's
+        name (str): Name of the file to be removed. Defaults to "logo" as mostly
+                    they are images of club logo's
 
     Returns:
         bool: True if the old file is removed, False otherwise

@@ -84,7 +84,8 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 @strawberry.mutation
 def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     """
-    Mutation for editing of the club details either by that specific club or the cc
+    Mutation for editing of the club details either by that specific club or
+    the cc
 
     This method is used for editing the club details.
     CC can edit any club details, but the club can only edit its own details.
@@ -104,7 +105,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         Exception: Invalid Club ID/Club Email.
         Exception: Error in updating the role/cid.
         Exception: Authentication Error! (CLUB ID CHANGED).
-        Exception: You dont have permission to change the name/email of the club. Please contact CC for it.
+        Exception: You dont have permission to change the name/email of the
+                   club. Please contact CC for it.
         Exception: Only CC is allowed to change the category of club.
         Exception: Not Authenticated to access this API.
     """  # noqa: E501
@@ -197,7 +199,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             or club_input["email"] != exists["email"]
         ):
             raise Exception(
-                "You don't have permission to change the name/email of the club. Please contact CC for it"  # noqa: E501
+                "You don't have permission to change the name/email of the 
+                club. Please contact CC for it"  # noqa: E501
             )
 
         if club_input["category"] != exists["category"]:
