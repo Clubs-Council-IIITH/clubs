@@ -207,7 +207,7 @@ def check_remove_old_file(old_obj, new_obj, name="logo"):
     Args:
         old_obj (dict): Old object containing the old file
         new_obj (dict): New object containing the new file
-        name (str): Name of the file to be removed. Defaults to "logo" as 
+        name (str): Name of the file to be removed. Defaults to "logo" as
                     mostly they are images of club logo's.
 
     Returns:

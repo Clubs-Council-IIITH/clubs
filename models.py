@@ -119,7 +119,7 @@ class Social(BaseModel):
 
     Attributes:
         website (HttpUrlString | None): Club Website URL. Defaults to None.
-        instagram (HttpUrlString | None): Club Instagram handle. 
+        instagram (HttpUrlString | None): Club Instagram handle.
                                           Defaults to None.
         facebook (HttpUrlString | None): Club Facebook. Defaults to None.
         youtube (HttpUrlString | None): Club YouTube handle. Defaults to None.
@@ -129,7 +129,7 @@ class Social(BaseModel):
         discord (HttpUrlString | None): Club Discord handle. Defaults to None.
         whatsapp (HttpUrlString | None): Club WhatsApp handle.
                                          Defaults to None.
-        other_links (List[HttpUrlString]): List of other social handles 
+        other_links (List[HttpUrlString]): List of other social handles
                                            and URLs
     """
 

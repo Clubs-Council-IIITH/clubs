@@ -17,7 +17,7 @@ from models import Club, PyObjectId, Social
 # custom context class
 class Context(BaseContext):
     """
-    Class provides user metadata and cookies from request headers, has 
+    Class provides user metadata and cookies from request headers, has
     methods for doing this.
     """
 
@@ -150,7 +150,7 @@ class SimpleClubInput:
 )
 class FullClubInput:
     """
-    Input used for input of all user-provided club details, pictures are 
+    Input used for input of all user-provided club details, pictures are
     optional to fill.
     """
 
