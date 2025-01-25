@@ -199,8 +199,8 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             or club_input["email"] != exists["email"]
         ):
             raise Exception(
-                "You don't have permission to change the name/email of the 
-                club. Please contact CC for it"  # noqa: E501
+                "You don't have permission to change the name/email of the"
+                "club. Please contact CC for it"  # noqa: E501
             )
 
         if club_input["category"] != exists["category"]:
