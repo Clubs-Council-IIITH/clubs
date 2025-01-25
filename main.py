@@ -1,3 +1,17 @@
+"""
+Main module for the Clubs Microservice.
+
+This module sets up the FastAPI application and integrates the Strawberry GraphQL schema.
+It includes the configuration for queries, mutations, and context.
+
+Attributes:
+    GLOBAL_DEBUG (str): Environment variable that Enables or Disables debug mode.
+                        Defaults to "False".
+    DEBUG (bool): Indicates whether the application is running in debug mode.
+    gql_app (GraphQLRouter): The GraphQL router for handling GraphQL requests.
+    app (FastAPI): The FastAPI application instance.
+"""
+
 from os import getenv
 
 import strawberry
@@ -20,7 +34,7 @@ Query = create_type("Query", queries)
 Mutation = create_type("Mutation", mutations)
 
 
-# override context getter
+# Returns The custom context by overriding the context getter.
 async def get_context() -> Context:
     return Context()
 

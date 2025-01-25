@@ -1,3 +1,7 @@
+"""
+Queries for Clubs
+"""
+
 from typing import List
 
 import strawberry
@@ -14,10 +18,13 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 @strawberry.field
 def activeClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description: Returns all the currently active clubs.
-    Scope: Public
-    Return Type: List[SimpleClubType]
-    Input: None
+    Fetches all the currently active clubs and is accessible to all.
+
+    Args:
+        info (Info): User metadata and cookies.
+
+    Returns:
+        List[SimpleClubType]: List of active clubs.
     """
     results = clubsdb.find({"state": "active"}, {"_id": 0})
     clubs = [
@@ -31,14 +38,17 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def allClubs(info: Info) -> List[SimpleClubType]:
     """
-    Description:
-        For CC:
-            Returns all the currently active/deleted clubs.
-        For Public:
-            Returns all the currently active clubs.
-    Scope: CC (For All Clubs), Public (For Active Clubs)
-    Return Type: List[SimpleClubType]
-    Input: None
+    Fetches all the clubs
+
+    This method returns all the clubs when accessed CC.
+    When accessed by public, it returns only the active clubs.
+    Access to both public and CC(Clubs Council).
+
+    Args:
+        info (Info): User metadata and cookies.
+
+    Returns:
+        List[SimpleClubType]: List of all clubs.
     """
     user = info.context.user
     if user is None:
@@ -62,17 +72,22 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 @strawberry.field
 def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     """
-    Description: Returns complete details of the club, from its club-id.
-        For CC:
-            Returns details even for deleted clubs.
-        For Public:
-            Returns details only for the active clubs.
-    Scope: Public
-    Return Type: FullClubType
-    Input: SimpleClubInput (cid)
-    Errors:
-        - cid doesn't exist
-        - if not cc and club is deleted
+    Fetches all Club Details of a club
+
+    Used to get all the details of a deleted/active club by its cid.
+    Returns deleted clubs also for CC and not for public.
+    Accessible to both public and CC(Clubs Council).
+
+    Args:
+        clubInput (SimpleClubInput): The club cid.
+        info (Info): User metadata and cookies.
+
+    Returns:
+        FullClubType: Contains all the club details.
+
+    Raises:
+        Exception: If the club is not found.
+        Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
     club_input = jsonable_encoder(clubInput)

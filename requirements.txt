@@ -28,3 +28,4 @@ tomli==2.1.0
 typer==0.13.1
 typing-extensions>=4.12.2
 uvicorn==0.32.1
+pydoc-markdown==4.8.2

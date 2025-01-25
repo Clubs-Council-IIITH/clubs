@@ -17,6 +17,9 @@ from pydantic import (
 from pydantic_core import core_schema
 from pytz import timezone
 
+"""
+Annotated type and validator for HTTP URLs to be stored as strings.
+"""
 http_url_adapter = TypeAdapter(HttpUrl)
 HttpUrlString = Annotated[
     str,
@@ -27,11 +30,18 @@ HttpUrlString = Annotated[
 
 
 def create_utc_time():
+    """
+    Returns the current time according to UTC timezone.
+    """
     return datetime.now(timezone("UTC"))
 
 
 # for handling mongo ObjectIds
 class PyObjectId(ObjectId):
+    """
+    Class for handling MongoDB document ObjectIds for 'id' fields in Models.
+    """
+
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler):
         return core_schema.union_schema(
@@ -55,6 +65,18 @@ class PyObjectId(ObjectId):
 
 
 def iiit_email_only(v: str) -> str:
+    """
+    Validates emails according to the valid forms.
+
+    Args:
+        v (str): The Email to be validated.
+
+    Raises:
+        ValueError: If email is not valid.
+
+    Returns:
+        str: Valid Email.
+    """
     valid_domains = [
         "@iiit.ac.in",
         "@students.iiit.ac.in",
@@ -67,17 +89,22 @@ def iiit_email_only(v: str) -> str:
 
 
 def current_year() -> int:
+    """Returns the current year."""
     return datetime.now().year
 
 
 @strawberry.enum
 class EnumStates(str, Enum):
+    """Enum for state of the club."""
+
     active = "active"
     deleted = "deleted"
 
 
 @strawberry.enum
 class EnumCategories(str, Enum):
+    """Enum for category of the club."""
+
     cultural = "cultural"
     technical = "technical"
     affinity = "affinity"
@@ -87,6 +114,21 @@ class EnumCategories(str, Enum):
 
 
 class Social(BaseModel):
+    """
+    Model for storing social handles of a Club
+
+    Attributes:
+        website (HttpUrlString | None): Club Website URL. Defaults to None.
+        instagram (HttpUrlString | None): Club Instagram handle. Defaults to None.
+        facebook (HttpUrlString | None): Club Facebook. Defaults to None.
+        youtube (HttpUrlString | None): Club YouTube handle. Defaults to None.
+        twitter (HttpUrlString | None): Club Twitter handle. Defaults to None.
+        linkedin (HttpUrlString | None): Club LinkedIn handle. Defaults to None.
+        discord (HttpUrlString | None): Club Discord handle. Defaults to None.
+        whatsapp (HttpUrlString | None): Club WhatsApp handle. Defaults to None.
+        other_links (List[HttpUrlString]): List of other social handles and URLs
+    """
+
     website: HttpUrlString | None = None
     instagram: HttpUrlString | None = None
     facebook: HttpUrlString | None = None
@@ -106,6 +148,28 @@ class Social(BaseModel):
 
 
 class Club(BaseModel):
+    """
+    Model for storing Club details.
+
+    Attributes:
+        id (PyObjectId): Unique ObjectId of the document of the Club.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (EnumStates): State of the Club.
+        category (EnumCategories): Category of the Club.
+        student_body (bool): Is this a Student Body?
+        name (str): Name of the Club.
+        email (EmailStr): Email of the Club.
+        logo (str | None): Club Official Logo. Defaults to None.
+        banner (str | None): Club Long Banner. Defaults to None.
+        banner_square (str | None): Club Square Banner. Defaults to None.
+        tagline (str | None): Tagline of the Club. Defaults to None.
+        description (str | None): Club Description. Defaults to None.
+        socials (Social): Social Handles of the Club.
+        created_time (datetime): Time of creation of the Club.
+        updated_time (datetime): Time of last update to the Club.
+    """
+
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     cid: str = Field(..., description="Club ID")
     code: str = Field(
