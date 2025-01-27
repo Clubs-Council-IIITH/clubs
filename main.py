@@ -7,7 +7,7 @@ It includes the configuration for queries, mutations, and context.
 
 Attributes:
     GLOBAL_DEBUG (str): Environment variable that Enables or Disables debug
-    mode. Defaults to "False".
+                        mode. Defaults to "False".
     DEBUG (bool): Indicates whether the application is running in debug mode.
     gql_app (GraphQLRouter): The GraphQL router for handling GraphQL requests.
     app (FastAPI): The FastAPI application instance.

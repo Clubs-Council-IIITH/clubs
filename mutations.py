@@ -94,7 +94,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     Args:
         clubInput (FullClubInput): Full details of the club to be updated to.
-        Info (Info): User metadata and cookies.
+        info (Info): User metadata and cookies.
 
     Returns:
         FullClubType: Full Details of the edited club.
