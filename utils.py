@@ -5,7 +5,7 @@ import requests
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
 
-def update_role(uid, cookies=None, role="club"):
+def update_role(uid, cookies=None, role="club") -> dict | None:
     """
     Function to call the updateRole mutation
 
@@ -133,7 +133,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
         return False
 
 
-def getUser(uid, cookies=None):
+def getUser(uid, cookies=None) -> dict | None:
     """
     Function to get a particular user details
 
@@ -176,7 +176,7 @@ def getUser(uid, cookies=None):
         return None
 
 
-def delete_file(filename):
+def delete_file(filename) -> str:
     """
     Method for deleting a file from the files microservice
 
@@ -184,7 +184,7 @@ def delete_file(filename):
         filename (str): Name of the file to be deleted
 
     Returns:
-        Response from the files microservice
+        str: Response from the files microservice
     """
     response = requests.post(
         "http://files/delete-file",
@@ -200,7 +200,7 @@ def delete_file(filename):
     return response.text
 
 
-def check_remove_old_file(old_obj, new_obj, name="logo"):
+def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
     """
     Method to remove old files.
 
