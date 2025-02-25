@@ -11,7 +11,7 @@ This microservice is built using **FastAPI**, **Strawberry (GraphQL)**, and **Mo
 
 ## Usage
 
-This microservice is meant to be ran with the docker-compose script, the source code for this can be found in the [`services repo`](https://github.com/Clubs-Council-IIITH/services).
+This microservice is meant to be run with the docker-compose script, the source code for this can be found in the [`services repo`](https://github.com/Clubs-Council-IIITH/services).
 
 1. Go to [Clubs-Council-IIITH Services Repository](https://github.com/Clubs-Council-IIITH/setup).
 2. Follow the setup instructions provided there.
