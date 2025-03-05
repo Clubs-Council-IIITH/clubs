@@ -24,7 +24,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
         info (Info): User metadata and cookies.
 
     Returns:
-        List[SimpleClubType]: List of active clubs.
+        (List[SimpleClubType]): List of active clubs.
     """
     results = clubsdb.find({"state": "active"}, {"_id": 0})
     clubs = [
@@ -48,7 +48,7 @@ def allClubs(info: Info) -> List[SimpleClubType]:
         info (Info): User metadata and cookies.
 
     Returns:
-        List[SimpleClubType]: List of all clubs.
+        (List[SimpleClubType]): List of all clubs.
     """
     user = info.context.user
     if user is None:
@@ -83,7 +83,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         info (Info): User metadata and cookies.
 
     Returns:
-        FullClubType: Contains all the club details.
+        (FullClubType): Contains all the club details.
 
     Raises:
         Exception: If the club is not found.

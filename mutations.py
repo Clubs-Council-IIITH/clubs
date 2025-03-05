@@ -34,7 +34,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         info (Info): User metadata and cookies.
 
     Returns:
-        SimpleClubType: Details of the created club.
+        (SimpleClubType): Details of the created club.
 
     Raises:
         Exception: Not Authenticated
@@ -97,7 +97,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         info (Info): User metadata and cookies.
 
     Returns:
-        FullClubType: Full Details of the edited club.
+        (FullClubType): Full Details of the edited club.
 
     Raises:
         Exception: Not Authenticated.
@@ -268,7 +268,7 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         info (Info): User metadata and cookies.
 
     Returns:
-        SimpleClubType: Details of the deleted club.
+        (SimpleClubType): Details of the deleted club.
 
     Raises:
         Exception: Not Authenticated.
@@ -309,7 +309,7 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         info (Info): User metadata and cookies.
 
     Returns:
-        SimpleClubType: Details of the restarted clubs cid.
+        (SimpleClubType): Details of the restarted clubs cid.
 
     Raises:
         Exception: Not Authenticated.

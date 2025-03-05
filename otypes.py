@@ -38,13 +38,13 @@ class Context(BaseContext):
         return cookies
 
 
-"""custom info Type for user metadata"""
 Info = _Info[Context, RootValueType]
+"""custom info Type for user metadata"""
 
-"""A scalar Type for serializing PyObjectId, used for id field"""
 PyObjectIdType = strawberry.scalar(
     PyObjectId, serialize=str, parse_value=lambda v: PyObjectId(v)
 )
+"""A scalar Type for serializing PyObjectId, used for id field"""
 
 
 # TYPES

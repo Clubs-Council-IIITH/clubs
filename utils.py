@@ -19,7 +19,7 @@ def update_role(uid, cookies=None, role="club") -> dict | None:
         role (str): Role of the user to be updated to. Defaults to 'club'.
 
     Returns:
-        dict: Response from the mutation.
+        (dict | None): Response from the mutation.
     """
     try:
         query = """
@@ -68,7 +68,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
         cookies (dict): Cookies from the request. Defaults to None.
 
     Returns:
-        bool: True if both mutations are successful, False otherwise.
+        (bool): True if both mutations are successful, False otherwise.
     """
     return1, return2 = None, None
     # Update Events CID
@@ -145,7 +145,7 @@ def getUser(uid, cookies=None) -> dict | None:
         cookies (dict): Cookies from the request. Defaults to None.
 
     Returns:
-        dict: User details as a result of the query.
+        (dict | None): User details as a result of the query.
     """
     try:
         query = """
@@ -184,7 +184,7 @@ def delete_file(filename) -> str:
         filename (str): Name of the file to be deleted
 
     Returns:
-        str: Response from the files microservice
+        (str): Response from the files microservice
     """
     response = requests.post(
         "http://files/delete-file",
@@ -211,7 +211,7 @@ def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
                     mostly they are images of club logo's.
 
     Returns:
-        bool: True if the old file is removed, False otherwise
+        (bool): True if the old file is removed, False otherwise
     """
     old_file = old_obj.get(name)
     new_file = new_obj.get(name)
