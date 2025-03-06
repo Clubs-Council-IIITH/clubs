@@ -75,7 +75,7 @@ def iiit_email_only(v: str) -> str:
         ValueError: If email is not valid.
 
     Returns:
-        str: Valid Email.
+        (str): Valid Email.
     """
     valid_domains = [
         "@iiit.ac.in",
