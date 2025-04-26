@@ -5,7 +5,7 @@ email_validator >=2.2.0
 fastapi==0.115.12
 graphql-core==3.2.6
 greenlet==3.1.1
-h11==0.14.0
+h11==0.16.0
 idna==3.10
 libcst==1.7.0
 msgpack==1.1.0
@@ -13,6 +13,7 @@ mypy-extensions==1.0.0
 pathspec==0.12.1
 platformdirs==4.3.7
 pydantic>=2.11.2,<3.0.0
+pydoc-markdown==4.8.2
 Pygments==2.19.1
 pymongo==4.11.3
 python-dateutil>=2.9.0.post0
@@ -28,4 +29,3 @@ tomli==2.2.1
 typer==0.15.2
 typing-extensions>=4.13.1
 uvicorn==0.34.0
-pydoc-markdown==4.8.2
