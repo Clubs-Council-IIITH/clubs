@@ -1,11 +1,10 @@
 import os
-
-import requests
+import httpx
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
 
-def update_role(uid, cookies=None, role="club") -> dict | None:
+async def update_role(uid, cookies=None, role="club") -> dict | None:
     """
     Function to call the updateRole mutation
 
@@ -23,10 +22,10 @@ def update_role(uid, cookies=None, role="club") -> dict | None:
     """
     try:
         query = """
-                    mutation UpdateRole($roleInput: RoleInput!) {
-                        updateRole(roleInput: $roleInput)
-                    }
-                """
+            mutation UpdateRole($roleInput: RoleInput!) {
+                updateRole(roleInput: $roleInput)
+            }
+        """
         variables = {
             "roleInput": {
                 "role": role,
@@ -34,24 +33,24 @@ def update_role(uid, cookies=None, role="club") -> dict | None:
                 "interCommunicationSecret": inter_communication_secret,
             }
         }
-        if cookies:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-                cookies=cookies,
-            )
-        else:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-            )
-
+        async with httpx.AsyncClient() as client:
+            if cookies:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                    cookies=cookies,
+                )
+            else:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                )
         return result.json()
     except Exception:
         return None
 
 
-def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
+async def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     """
     Function to call the updateEventsCid & updateMembersCid mutation
 
@@ -71,61 +70,60 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
         (bool): True if both mutations are successful, False otherwise.
     """
     return1, return2 = None, None
-    # Update Events CID
-    try:
-        query = """
-                    mutation UpdateEventsCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
-                        updateEventsCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
-                    }
-                """  # noqa: E501
-        variables = {
-            "oldCid": old_cid,
-            "newCid": new_cid,
-            "interCommunicationSecret": inter_communication_secret,
-        }
-        if cookies:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-                cookies=cookies,
-            )
-        else:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-            )
+    async with httpx.AsyncClient() as client:
+        # Update Events CID
+        try:
+            query = """
+                mutation UpdateEventsCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
+                    updateEventsCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
+                }
+            """  # noqa: E501
+            variables = {
+                "oldCid": old_cid,
+                "newCid": new_cid,
+                "interCommunicationSecret": inter_communication_secret,
+            }
+            if cookies:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                    cookies=cookies,
+                )
+            else:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                )
+            return1 = result.json()
+        except Exception:
+            return False
 
-        return1 = result.json()
-    except Exception:
-        return False
-
-    # Update Members CID
-    try:
-        query = """
-                    mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
-                        updateMembersCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
-                    }
-                """  # noqa: E501
-        variables = {
-            "oldCid": old_cid,
-            "newCid": new_cid,
-            "interCommunicationSecret": inter_communication_secret,
-        }
-        if cookies:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-                cookies=cookies,
-            )
-        else:
-            result = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variables},
-            )
-
-        return2 = result.json()
-    except Exception:
-        return False
+        # Update Members CID
+        try:
+            query = """
+                mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
+                    updateMembersCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
+                }
+            """  # noqa: E501
+            variables = {
+                "oldCid": old_cid,
+                "newCid": new_cid,
+                "interCommunicationSecret": inter_communication_secret,
+            }
+            if cookies:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                    cookies=cookies,
+                )
+            else:
+                result = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variables},
+                )
+            return2 = result.json()
+        except Exception:
+            return False
 
     if return1 and return2:
         return True
@@ -133,7 +131,7 @@ def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
         return False
 
 
-def getUser(uid, cookies=None) -> dict | None:
+async def getUser(uid, cookies=None) -> dict | None:
     """
     Function to get a particular user details
 
@@ -159,24 +157,24 @@ def getUser(uid, cookies=None) -> dict | None:
             }
         """
         variable = {"userInput": {"uid": uid}}
-        if cookies:
-            request = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variable},
-                cookies=cookies,
-            )
-        else:
-            request = requests.post(
-                "http://gateway/graphql",
-                json={"query": query, "variables": variable},
-            )
-
+        async with httpx.AsyncClient() as client:
+            if cookies:
+                request = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variable},
+                    cookies=cookies,
+                )
+            else:
+                request = await client.post(
+                    "http://gateway/graphql",
+                    json={"query": query, "variables": variable},
+                )
         return request.json()["data"]["userProfile"]
     except Exception:
         return None
 
 
-def delete_file(filename) -> str:
+async def delete_file(filename) -> str:
     """
     Method for deleting a file from the files microservice
 
@@ -186,13 +184,14 @@ def delete_file(filename) -> str:
     Returns:
         (str): Response from the files microservice
     """
-    response = requests.post(
-        "http://files/delete-file",
-        params={
-            "filename": filename,
-            "inter_communication_secret": inter_communication_secret,
-        },
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://files/delete-file",
+            params={
+                "filename": filename,
+                "inter_communication_secret": inter_communication_secret,
+            },
+        )
 
     if response.status_code != 200:
         raise Exception(response.text)
@@ -200,7 +199,7 @@ def delete_file(filename) -> str:
     return response.text
 
 
-def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
+async def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
     """
     Method to remove old files.
 
@@ -218,7 +217,7 @@ def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
 
     if old_file and new_file and old_file != new_file:
         try:
-            delete_file(old_file)
+            await delete_file(old_file)
         except Exception as e:
             print(f"Error in deleting old {name} file: {e}")
             return False
