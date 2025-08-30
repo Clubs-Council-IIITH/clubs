@@ -25,7 +25,7 @@ from utils import (
 
 
 @strawberry.mutation
-def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
+async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     """
     Mutation for creation of a new club by CC.
 
@@ -54,25 +54,25 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     if role in ["cc"]:
         club_input["cid"] = club_input["email"].split("@")[0]
 
-        cid_exists = clubsdb.find_one({"cid": club_input["cid"]})
+        cid_exists = await clubsdb.find_one({"cid": club_input["cid"]})
         if cid_exists:
             raise Exception("A club with this cid already exists")
 
         # Check whether this cid is valid or not
-        clubMember = getUser(club_input["cid"], info.context.cookies)
+        clubMember = await getUser(club_input["cid"], info.context.cookies)
         if clubMember is None:
             raise Exception("Invalid Club ID/Club Email")
 
-        code_exists = clubsdb.find_one({"code": club_input["code"]})
+        code_exists = await clubsdb.find_one({"code": club_input["code"]})
         if code_exists:
             raise Exception("A club with this short code already exists")
 
-        created_id = clubsdb.insert_one(club_input).inserted_id
+        created_id = await clubsdb.insert_one(club_input).inserted_id
         created_sample = Club.model_validate(
-            clubsdb.find_one({"_id": created_id})
+            await clubsdb.find_one({"_id": created_id})
         )
 
-        if not update_role(club_input["cid"], info.context.cookies):
+        if not await update_role(club_input["cid"], info.context.cookies):
             raise Exception("Error in updating the role for the club")
 
         return SimpleClubType.from_pydantic(created_sample)
@@ -82,7 +82,7 @@ def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
 
 @strawberry.mutation
-def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
+async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     """
     Mutation for editing of the club details either by that specific club or
     the cc
@@ -120,25 +120,25 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
     if role in ["cc"]:
-        exists = clubsdb.find_one({"code": club_input["code"]})
+        exists = await clubsdb.find_one({"code": club_input["code"]})
         if not exists:
             raise Exception("A club with this code doesn't exist")
 
         # Check whether this cid is valid or not
-        clubMember = getUser(club_input["cid"], info.context.cookies)
+        clubMember = await getUser(club_input["cid"], info.context.cookies)
         if clubMember is None:
             raise Exception("Invalid Club ID/Club Email")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
 
-        check_remove_old_file(exists, club_input, "logo")
-        check_remove_old_file(exists, club_input, "banner")
-        check_remove_old_file(exists, club_input, "banner_square")
+        await check_remove_old_file(exists, club_input, "logo")
+        await check_remove_old_file(exists, club_input, "banner")
+        await check_remove_old_file(exists, club_input, "banner_square")
 
-        clubsdb.replace_one({"code": club_input["code"]}, club_input)
+        await clubsdb.replace_one({"code": club_input["code"]}, club_input)
         if "socials" in club_input.keys():
-            clubsdb.update_one(
+            await clubsdb.update_one(
                 {"code": club_input["code"]},
                 {
                     "$set": {
@@ -158,7 +158,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                     }
                 },
             )
-        clubsdb.update_one(
+        await clubsdb.update_one(
             {"code": club_input["code"]},
             {
                 "$set": {
@@ -169,20 +169,20 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
 
         if exists["cid"] != club_input["cid"]:
-            return1 = update_role(
+            return1 = await update_role(
                 exists["cid"], info.context.cookies, role="public"
             )
-            return2 = update_role(
+            return2 = await update_role(
                 club_input["cid"], info.context.cookies, role="club"
             )
-            return3 = update_events_members_cid(
+            return3 = await update_events_members_cid(
                 exists["cid"], club_input["cid"], cookies=info.context.cookies
             )
             if not return1 or not return2 or not return3:
                 raise Exception("Error in updating the role/cid.")
 
         result = Club.model_validate(
-            clubsdb.find_one({"code": club_input["code"]})
+            await clubsdb.find_one({"code": club_input["code"]})
         )
         return FullClubType.from_pydantic(result)
 
@@ -190,7 +190,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         if uid != club_input["cid"]:
             raise Exception("Authentication Error! (CLUB ID CHANGED)")
 
-        exists = clubsdb.find_one({"cid": club_input["cid"]})
+        exists = await clubsdb.find_one({"cid": club_input["cid"]})
         if not exists:
             raise Exception("A club with this cid doesn't exist")
 
@@ -211,13 +211,13 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
 
-        check_remove_old_file(exists, club_input, "logo")
-        check_remove_old_file(exists, club_input, "banner")
-        check_remove_old_file(exists, club_input, "banner_square")
+        await check_remove_old_file(exists, club_input, "logo")
+        await check_remove_old_file(exists, club_input, "banner")
+        await check_remove_old_file(exists, club_input, "banner_square")
 
-        clubsdb.replace_one({"cid": uid}, club_input)
+        await clubsdb.replace_one({"cid": uid}, club_input)
         if "socials" in club_input.keys():
-            clubsdb.update_one(
+            await clubsdb.update_one(
                 {"cid": club_input["cid"]},
                 {
                     "$set": {
@@ -239,7 +239,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             )
 
         # also autofills the updated time
-        clubsdb.update_one(
+        await clubsdb.update_one(
             {"cid": club_input["cid"]},
             {
                 "$set": {
@@ -250,7 +250,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
 
         result = Club.model_validate(
-            clubsdb.find_one({"cid": club_input["cid"]})
+            await clubsdb.find_one({"cid": club_input["cid"]})
         )
         return FullClubType.from_pydantic(result)
 
@@ -259,7 +259,7 @@ def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
 
 @strawberry.mutation
-def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     """
     Mutation for the cc to move a club to deleted state.
 
@@ -285,22 +285,22 @@ def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time
-    clubsdb.update_one(
+    await clubsdb.update_one(
         {"cid": club_input["cid"]},
         {"$set": {"state": "deleted", "updated_time": create_utc_time()}},
     )
 
-    update_role(club_input["cid"], info.context.cookies, "public")
+    await update_role(club_input["cid"], info.context.cookies, "public")
 
     updated_sample = Club.model_validate(
-        clubsdb.find_one({"cid": club_input["cid"]})
+        await clubsdb.find_one({"cid": club_input["cid"]})
     )
 
     return SimpleClubType.from_pydantic(updated_sample)
 
 
 @strawberry.mutation
-def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+async def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     """
     Mutation for cc to move a club from deleted state to active state.
 
@@ -326,15 +326,15 @@ def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time
-    clubsdb.update_one(
+    await clubsdb.update_one(
         {"cid": club_input["cid"]},
         {"$set": {"state": "active", "updated_time": create_utc_time()}},
     )
 
-    update_role(club_input["cid"], info.context.cookies, "club")
+    await update_role(club_input["cid"], info.context.cookies, "club")
 
     updated_sample = Club.model_validate(
-        clubsdb.find_one({"cid": club_input["cid"]})
+        await clubsdb.find_one({"cid": club_input["cid"]})
     )
 
     return SimpleClubType.from_pydantic(updated_sample)

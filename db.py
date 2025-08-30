@@ -12,14 +12,14 @@ Attributes:
     MONGO_PORT (str): MongoDB port. Defaults to "27017".
     MONGO_URI (str): MongoDB URI.
     MONGO_DATABASE (str): MongoDB database name.
-    client (MongoClient): MongoDB client.
+    client (AsyncMongoClient): MongoDB async client.
     db (Database): MongoDB database.
     clubsdb (Collection): MongoDB collection for clubs.
 """
 
 from os import getenv
 
-from pymongo import MongoClient
+from pymongo import AsyncMongoClient
 
 # get mongodb URI and database name from environment variale
 MONGO_URI = "mongodb://{}:{}@mongo:{}/".format(
@@ -30,21 +30,21 @@ MONGO_URI = "mongodb://{}:{}@mongo:{}/".format(
 MONGO_DATABASE = getenv("MONGO_DATABASE", default="default")
 
 # instantiate mongo client
-client = MongoClient(MONGO_URI)
+client = AsyncMongoClient(MONGO_URI)
 
 # get database
 db = client[MONGO_DATABASE]
 clubsdb = db.clubs
 
-try:
-    # check if the clubs index exists
-    if "unique_clubs" in clubsdb.index_information():
-        print("The clubs index exists.")
-    else:
-        # create the index
-        clubsdb.create_index([("cid", 1)], unique=True, name="unique_clubs")
-        print("The clubs index was created.")
 
-    print(clubsdb.index_information())
-except Exception:
-    pass
+async def ensure_clubs_index():
+    try:
+        indexes = await clubsdb.index_information()
+        if "unique_clubs" in indexes:
+            print("The clubs index exists.")
+        else:
+            await clubsdb.create_index([("cid", 1)], unique=True, name="unique_clubs")
+            print("The clubs index was created.")
+        print(await clubsdb.index_information())
+    except Exception:
+        pass
