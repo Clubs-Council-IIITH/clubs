@@ -26,7 +26,7 @@ async def activeClubs(info: Info) -> List[SimpleClubType]:
     Returns:
         (List[SimpleClubType]): List of active clubs.
     """
-    results = await clubsdb.find({"state": "active"}, {"_id": 0})
+    results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
     clubs = [
         SimpleClubType.from_pydantic(Club.model_validate(result))
         for result in results
@@ -58,9 +58,9 @@ async def allClubs(info: Info) -> List[SimpleClubType]:
 
     results = []
     if role in ["cc"]:
-        results = await clubsdb.find()
+        results = await clubsdb.find().to_list(length=None)
     else:
-        results = await clubsdb.find({"state": "active"}, {"_id": 0})
+        results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
 
     clubs = []
     for result in results:
