@@ -67,9 +67,9 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
         if code_exists:
             raise Exception("A club with this short code already exists")
 
-        created_id = await clubsdb.insert_one(club_input).inserted_id
+        created_record = await clubsdb.insert_one(club_input)
         created_sample = Club.model_validate(
-            await clubsdb.find_one({"_id": created_id})
+            await clubsdb.find_one({"_id": created_record.inserted_id})
         )
 
         if not await update_role(club_input["cid"], info.context.cookies):
@@ -300,7 +300,9 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
 
 
 @strawberry.mutation
-async def restartClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
+async def restartClub(
+    clubInput: SimpleClubInput, info: Info
+) -> SimpleClubType:
     """
     Mutation for cc to move a club from deleted state to active state.
 
