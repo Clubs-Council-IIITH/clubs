@@ -16,7 +16,7 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 
 # fetch all active clubs
 @strawberry.field
-def activeClubs(info: Info) -> List[SimpleClubType]:
+async def activeClubs(info: Info) -> List[SimpleClubType]:
     """
     Fetches all the currently active clubs and is accessible to all.
 
@@ -26,7 +26,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
     Returns:
         (List[SimpleClubType]): List of active clubs.
     """
-    results = clubsdb.find({"state": "active"}, {"_id": 0})
+    results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
     clubs = [
         SimpleClubType.from_pydantic(Club.model_validate(result))
         for result in results
@@ -36,7 +36,7 @@ def activeClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
-def allClubs(info: Info) -> List[SimpleClubType]:
+async def allClubs(info: Info) -> List[SimpleClubType]:
     """
     Fetches all the clubs
 
@@ -58,9 +58,9 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
     results = []
     if role in ["cc"]:
-        results = clubsdb.find()
+        results = await clubsdb.find().to_list(length=None)
     else:
-        results = clubsdb.find({"state": "active"}, {"_id": 0})
+        results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
 
     clubs = []
     for result in results:
@@ -70,7 +70,7 @@ def allClubs(info: Info) -> List[SimpleClubType]:
 
 
 @strawberry.field
-def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
+async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     """
     Fetches all Club Details of a club
 
@@ -93,7 +93,7 @@ def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput)
 
     result = None
-    club = clubsdb.find_one({"cid": club_input["cid"].lower()}, {"_id": 0})
+    club = await clubsdb.find_one({"cid": club_input["cid"].lower()}, {"_id": 0})
 
     if not club:
         raise Exception("No Club Found")
