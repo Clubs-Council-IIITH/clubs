@@ -43,7 +43,9 @@ async def ensure_clubs_index():
         if "unique_clubs" in indexes:
             print("The clubs index exists.")
         else:
-            await clubsdb.create_index([("cid", 1)], unique=True, name="unique_clubs")
+            await clubsdb.create_index(
+                [("cid", 1)], unique=True, name="unique_clubs"
+            )
             print("The clubs index was created.")
         print(await clubsdb.index_information())
     except Exception:

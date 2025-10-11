@@ -56,12 +56,14 @@ DEBUG = getenv("GLOBAL_DEBUG", "False").lower() in ("true", "1", "t")
 # serve API with FastAPI router
 gql_app = GraphQLRouter(schema, graphiql=True, context_getter=get_context)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     await ensure_clubs_index()
     yield
     # Shutdown
+
 
 app = FastAPI(
     debug=DEBUG,

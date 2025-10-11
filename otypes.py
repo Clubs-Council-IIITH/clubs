@@ -62,7 +62,7 @@ class SocialsType:
         linkedin (Optional[str]): Club LinkedIn handle. Defaults to None.
         discord (Optional[str]): Club Discord handle. Defaults to None.
         whatsapp (Optional[str]): Club WhatsApp handle. Defaults to None.
-        other_links (Optional[List[str]]): List of other social handles and URLs
+        other_links (Optional[List[str]]): List of other social handles
                                      Defaults to None.
     """
 
@@ -170,7 +170,7 @@ class FullClubInput:
     Attributes:
         logo (Optional[str]): Club Logo URL. Defaults to None.
         banner (Optional[str]): Club Banner URL. Defaults to None.
-        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club Square Banner URL.Defaults to None.
 
     """
 

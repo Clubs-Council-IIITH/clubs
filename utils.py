@@ -1,4 +1,5 @@
 import os
+
 from httpx import AsyncClient
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
@@ -66,8 +67,16 @@ async def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     # Update Events CID
     try:
         query = """
-            mutation UpdateEventsCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
-                updateEventsCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
+            mutation UpdateEventsCid(
+            $oldCid: String!,
+            $newCid: String!,
+            $interCommunicationSecret: String
+            ) {
+                updateEventsCid(
+                    oldCid: $oldCid,
+                    newCid: $newCid,
+                    interCommunicationSecret: $interCommunicationSecret
+                )
             }
         """
         variables = {
@@ -87,8 +96,16 @@ async def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
     # Update Members CID
     try:
         query = """
-            mutation UpdateMembersCid($oldCid: String!, $newCid: String!, $interCommunicationSecret: String) {
-                updateMembersCid(oldCid: $oldCid, newCid: $newCid, interCommunicationSecret: $interCommunicationSecret)
+            mutation UpdateMembersCid(
+            $oldCid: String!,
+            $newCid: String!,
+            $interCommunicationSecret: String
+            ) {
+                updateMembersCid(
+                    oldCid: $oldCid,
+                    newCid: $newCid,
+                    interCommunicationSecret: $interCommunicationSecret
+                )
             }
         """
         variables = {
