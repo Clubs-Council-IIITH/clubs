@@ -21,10 +21,10 @@ async def activeClubs(info: Info) -> List[SimpleClubType]:
     Fetches all the currently active clubs and is accessible to all.
 
     Args:
-        info (Info): User metadata and cookies.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (List[SimpleClubType]): List of active clubs.
+        (List[otypes.SimpleClubType]): List of active clubs.
     """
     results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
     clubs = [
@@ -45,10 +45,10 @@ async def allClubs(info: Info) -> List[SimpleClubType]:
     Access to both public and CC(Clubs Council).
 
     Args:
-        info (Info): User metadata and cookies.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (List[SimpleClubType]): List of all clubs.
+        (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
     if user is None:
@@ -79,11 +79,11 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Accessible to both public and CC(Clubs Council).
 
     Args:
-        clubInput (SimpleClubInput): The club cid.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.SimpleClubInput): The club cid.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (FullClubType): Contains all the club details.
+        (otypes.FullClubType): Contains all the club details.
 
     Raises:
         Exception: If the club is not found.

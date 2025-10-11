@@ -52,6 +52,18 @@ PyObjectIdType = strawberry.scalar(
 class SocialsType:
     """
     Type used for return of social media handles of a club.
+
+    Attributes:
+        website (Optional[str]): Club Website URL. Defaults to None.
+        instagram (Optional[str]): Club Instagram handle. Defaults to None.
+        facebook (Optional[str]): Club Facebook. Defaults to None.
+        youtube (Optional[str]): Club YouTube handle. Defaults to None.
+        twitter (Optional[str]): Club Twitter handle. Defaults to None.
+        linkedin (Optional[str]): Club LinkedIn handle. Defaults to None.
+        discord (Optional[str]): Club Discord handle. Defaults to None.
+        whatsapp (Optional[str]): Club WhatsApp handle. Defaults to None.
+        other_links (Optional[List[str]]): List of other social handles and URLs
+                                     Defaults to None.
     """
 
     website: Optional[str] = strawberry.UNSET
@@ -130,6 +142,8 @@ class SocialsInput:
 class SimpleClubInput:
     """
     Input used for input of cid(Club id) of a club.
+    Attributes:
+        cid (str): the Club ID.
     """
 
     cid: str
@@ -152,6 +166,12 @@ class FullClubInput:
     """
     Input used for input of all user-provided club details, pictures are
     optional to fill.
+
+    Attributes:
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+
     """
 
     logo: Optional[str] = strawberry.UNSET
