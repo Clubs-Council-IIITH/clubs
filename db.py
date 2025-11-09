@@ -13,8 +13,8 @@ Attributes:
     MONGO_URI (str): MongoDB URI.
     MONGO_DATABASE (str): MongoDB database name.
     client (AsyncMongoClient): MongoDB async client.
-    db (Database): MongoDB database.
-    clubsdb (Collection): MongoDB collection for clubs.
+    db (pymongo.asynchronous.database.AsyncDatabase): MongoDB database.
+    clubsdb (pymongo.asynchronous.collection.AsyncCollection): MongoDB collection for clubs.
 """
 
 from os import getenv
