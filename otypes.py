@@ -96,6 +96,19 @@ class SocialsType:
 class SimpleClubType:
     """
     Type used for return of user-provided club details except social handles.
+
+    Attributes:
+        id (models.PyObjectId): The ID of the club's document.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (models.EnumStates): State of the Club.
+        category (models.EnumCategories): Category of the Club.
+        email (str): Email of the Club.
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+        name (str): Name of the Club.
+        tagline (Optional[str]): Tagline of the Club. Defaults to None.
     """
 
     pass
@@ -122,6 +135,21 @@ class SimpleClubType:
 class FullClubType:
     """
     Type used for return of all user-provided club details.
+
+    Attributes:
+        id (models.PyObjectId): The ID of the club's document.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (models.EnumStates): State of the Club.
+        category (models.EnumCategories): Category of the Club.
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+        name (str): Name of the Club.
+        email (str): Email of the Club.
+        tagline (Optional[str]): Tagline of the Club. Defaults to None.
+        description (Optional[str]): Club Description. Defaults to None.
+        socials (SocialsType): Social Handles of the Club.
     """
 
     # socials: SocialsType
@@ -141,7 +169,8 @@ class SocialsInput:
 @strawberry.input
 class SimpleClubInput:
     """
-    Input used for input of cid(Club id) of a club.
+    Input used for input of cid (Club id) of a club.
+    
     Attributes:
         cid (str): the Club ID.
     """

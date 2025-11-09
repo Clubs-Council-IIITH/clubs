@@ -12,7 +12,7 @@ Attributes:
     MONGO_PORT (str): MongoDB port. Defaults to "27017".
     MONGO_URI (str): MongoDB URI.
     MONGO_DATABASE (str): MongoDB database name.
-    client (AsyncMongoClient): MongoDB async client.
+    client (pymongo.AsyncMongoClient): MongoDB async client.
     db (pymongo.asynchronous.database.AsyncDatabase): MongoDB database.
     clubsdb (pymongo.asynchronous.collection.AsyncCollection): MongoDB
                                                              clubs collection.
