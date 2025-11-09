@@ -17,9 +17,6 @@ from pydantic import (
 from pydantic_core import core_schema
 from pytz import timezone
 
-"""
-Annotated type and validator for HTTP URLs to be stored as strings.
-"""
 http_url_adapter = TypeAdapter(HttpUrl)
 HttpUrlString = Annotated[
     str,
@@ -27,6 +24,9 @@ HttpUrlString = Annotated[
         lambda value: str(http_url_adapter.validate_python(value))
     ),
 ]
+"""
+Annotated type and validator for HTTP URLs to be stored as strings.
+"""
 
 
 def create_utc_time():
