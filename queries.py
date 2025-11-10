@@ -21,12 +21,14 @@ async def activeClubs(info: Info) -> List[SimpleClubType]:
     Fetches all the currently active clubs and is accessible to all.
 
     Args:
-        info (Info): User metadata and cookies.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (List[SimpleClubType]): List of active clubs.
+        (List[otypes.SimpleClubType]): List of active clubs.
     """
-    results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
+    results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
+        length=None
+    )
     clubs = [
         SimpleClubType.from_pydantic(Club.model_validate(result))
         for result in results
@@ -45,10 +47,10 @@ async def allClubs(info: Info) -> List[SimpleClubType]:
     Access to both public and CC(Clubs Council).
 
     Args:
-        info (Info): User metadata and cookies.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (List[SimpleClubType]): List of all clubs.
+        (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
     if user is None:
@@ -60,7 +62,9 @@ async def allClubs(info: Info) -> List[SimpleClubType]:
     if role in ["cc"]:
         results = await clubsdb.find().to_list(length=None)
     else:
-        results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(length=None)
+        results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
+            length=None
+        )
 
     clubs = []
     for result in results:
@@ -79,11 +83,11 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Accessible to both public and CC(Clubs Council).
 
     Args:
-        clubInput (SimpleClubInput): The club cid.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.SimpleClubInput): The club cid.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (FullClubType): Contains all the club details.
+        (otypes.FullClubType): Contains all the club details.
 
     Raises:
         Exception: If the club is not found.
@@ -93,7 +97,9 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     club_input = jsonable_encoder(clubInput)
 
     result = None
-    club = await clubsdb.find_one({"cid": club_input["cid"].lower()}, {"_id": 0})
+    club = await clubsdb.find_one(
+        {"cid": club_input["cid"].lower()}, {"_id": 0}
+    )
 
     if not club:
         raise Exception("No Club Found")

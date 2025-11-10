@@ -52,6 +52,18 @@ PyObjectIdType = strawberry.scalar(
 class SocialsType:
     """
     Type used for return of social media handles of a club.
+
+    Attributes:
+        website (Optional[str]): Club Website URL. Defaults to None.
+        instagram (Optional[str]): Club Instagram handle. Defaults to None.
+        facebook (Optional[str]): Club Facebook. Defaults to None.
+        youtube (Optional[str]): Club YouTube handle. Defaults to None.
+        twitter (Optional[str]): Club Twitter handle. Defaults to None.
+        linkedin (Optional[str]): Club LinkedIn handle. Defaults to None.
+        discord (Optional[str]): Club Discord handle. Defaults to None.
+        whatsapp (Optional[str]): Club WhatsApp handle. Defaults to None.
+        other_links (Optional[List[str]]): List of other social handles
+                                     Defaults to None.
     """
 
     website: Optional[str] = strawberry.UNSET
@@ -84,6 +96,19 @@ class SocialsType:
 class SimpleClubType:
     """
     Type used for return of user-provided club details except social handles.
+
+    Attributes:
+        id (models.PyObjectId): The ID of the club's document.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (models.EnumStates): State of the Club.
+        category (models.EnumCategories): Category of the Club.
+        email (str): Email of the Club.
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club SquareBanner URL. Defaults to None.
+        name (str): Name of the Club.
+        tagline (Optional[str]): Tagline of the Club. Defaults to None.
     """
 
     pass
@@ -110,6 +135,21 @@ class SimpleClubType:
 class FullClubType:
     """
     Type used for return of all user-provided club details.
+
+    Attributes:
+        id (models.PyObjectId): The ID of the club's document.
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        state (models.EnumStates): State of the Club.
+        category (models.EnumCategories): Category of the Club.
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club SquareBanner URL. Defaults to None.
+        name (str): Name of the Club.
+        email (str): Email of the Club.
+        tagline (Optional[str]): Tagline of the Club. Defaults to None.
+        description (Optional[str]): Club Description. Defaults to None.
+        socials (SocialsType): Social Handles of the Club.
     """
 
     # socials: SocialsType
@@ -129,7 +169,10 @@ class SocialsInput:
 @strawberry.input
 class SimpleClubInput:
     """
-    Input used for input of cid(Club id) of a club.
+    Input used for input of cid (Club id) of a club.
+
+    Attributes:
+        cid (str): the Club ID.
     """
 
     cid: str
@@ -152,6 +195,12 @@ class FullClubInput:
     """
     Input used for input of all user-provided club details, pictures are
     optional to fill.
+
+    Attributes:
+        logo (Optional[str]): Club Logo URL. Defaults to None.
+        banner (Optional[str]): Club Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club Square Banner URL.Defaults to None.
+
     """
 
     logo: Optional[str] = strawberry.UNSET

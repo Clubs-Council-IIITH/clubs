@@ -30,11 +30,11 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     Mutation for creation of a new club by CC.
 
     Args:
-        clubInput (FullClubInput): Full details of the club.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.FullClubInput): Full details of the club.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (SimpleClubType): Details of the created club.
+        (otypes.SimpleClubType): Details of the created club.
 
     Raises:
         Exception: Not Authenticated
@@ -93,11 +93,11 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
 
     Args:
-        clubInput (FullClubInput): Full details of the club to be updated to.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.FullClubInput): Full details of the club to be updated to.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (FullClubType): Full Details of the edited club.
+        (otypes.FullClubType): Full Details of the edited club.
 
     Raises:
         Exception: Not Authenticated.
@@ -264,11 +264,11 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     Mutation for the cc to move a club to deleted state.
 
     Args:
-        clubInput (SimpleClubInput): The club cid.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.SimpleClubInput): The club cid.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (SimpleClubType): Details of the deleted club.
+        (otypes.SimpleClubType): Details of the deleted club.
 
     Raises:
         Exception: Not Authenticated.
@@ -307,11 +307,11 @@ async def restartClub(
     Mutation for cc to move a club from deleted state to active state.
 
     Args:
-        clubInput (SimpleClubInput): The club cid.
-        info (Info): User metadata and cookies.
+        clubInput (otypes.SimpleClubInput): The club cid.
+        info (otypes.Info): User metadata and cookies.
 
     Returns:
-        (SimpleClubType): Details of the restarted clubs cid.
+        (otypes.SimpleClubType): Details of the restarted clubs cid.
 
     Raises:
         Exception: Not Authenticated.

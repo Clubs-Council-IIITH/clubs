@@ -17,9 +17,6 @@ from pydantic import (
 from pydantic_core import core_schema
 from pytz import timezone
 
-"""
-Annotated type and validator for HTTP URLs to be stored as strings.
-"""
 http_url_adapter = TypeAdapter(HttpUrl)
 HttpUrlString = Annotated[
     str,
@@ -27,6 +24,9 @@ HttpUrlString = Annotated[
         lambda value: str(http_url_adapter.validate_python(value))
     ),
 ]
+"""
+Annotated type and validator for HTTP URLs to be stored as strings.
+"""
 
 
 def create_utc_time():
@@ -163,7 +163,7 @@ class Club(BaseModel):
         category (EnumCategories): Category of the Club.
         student_body (bool): Is this a Student Body?
         name (str): Name of the Club.
-        email (EmailStr): Email of the Club.
+        email (pydantic.networks.EmailStr): Email of the Club.
         logo (str | None): Club Official Logo. Defaults to None.
         banner (str | None): Club Long Banner. Defaults to None.
         banner_square (str | None): Club Square Banner. Defaults to None.

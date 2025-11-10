@@ -12,9 +12,10 @@ Attributes:
     MONGO_PORT (str): MongoDB port. Defaults to "27017".
     MONGO_URI (str): MongoDB URI.
     MONGO_DATABASE (str): MongoDB database name.
-    client (AsyncMongoClient): MongoDB async client.
-    db (Database): MongoDB database.
-    clubsdb (Collection): MongoDB collection for clubs.
+    client (pymongo.AsyncMongoClient): MongoDB async client.
+    db (pymongo.asynchronous.database.AsyncDatabase): MongoDB database.
+    clubsdb (pymongo.asynchronous.collection.AsyncCollection): MongoDB
+                                                             clubs collection.
 """
 
 from os import getenv
@@ -43,7 +44,9 @@ async def ensure_clubs_index():
         if "unique_clubs" in indexes:
             print("The clubs index exists.")
         else:
-            await clubsdb.create_index([("cid", 1)], unique=True, name="unique_clubs")
+            await clubsdb.create_index(
+                [("cid", 1)], unique=True, name="unique_clubs"
+            )
             print("The clubs index was created.")
         print(await clubsdb.index_information())
     except Exception:
