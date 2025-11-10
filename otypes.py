@@ -106,7 +106,7 @@ class SimpleClubType:
         email (str): Email of the Club.
         logo (Optional[str]): Club Logo URL. Defaults to None.
         banner (Optional[str]): Club Banner URL. Defaults to None.
-        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club SquareBanner URL. Defaults to None.
         name (str): Name of the Club.
         tagline (Optional[str]): Tagline of the Club. Defaults to None.
     """
@@ -144,7 +144,7 @@ class FullClubType:
         category (models.EnumCategories): Category of the Club.
         logo (Optional[str]): Club Logo URL. Defaults to None.
         banner (Optional[str]): Club Banner URL. Defaults to None.
-        banner_square (Optional[str]): Club Square Banner URL. Defaults to None.
+        banner_square (Optional[str]): Club SquareBanner URL. Defaults to None.
         name (str): Name of the Club.
         email (str): Email of the Club.
         tagline (Optional[str]): Tagline of the Club. Defaults to None.
@@ -170,7 +170,7 @@ class SocialsInput:
 class SimpleClubInput:
     """
     Input used for input of cid (Club id) of a club.
-    
+
     Attributes:
         cid (str): the Club ID.
     """

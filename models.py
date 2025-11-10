@@ -163,7 +163,7 @@ class Club(BaseModel):
         category (EnumCategories): Category of the Club.
         student_body (bool): Is this a Student Body?
         name (str): Name of the Club.
-        email (EmailStr): Email of the Club.
+        email (pydantic.networks.EmailStr): Email of the Club.
         logo (str | None): Club Official Logo. Defaults to None.
         banner (str | None): Club Long Banner. Defaults to None.
         banner_square (str | None): Club Square Banner. Defaults to None.
