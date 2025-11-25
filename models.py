@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, List
+from zoneinfo import ZoneInfo
 
 import strawberry
 from bson import ObjectId
@@ -15,7 +16,6 @@ from pydantic import (
     field_validator,
 )
 from pydantic_core import core_schema
-from pytz import timezone
 
 http_url_adapter = TypeAdapter(HttpUrl)
 HttpUrlString = Annotated[
@@ -33,7 +33,7 @@ def create_utc_time():
     """
     Returns the current time according to UTC timezone.
     """
-    return datetime.now(timezone("UTC"))
+    return datetime.now(ZoneInfo("UTC"))
 
 
 # for handling mongo ObjectIds
