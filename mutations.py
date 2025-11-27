@@ -172,7 +172,11 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
+        await invalidate_club_cache(club_input["cid"])
+        await invalidate_active_clubs_cache()
+
         if exists["cid"] != club_input["cid"]:
+            await invalidate_club_cache(exists["cid"])
             return1 = await update_role(
                 exists["cid"], info.context.cookies, role="public"
             )
@@ -184,10 +188,6 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             )
             if not return1 or not return2 or not return3:
                 raise Exception("Error in updating the role/cid.")
-
-        await invalidate_club_cache(club_input["cid"])
-        await invalidate_club_cache(exists["cid"])
-        await invalidate_active_clubs_cache()
 
         result = Club.model_validate(
             await clubsdb.find_one({"code": club_input["code"]})
