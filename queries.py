@@ -4,6 +4,7 @@ Queries for Clubs
 
 from typing import List
 
+import aiorwlock
 import strawberry
 from cachetools import TTLCache
 from fastapi.encoders import jsonable_encoder
@@ -16,6 +17,8 @@ from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 
 active_clubs = TTLCache(maxsize=1, ttl=86400)  # 24 hours
 club_cache = TTLCache(maxsize=50, ttl=86400)  # 24 hours
+active_clubs_lock = aiorwlock.RWLock()
+club_cache_lock = aiorwlock.RWLock()
 
 
 @strawberry.field
@@ -45,8 +48,9 @@ async def allClubs(
 
     # For public, serve from cache if available
     if not is_admin:
-        if "active_clubs" in active_clubs:
-            return active_clubs["active_clubs"]
+        async with active_clubs_lock.reader_lock:
+            if "active_clubs" in active_clubs:
+                return active_clubs["active_clubs"]
 
     results = []
     if is_admin:
@@ -62,7 +66,8 @@ async def allClubs(
 
     # Update the cache if not admin
     if not is_admin:
-        active_clubs["active_clubs"] = clubs
+        async with active_clubs_lock.writer_lock:
+            active_clubs["active_clubs"] = clubs
 
     return clubs
 
@@ -96,8 +101,10 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     cid = club_input["cid"].lower()
 
     # serve from cache if available for public
-    if not is_admin and cid in club_cache:
-        return club_cache[cid]
+    if not is_admin:
+        async with club_cache_lock.reader_lock:
+            if cid in club_cache:
+                return club_cache[cid]
 
     result = None
     club = await clubsdb.find_one({"cid": cid}, {"_id": 0})
@@ -124,7 +131,8 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
         # cache the club if not admin and not deleted
         if not is_admin and club["state"] != "deleted":
-            club_cache[cid] = full_club
+            async with club_cache_lock.writer_lock:
+                club_cache[cid] = full_club
 
         return full_club
     else:
