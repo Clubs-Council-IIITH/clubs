@@ -5,6 +5,7 @@ Queries for Clubs
 from typing import List
 
 import strawberry
+from cachetools import TTLCache
 from fastapi.encoders import jsonable_encoder
 
 from db import clubsdb
@@ -12,6 +13,9 @@ from models import Club
 
 # import all models and types
 from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
+
+active_clubs = TTLCache(maxsize=1, ttl=86400)  # 24 hours
+club_cache = TTLCache(maxsize=50, ttl=86400)  # 24 hours
 
 
 @strawberry.field
@@ -22,9 +26,11 @@ async def allClubs(
     Fetches all the clubs
 
     This method returns all the clubs when accessed CC.
-    When accessed by public or onlyActive is True, 
+    When accessed by public or onlyActive is True,
     it returns only the active clubs.
     Access to both public and CC (Clubs Council).
+
+    Note: The results are cached for 24 hours for public access.
 
     Args:
         info (otypes.Info): User metadata and cookies.
@@ -35,9 +41,12 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    isAdmin = False
-    if user is not None and user["role"] in ["cc"] and not onlyActive:
-        isAdmin = True
+    isAdmin = user is not None and user["role"] in ["cc"] and not onlyActive
+
+    # For public, serve from cache if available
+    if not isAdmin:
+        if "active_clubs" in active_clubs:
+            return active_clubs["active_clubs"]
 
     results = []
     if isAdmin:
@@ -51,6 +60,10 @@ async def allClubs(
     for result in results:
         clubs.append(SimpleClubType.from_pydantic(Club.model_validate(result)))
 
+    # Update the cache if not admin
+    if not isAdmin:
+        active_clubs["active_clubs"] = clubs
+
     return clubs
 
 
@@ -62,6 +75,8 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Used to get all the details of a deleted/active club by its cid.
     Returns deleted clubs also for CC and not for public.
     Accessible to both public and CC(Clubs Council).
+
+    Note: The results are cached for 24 hours for public access.
 
     Args:
         clubInput (otypes.SimpleClubInput): The club cid.
@@ -75,12 +90,17 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
+    isAdmin = user is not None and user["role"] in ["cc"]
+
     club_input = jsonable_encoder(clubInput)
+    cid = club_input["cid"].lower()
+
+    # serve from cache if available for public
+    if not isAdmin and cid in club_cache:
+        return club_cache[cid]
 
     result = None
-    club = await clubsdb.find_one(
-        {"cid": club_input["cid"].lower()}, {"_id": 0}
-    )
+    club = await clubsdb.find_one({"cid": cid}, {"_id": 0})
 
     if not club:
         raise Exception("No Club Found")
@@ -88,7 +108,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     # check if club is deleted
     if club["state"] == "deleted":
         # if deleted, check if requesting user is admin
-        if (user is not None) and (user["role"] in ["cc"]):
+        if isAdmin:
             result = Club.model_validate(club)
 
         # if not admin, raise error
@@ -100,8 +120,13 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         result = Club.model_validate(club)
 
     if result:
-        return FullClubType.from_pydantic(result)
+        full_club = FullClubType.from_pydantic(result)
 
+        # cache the club if not admin and not deleted
+        if not isAdmin and club["state"] != "deleted":
+            club_cache[cid] = full_club
+
+        return full_club
     else:
         raise Exception("No Club Result Found")
 
