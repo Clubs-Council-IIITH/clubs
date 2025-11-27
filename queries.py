@@ -4,9 +4,7 @@ Queries for Clubs
 
 from typing import List
 
-import aiorwlock
 import strawberry
-from cachetools import TTLCache
 from fastapi.encoders import jsonable_encoder
 
 from db import clubsdb
@@ -14,11 +12,7 @@ from models import Club
 
 # import all models and types
 from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
-
-active_clubs = TTLCache(maxsize=1, ttl=86400)  # 24 hours
-club_cache = TTLCache(maxsize=50, ttl=86400)  # 24 hours
-active_clubs_lock = aiorwlock.RWLock()
-club_cache_lock = aiorwlock.RWLock()
+from utils import active_clubs, active_clubs_lock, club_cache, club_cache_lock
 
 
 @strawberry.field

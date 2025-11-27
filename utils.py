@@ -1,9 +1,15 @@
 import os
 
+import aiorwlock
+from cachetools import TTLCache
 from httpx import AsyncClient
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
+active_clubs = TTLCache(maxsize=1, ttl=86400)  # 24 hours
+club_cache = TTLCache(maxsize=50, ttl=86400)  # 24 hours
+active_clubs_lock = aiorwlock.RWLock()
+club_cache_lock = aiorwlock.RWLock()
 
 async def update_role(uid, cookies=None, role="club") -> dict | None:
     """
