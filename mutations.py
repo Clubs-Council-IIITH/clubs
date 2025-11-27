@@ -76,7 +76,7 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
         if not await update_role(club_input["cid"], info.context.cookies):
             raise Exception("Error in updating the role for the club")
-        
+
         await invalidate_active_clubs_cache()
 
         return SimpleClubType.from_pydantic(created_sample)
@@ -186,6 +186,8 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                 raise Exception("Error in updating the role/cid.")
 
         await invalidate_club_cache(club_input["cid"])
+        await invalidate_club_cache(exists["cid"])
+        await invalidate_active_clubs_cache()
 
         result = Club.model_validate(
             await clubsdb.find_one({"code": club_input["code"]})
@@ -256,6 +258,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
 
         await invalidate_club_cache(club_input["cid"])
+        await invalidate_active_clubs_cache()
 
         result = Club.model_validate(
             await clubsdb.find_one({"cid": club_input["cid"]})
