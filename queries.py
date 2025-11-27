@@ -27,12 +27,12 @@ async def allClubs(
     """
     Fetches all the clubs
 
-    This method returns all the clubs when accessed CC.
+    This method returns all the clubs when accessed by CC.
     When accessed by public or onlyActive is True,
     it returns only the active clubs.
     Access to both public and CC (Clubs Council).
 
-    Note: The results are cached for 24 hours for public access.
+    Note: The results are cached for public access.
 
     Args:
         info (otypes.Info): User metadata and cookies.
@@ -80,7 +80,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Returns deleted clubs also for CC and not for public.
     Accessible to both public and CC(Clubs Council).
 
-    Note: The results are cached for 24 hours for public access.
+    Note: The results are cached for public access.
 
     Args:
         clubInput (otypes.SimpleClubInput): The club cid.
