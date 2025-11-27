@@ -12,7 +12,12 @@ from models import Club
 
 # import all models and types
 from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
-from utils import active_clubs, active_clubs_lock, club_cache, club_cache_lock
+from utils import (
+    active_clubs_cache,
+    active_clubs_lock,
+    club_cache,
+    club_cache_lock,
+)
 
 
 @strawberry.field
@@ -43,8 +48,8 @@ async def allClubs(
     # For public, serve from cache if available
     if not is_admin:
         async with active_clubs_lock.reader_lock:
-            if "active_clubs" in active_clubs:
-                return active_clubs["active_clubs"]
+            if "active_clubs" in active_clubs_cache:
+                return active_clubs_cache["active_clubs"]
 
     results = []
     if is_admin:
@@ -61,7 +66,7 @@ async def allClubs(
     # Update the cache if not admin
     if not is_admin:
         async with active_clubs_lock.writer_lock:
-            active_clubs["active_clubs"] = clubs
+            active_clubs_cache["active_clubs"] = clubs
 
     return clubs
 
