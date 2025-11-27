@@ -6,8 +6,8 @@ from httpx import AsyncClient
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
-active_clubs_cache = LRUCache(maxsize=1)  # 24 hours
-club_cache = LFUCache(maxsize=50)  # 24 hours
+active_clubs_cache = LRUCache(maxsize=1)
+club_cache = LFUCache(maxsize=50)
 active_clubs_lock = aiorwlock.RWLock()
 club_cache_lock = aiorwlock.RWLock()
 
