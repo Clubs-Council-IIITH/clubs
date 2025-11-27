@@ -41,15 +41,15 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    isAdmin = user is not None and user["role"] in ["cc"] and not onlyActive
+    is_admin = user is not None and user["role"] in ["cc"] and not onlyActive
 
     # For public, serve from cache if available
-    if not isAdmin:
+    if not is_admin:
         if "active_clubs" in active_clubs:
             return active_clubs["active_clubs"]
 
     results = []
-    if isAdmin:
+    if is_admin:
         results = await clubsdb.find().to_list(length=None)
     else:
         results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
@@ -61,7 +61,7 @@ async def allClubs(
         clubs.append(SimpleClubType.from_pydantic(Club.model_validate(result)))
 
     # Update the cache if not admin
-    if not isAdmin:
+    if not is_admin:
         active_clubs["active_clubs"] = clubs
 
     return clubs
@@ -90,13 +90,13 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
-    isAdmin = user is not None and user["role"] in ["cc"]
+    is_admin = user is not None and user["role"] in ["cc"]
 
     club_input = jsonable_encoder(clubInput)
     cid = club_input["cid"].lower()
 
     # serve from cache if available for public
-    if not isAdmin and cid in club_cache:
+    if not is_admin and cid in club_cache:
         return club_cache[cid]
 
     result = None
@@ -108,7 +108,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     # check if club is deleted
     if club["state"] == "deleted":
         # if deleted, check if requesting user is admin
-        if isAdmin:
+        if is_admin:
             result = Club.model_validate(club)
 
         # if not admin, raise error
@@ -123,7 +123,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         full_club = FullClubType.from_pydantic(result)
 
         # cache the club if not admin and not deleted
-        if not isAdmin and club["state"] != "deleted":
+        if not is_admin and club["state"] != "deleted":
             club_cache[cid] = full_club
 
         return full_club
