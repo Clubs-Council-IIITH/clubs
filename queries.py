@@ -22,7 +22,7 @@ async def allClubs(
     Fetches all the clubs
 
     This method returns all the clubs when accessed by CC.
-    When accessed by public or onlyActive is True, 
+    When accessed by public or onlyActive is True,
     it returns only the active clubs.
     Access to both public and CC (Clubs Council).
 
