@@ -14,52 +14,33 @@ from models import Club
 from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
 
 
-# fetch all active clubs
 @strawberry.field
-async def activeClubs(info: Info) -> List[SimpleClubType]:
-    """
-    Fetches all the currently active clubs and is accessible to all.
-
-    Args:
-        info (otypes.Info): User metadata and cookies.
-
-    Returns:
-        (List[otypes.SimpleClubType]): List of active clubs.
-    """
-    results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
-        length=None
-    )
-    clubs = [
-        SimpleClubType.from_pydantic(Club.model_validate(result))
-        for result in results
-    ]
-
-    return clubs
-
-
-@strawberry.field
-async def allClubs(info: Info) -> List[SimpleClubType]:
+async def allClubs(
+    info: Info, onlyActive: bool = False
+) -> List[SimpleClubType]:
     """
     Fetches all the clubs
 
-    This method returns all the clubs when accessed CC.
-    When accessed by public, it returns only the active clubs.
-    Access to both public and CC(Clubs Council).
+    This method returns all the clubs when accessed by CC.
+    When accessed by public or onlyActive is True, 
+    it returns only the active clubs.
+    Access to both public and CC (Clubs Council).
 
     Args:
         info (otypes.Info): User metadata and cookies.
+        onlyActive (bool): If true, returns only active clubs.
+            Default is False.
 
     Returns:
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    if user is None:
-        role = "public"
-    else:
-        role = user["role"]
+    isAdmin = False
+    if user is not None and user["role"] in ["cc"] and not onlyActive:
+        isAdmin = True
 
     results = []
-    if role in ["cc"]:
+    if isAdmin:
         results = await clubsdb.find().to_list(length=None)
     else:
         results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
@@ -127,7 +108,6 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
 # register all queries
 queries = [
-    activeClubs,
     allClubs,
     club,
 ]
