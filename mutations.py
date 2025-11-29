@@ -19,6 +19,8 @@ from otypes import (
 from utils import (
     check_remove_old_file,
     getUser,
+    invalidate_active_clubs_cache,
+    invalidate_club_cache,
     update_events_members_cid,
     update_role,
 )
@@ -74,6 +76,8 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
         if not await update_role(club_input["cid"], info.context.cookies):
             raise Exception("Error in updating the role for the club")
+
+        await invalidate_active_clubs_cache()
 
         return SimpleClubType.from_pydantic(created_sample)
 
@@ -168,7 +172,11 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
+        await invalidate_club_cache(club_input["cid"])
+        await invalidate_active_clubs_cache()
+
         if exists["cid"] != club_input["cid"]:
+            await invalidate_club_cache(exists["cid"])
             return1 = await update_role(
                 exists["cid"], info.context.cookies, role="public"
             )
@@ -249,6 +257,9 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
             },
         )
 
+        await invalidate_club_cache(club_input["cid"])
+        await invalidate_active_clubs_cache()
+
         result = Club.model_validate(
             await clubsdb.find_one({"cid": club_input["cid"]})
         )
@@ -296,6 +307,9 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
         await clubsdb.find_one({"cid": club_input["cid"]})
     )
 
+    await invalidate_active_clubs_cache()
+    await invalidate_club_cache(club_input["cid"])
+
     return SimpleClubType.from_pydantic(updated_sample)
 
 
@@ -338,6 +352,9 @@ async def restartClub(
     updated_sample = Club.model_validate(
         await clubsdb.find_one({"cid": club_input["cid"]})
     )
+
+    await invalidate_active_clubs_cache()
+    await invalidate_club_cache(club_input["cid"])
 
     return SimpleClubType.from_pydantic(updated_sample)
 

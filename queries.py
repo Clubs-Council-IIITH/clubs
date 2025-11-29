@@ -12,6 +12,12 @@ from models import Club
 
 # import all models and types
 from otypes import FullClubType, Info, SimpleClubInput, SimpleClubType
+from utils import (
+    active_clubs_cache,
+    active_clubs_lock,
+    club_cache,
+    club_cache_lock,
+)
 
 
 @strawberry.field
@@ -26,6 +32,8 @@ async def allClubs(
     it returns only the active clubs.
     Access to both public and CC (Clubs Council).
 
+    Note: The results are cached for public access.
+
     Args:
         info (otypes.Info): User metadata and cookies.
         onlyActive (bool): If true, returns only active clubs.
@@ -35,12 +43,16 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    isAdmin = False
-    if user is not None and user["role"] in ["cc"] and not onlyActive:
-        isAdmin = True
+    is_admin = user is not None and user["role"] in ["cc"] and not onlyActive
+
+    # For public, serve from cache if available
+    if not is_admin:
+        async with active_clubs_lock.reader_lock:
+            if "active_clubs" in active_clubs_cache:
+                return active_clubs_cache["active_clubs"]
 
     results = []
-    if isAdmin:
+    if is_admin:
         results = await clubsdb.find().to_list(length=None)
     else:
         results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
@@ -50,6 +62,11 @@ async def allClubs(
     clubs = []
     for result in results:
         clubs.append(SimpleClubType.from_pydantic(Club.model_validate(result)))
+
+    # Update the cache if not admin
+    if not is_admin:
+        async with active_clubs_lock.writer_lock:
+            active_clubs_cache["active_clubs"] = clubs
 
     return clubs
 
@@ -63,6 +80,8 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Returns deleted clubs also for CC and not for public.
     Accessible to both public and CC(Clubs Council).
 
+    Note: The results are cached for public access.
+
     Args:
         clubInput (otypes.SimpleClubInput): The club cid.
         info (otypes.Info): User metadata and cookies.
@@ -75,12 +94,19 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
+    is_admin = user is not None and user["role"] in ["cc"]
+
     club_input = jsonable_encoder(clubInput)
+    cid = club_input["cid"].lower()
+
+    # serve from cache if available for public
+    if not is_admin:
+        async with club_cache_lock.reader_lock:
+            if cid in club_cache:
+                return club_cache[cid]
 
     result = None
-    club = await clubsdb.find_one(
-        {"cid": club_input["cid"].lower()}, {"_id": 0}
-    )
+    club = await clubsdb.find_one({"cid": cid}, {"_id": 0})
 
     if not club:
         raise Exception("No Club Found")
@@ -88,7 +114,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     # check if club is deleted
     if club["state"] == "deleted":
         # if deleted, check if requesting user is admin
-        if (user is not None) and (user["role"] in ["cc"]):
+        if is_admin:
             result = Club.model_validate(club)
 
         # if not admin, raise error
@@ -100,8 +126,14 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         result = Club.model_validate(club)
 
     if result:
-        return FullClubType.from_pydantic(result)
+        full_club = FullClubType.from_pydantic(result)
 
+        # cache the club if not admin and not deleted
+        if not is_admin and club["state"] != "deleted":
+            async with club_cache_lock.writer_lock:
+                club_cache[cid] = full_club
+
+        return full_club
     else:
         raise Exception("No Club Result Found")
 

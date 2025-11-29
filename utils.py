@@ -1,9 +1,24 @@
 import os
 
+import aiorwlock
+from cachetools import LFUCache, LRUCache
 from httpx import AsyncClient
 
 inter_communication_secret = os.getenv("INTER_COMMUNICATION_SECRET")
 
+active_clubs_cache = LRUCache(maxsize=1)
+club_cache = LFUCache(maxsize=50)
+active_clubs_lock = aiorwlock.RWLock()
+club_cache_lock = aiorwlock.RWLock()
+
+async def invalidate_active_clubs_cache():
+    async with active_clubs_lock.writer_lock:
+        active_clubs_cache.clear()
+
+async def invalidate_club_cache(cid: str):
+    async with club_cache_lock.writer_lock:
+        if cid in club_cache:
+            del club_cache[cid]
 
 async def update_role(uid, cookies=None, role="club") -> dict | None:
     """
