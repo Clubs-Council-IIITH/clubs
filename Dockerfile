@@ -2,9 +2,9 @@
 FROM python:3.13-slim AS python_cache
 COPY --from=ghcr.io/astral-sh/uv:0.10 /uv /uvx /bin/
 
-ENV VIRTUAL_ENV=/venv
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV UV_PROJECT_ENVIRONMENT=/venv
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
@@ -20,9 +20,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.13-slim AS build
 EXPOSE 80
 WORKDIR /app
-ENV VIRTUAL_ENV=/venv
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-COPY --from=python_cache /venv /venv
+COPY --from=python_cache /opt/venv /opt/venv
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     strawberry export-schema main > schema.graphql
