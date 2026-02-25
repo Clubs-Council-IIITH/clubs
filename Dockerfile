@@ -18,12 +18,17 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # build and start
 FROM python:3.13-slim AS build
+
 EXPOSE 80
+
 WORKDIR /app
+
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 COPY --from=python_cache /opt/venv /opt/venv
 COPY . .
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     strawberry export-schema main > schema.graphql
 ENTRYPOINT [ "./entrypoint.sh" ]
