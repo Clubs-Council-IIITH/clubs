@@ -2,8 +2,6 @@
 FROM python:3.13-slim AS python_cache
 COPY --from=ghcr.io/astral-sh/uv:0.10 /uv /uvx /bin/
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
 ENV UV_LINK_MODE=copy
