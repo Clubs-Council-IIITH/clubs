@@ -1,6 +1,6 @@
 # cache dependencies
-FROM python:3.13 AS python_cache
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM python:3.13-slim AS python_cache
+COPY --from=ghcr.io/astral-sh/uv:0.10 /uv /uvx /bin/
 
 ENV VIRTUAL_ENV=/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
