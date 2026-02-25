@@ -10,11 +10,11 @@ ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
 ENV UV_COMPILE_BYTECODE=1
 
-WORKDIR /cache/
-COPY pyproject.toml uv.lock ./
-# RUN python -m venv /venv
+WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    uv sync --frozen --no-install-project
 
 # build and start
 FROM python:3.13-slim AS build
