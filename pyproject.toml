@@ -1,7 +1,9 @@
 [project]
-name = "clubs"
+name = "clubs-subgraph"
 version = "1.0.0"
-requires-python = ">=3.10"
+readme = "README.md"
+
+requires-python = ">=3.11"
 dependencies = [
     "aiorwlock>=1.5.0",
     "cachetools==6.2.1",
