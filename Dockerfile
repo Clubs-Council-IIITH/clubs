@@ -2,11 +2,10 @@
 FROM python:3.13-slim AS python_cache
 COPY --from=ghcr.io/astral-sh/uv:0.10 /uv /uvx /bin/
 
-ENV UV_PROJECT_ENVIRONMENT=/opt/venv
-
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
 ENV UV_COMPILE_BYTECODE=1
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
 WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -16,17 +15,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # build and start
 FROM python:3.13-slim AS build
-
 EXPOSE 80
-
-WORKDIR /app
 
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+WORKDIR /app
+
 COPY --from=python_cache /opt/venv /opt/venv
 COPY . .
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    strawberry export-schema main > schema.graphql
+RUN strawberry export-schema main > schema.graphql
 ENTRYPOINT [ "./entrypoint.sh" ]
