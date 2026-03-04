@@ -77,22 +77,7 @@ class SocialsType:
     other_links: Optional[List[str]] = strawberry.UNSET
 
 
-@strawberry.experimental.pydantic.type(
-    Club,
-    fields=[
-        "id",
-        "cid",
-        "code",
-        "state",
-        "category",
-        "email",
-        "logo",
-        "banner",
-        "banner_square",
-        "name",
-        "tagline",
-    ],
-)
+@strawberry.experimental.pydantic.type(Club)
 class SimpleClubType:
     """
     Type used for return of user-provided club details except social handles.
@@ -110,28 +95,20 @@ class SimpleClubType:
         name (str): Name of the Club.
         tagline (Optional[str]): Tagline of the Club. Defaults to None.
     """
+    id: strawberry.auto
+    cid: strawberry.auto
+    code: strawberry.auto
+    state: strawberry.auto
+    category: strawberry.auto
+    email: strawberry.auto
+    logo: strawberry.auto
+    banner: strawberry.auto
+    banner_square: strawberry.auto
+    name: strawberry.auto
+    tagline: strawberry.auto
 
-    pass
 
-
-@strawberry.experimental.pydantic.type(
-    model=Club,
-    fields=[
-        "id",
-        "cid",
-        "code",
-        "state",
-        "category",
-        "logo",
-        "banner",
-        "banner_square",
-        "name",
-        "email",
-        "tagline",
-        "description",
-        "socials",
-    ],
-)
+@strawberry.experimental.pydantic.type(model=Club)
 class FullClubType:
     """
     Type used for return of all user-provided club details.
@@ -151,19 +128,36 @@ class FullClubType:
         description (Optional[str]): Club Description. Defaults to None.
         socials (SocialsType): Social Handles of the Club.
     """
-
-    # socials: SocialsType
-    pass
+    id: strawberry.auto 
+    cid: strawberry.auto 
+    code: strawberry.auto 
+    state: strawberry.auto 
+    category: strawberry.auto 
+    logo: strawberry.auto 
+    banner: strawberry.auto 
+    banner_square: strawberry.auto 
+    name: strawberry.auto 
+    email: strawberry.auto 
+    tagline: strawberry.auto 
+    description: strawberry.auto 
+    socials: strawberry.auto 
 
 
 # CLUBS INPUTS
-@strawberry.experimental.pydantic.input(model=Social, all_fields=True)
+@strawberry.experimental.pydantic.input(model=Social)
 class SocialsInput:
     """
     Input used for input of social media handles of a club.
     """
-
-    pass
+    website: strawberry.auto
+    instagram: strawberry.auto
+    facebook: strawberry.auto
+    youtube: strawberry.auto
+    twitter: strawberry.auto
+    linkedin: strawberry.auto
+    discord: strawberry.auto
+    whatsapp: strawberry.auto
+    other_links: strawberry.auto
 
 
 @strawberry.input
@@ -178,31 +172,30 @@ class SimpleClubInput:
     cid: str
 
 
-@strawberry.experimental.pydantic.input(
-    model=Club,
-    fields=[
-        "cid",
-        "code",
-        "name",
-        "email",
-        "category",
-        "tagline",
-        "description",
-        "socials",
-    ],
-)
+@strawberry.experimental.pydantic.input(model=Club)
 class FullClubInput:
     """
     Input used for input of all user-provided club details, pictures are
     optional to fill.
 
     Attributes:
-        logo (Optional[str]): Club Logo URL. Defaults to None.
-        banner (Optional[str]): Club Banner URL. Defaults to None.
-        banner_square (Optional[str]): Club Square Banner URL.Defaults to None.
-
+        cid (str): the Club ID.
+        code (str): Unique Short Code of Club.
+        name (str): Name of the Club.
+        email (pydantic.networks.EmailStr): Email of the Club.
+        category (EnumCategories): Category of the Club.
+        tagline (str | None): Tagline of the Club. Defaults to None.
+        description (str | None): Club Description. Defaults to None.
+        socials (Social): Social Handles of the Club.
     """
-
+    cid: strawberry.auto
+    code: strawberry.auto
+    name: strawberry.auto
+    email: strawberry.auto
+    category: strawberry.auto
+    tagline: strawberry.auto
+    description: strawberry.auto
+    socials: strawberry.auto
     logo: Optional[str] = strawberry.UNSET
     banner: Optional[str] = strawberry.UNSET
     banner_square: Optional[str] = strawberry.UNSET
