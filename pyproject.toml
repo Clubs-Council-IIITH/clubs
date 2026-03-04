@@ -1,3 +1,21 @@
+[project]
+name = "clubs-subgraph"
+version = "1.0.0"
+readme = "README.md"
+
+requires-python = ">=3.11"
+dependencies = [
+    "aiorwlock>=1.5.0",
+    "cachetools==6.2.1",
+    "email-validator>=2.2.0",
+    "fastapi~=0.116.1",
+    "httpx==0.28.1",
+    "pydantic>=2.11.7,<3.0.0",
+    "pymongo==4.14.0",
+    "strawberry-graphql[debug-server]==0.278.1",
+    "uvicorn==0.35.0",
+]
+
 [tool.ruff]
 line-length = 79
 indent-width = 4
