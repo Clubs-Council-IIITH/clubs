@@ -184,7 +184,7 @@ class FullClubInput:
         socials (Social): Social Handles of the Club.
         logo (str | None): Club Logo URL. Defaults to None.
         banner (str | None): Club Banner URL. Defaults to None.
-        banner_square (str | None): Club SquareBanner URL. Defaults to None. 
+        banner_square (str | None): Club SquareBanner URL. Defaults to None.
                             Defaults to None.
     """
 
