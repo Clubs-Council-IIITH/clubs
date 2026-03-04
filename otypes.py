@@ -95,6 +95,7 @@ class SimpleClubType:
         name (str): Name of the Club.
         tagline (Optional[str]): Tagline of the Club. Defaults to None.
     """
+
     id: strawberry.auto
     cid: strawberry.auto
     code: strawberry.auto
@@ -128,36 +129,30 @@ class FullClubType:
         description (Optional[str]): Club Description. Defaults to None.
         socials (SocialsType): Social Handles of the Club.
     """
-    id: strawberry.auto 
-    cid: strawberry.auto 
-    code: strawberry.auto 
-    state: strawberry.auto 
-    category: strawberry.auto 
-    logo: strawberry.auto 
-    banner: strawberry.auto 
-    banner_square: strawberry.auto 
-    name: strawberry.auto 
-    email: strawberry.auto 
-    tagline: strawberry.auto 
-    description: strawberry.auto 
-    socials: strawberry.auto 
+
+    id: strawberry.auto
+    cid: strawberry.auto
+    code: strawberry.auto
+    state: strawberry.auto
+    category: strawberry.auto
+    logo: strawberry.auto
+    banner: strawberry.auto
+    banner_square: strawberry.auto
+    name: strawberry.auto
+    email: strawberry.auto
+    tagline: strawberry.auto
+    description: strawberry.auto
+    socials: strawberry.auto
 
 
 # CLUBS INPUTS
-@strawberry.experimental.pydantic.input(model=Social)
+@strawberry.experimental.pydantic.input(model=Social, all_fields=True)
 class SocialsInput:
     """
     Input used for input of social media handles of a club.
     """
-    website: strawberry.auto
-    instagram: strawberry.auto
-    facebook: strawberry.auto
-    youtube: strawberry.auto
-    twitter: strawberry.auto
-    linkedin: strawberry.auto
-    discord: strawberry.auto
-    whatsapp: strawberry.auto
-    other_links: strawberry.auto
+
+    pass
 
 
 @strawberry.input
@@ -187,7 +182,12 @@ class FullClubInput:
         tagline (str | None): Tagline of the Club. Defaults to None.
         description (str | None): Club Description. Defaults to None.
         socials (Social): Social Handles of the Club.
+        logo (str | None): Club Logo URL. Defaults to None.
+        banner (str | None): Club Banner URL. Defaults to None.
+        banner_square (str | None): Club SquareBanner URL. Defaults to None. 
+                            Defaults to None.
     """
+
     cid: strawberry.auto
     code: strawberry.auto
     name: strawberry.auto
