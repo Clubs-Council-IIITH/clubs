@@ -37,7 +37,7 @@ Query = create_type("Query", queries)
 # create mutation types
 Mutation = create_type("Mutation", mutations)
 
-# Stawberry extensions
+# Strawberry extensions
 extensions = [
     PydanticErrorExtension,
 ]
