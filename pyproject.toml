@@ -12,7 +12,7 @@ dependencies = [
     "httpx==0.28.1",
     "pydantic>=2.12.5,<3.0.0",
     "pymongo==4.16.0",
-    "strawberry-graphql[cli]==0.312.2",
+    "strawberry-graphql[cli]==0.313.0",
     "uvicorn==0.42.0",
 ]
 
