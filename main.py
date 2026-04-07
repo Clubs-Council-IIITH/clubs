@@ -44,7 +44,7 @@ extensions = [
 
 
 # Returns The custom context by overriding the context getter.
-async def get_context() -> Context:
+def get_context() -> Context:
     return Context()
 
 
