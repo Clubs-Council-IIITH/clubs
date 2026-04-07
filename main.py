@@ -52,6 +52,7 @@ def get_context() -> Context:
 DEBUG = getenv("GLOBAL_DEBUG", "False").lower() in ("true", "1", "t")
 if DEBUG:
     print("Running in debug mode")
+else:
     extensions += [
         DisableIntrospection,
     ]
