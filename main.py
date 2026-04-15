@@ -18,6 +18,7 @@ from os import getenv
 
 import strawberry
 from fastapi import FastAPI
+from strawberry.extensions import DisableIntrospection, PydanticErrorExtension
 from strawberry.fastapi import GraphQLRouter
 from strawberry.tools import create_type
 
@@ -36,20 +37,33 @@ Query = create_type("Query", queries)
 # create mutation types
 Mutation = create_type("Mutation", mutations)
 
+# Strawberry extensions
+extensions = [
+    PydanticErrorExtension,
+]
+
 
 # Returns The custom context by overriding the context getter.
-async def get_context() -> Context:
+def get_context() -> Context:
     return Context()
+
+
+# check whether running in debug mode
+DEBUG = getenv("GLOBAL_DEBUG", "False").lower() in ("true", "1", "t")
+if DEBUG:
+    print("Running in debug mode")
+else:
+    extensions += [
+        DisableIntrospection,
+    ]
 
 
 schema = strawberry.federation.Schema(
     query=Query,
     mutation=Mutation,
     scalar_overrides={PyObjectId: PyObjectIdType},
+    extensions=extensions,
 )
-
-# check whether running in debug mode
-DEBUG = getenv("GLOBAL_DEBUG", "False").lower() in ("true", "1", "t")
 
 # serve API with FastAPI router
 gql_app = GraphQLRouter(schema, context_getter=get_context)
