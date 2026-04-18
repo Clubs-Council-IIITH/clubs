@@ -54,7 +54,7 @@ if DEBUG:
     print("Running in debug mode")
 else:
     extensions += [
-        DisableIntrospection,
+        DisableIntrospection(),
     ]
 
 
