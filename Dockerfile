@@ -1,6 +1,6 @@
 # cache dependencies
 FROM python:3.14-slim AS python_cache
-COPY --from=ghcr.io/astral-sh/uv:0.10 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /bin/
 
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0

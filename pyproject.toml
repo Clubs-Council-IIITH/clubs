@@ -6,14 +6,14 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "aiorwlock>=1.5.1",
-    "cachetools==7.0.5",
+    "cachetools==7.0.6",
     "email-validator>=2.3.0",
-    "fastapi~=0.135.1",
+    "fastapi~=0.136.0",
     "httpx==0.28.1",
     "pydantic>=2.12.5,<3.0.0",
     "pymongo==4.16.0",
-    "strawberry-graphql[cli]==0.313.0",
-    "uvicorn==0.42.0",
+    "strawberry-graphql[cli]==0.314.3",
+    "uvicorn==0.45.0",
 ]
 
 [tool.ruff]
