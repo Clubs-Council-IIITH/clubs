@@ -10,9 +10,10 @@ dependencies = [
     "email-validator>=2.3.0",
     "fastapi~=0.136.0",
     "httpx==0.28.1",
+    "idna>=3.15",
     "pydantic>=2.12.5,<3.0.0",
     "pymongo==4.16.0",
-    "strawberry-graphql[cli]==0.314.3",
+    "strawberry-graphql[cli]>=0.315.4",
     "uvicorn==0.45.0",
 ]
 
