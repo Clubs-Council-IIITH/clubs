@@ -43,7 +43,7 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    is_admin = user is not None and user["role"] in ["cc"] and not onlyActive
+    is_admin = user is not None and user["role"] in ["cc", "slo"] and not onlyActive
 
     # For public, serve from cache if available
     if not is_admin:
@@ -77,7 +77,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     Fetches all Club Details of a club
 
     Used to get all the details of a deleted/active club by its cid.
-    Returns deleted clubs also for CC and not for public.
+    Returns deleted clubs also for CC and SLO and not for public.
     Accessible to both public and CC(Clubs Council).
 
     Note: The results are cached for public access.
@@ -94,7 +94,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
-    is_admin = user is not None and user["role"] in ["cc"]
+    is_admin = user is not None and user["role"] in ["cc", "slo"]
 
     club_input = jsonable_encoder(clubInput)
     cid = club_input["cid"].lower()
