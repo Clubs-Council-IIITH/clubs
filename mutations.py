@@ -25,6 +25,14 @@ from utils import (
     update_role,
 )
 
+NON_LOGINABLE_CIDS = {"sac", "slc"}
+
+def is_non_loginable(club_input):
+    return (
+        club_input["category"] == "supervisory"
+        and club_input["cid"] in NON_LOGINABLE_CIDS
+    )
+
 
 @strawberry.mutation
 async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
@@ -53,17 +61,20 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
-    if role in ["cc"]:
+    if role in ["cc", "slo"]:
         club_input["cid"] = club_input["email"].split("@")[0]
 
         cid_exists = await clubsdb.find_one({"cid": club_input["cid"]})
         if cid_exists:
             raise Exception("A club with this cid already exists")
 
-        # Check whether this cid is valid or not
-        clubMember = await getUser(club_input["cid"], info.context.cookies)
-        if clubMember is None:
-            raise Exception("Invalid Club ID/Club Email")
+        if not is_non_loginable(club_input):
+            # Check whether this cid is valid or not
+            clubMember = await getUser(
+                club_input["cid"], info.context.cookies
+            )
+            if clubMember is None:
+                raise Exception("Invalid Club ID/Club Email")
 
         code_exists = await clubsdb.find_one({"code": club_input["code"]})
         if code_exists:
@@ -74,8 +85,9 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
             await clubsdb.find_one({"_id": created_record.inserted_id})
         )
 
-        if not await update_role(club_input["cid"], info.context.cookies):
-            raise Exception("Error in updating the role for the club")
+        if not is_non_loginable(club_input):
+            if not await update_role(club_input["cid"], info.context.cookies):
+                raise Exception("Error in updating the role for the club")
 
         await invalidate_active_clubs_cache()
 
@@ -123,15 +135,18 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
-    if role in ["cc"]:
+    if role in ["cc", "slo"]:
         exists = await clubsdb.find_one({"code": club_input["code"]})
         if not exists:
             raise Exception("A club with this code doesn't exist")
 
-        # Check whether this cid is valid or not
-        clubMember = await getUser(club_input["cid"], info.context.cookies)
-        if clubMember is None:
-            raise Exception("Invalid Club ID/Club Email")
+        if not is_non_loginable(club_input):
+            # Check whether this cid is valid or not
+            clubMember = await getUser(
+                club_input["cid"], info.context.cookies
+            )
+            if clubMember is None:
+                raise Exception("Invalid Club ID/Club Email")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -194,8 +209,8 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
         return FullClubType.from_pydantic(result)
 
-    elif role in ["club"]:
-        if uid != club_input["cid"]:
+    elif role in ["club", "slo"]:
+        if uid != club_input["cid"] and role != "slo":
             raise Exception("Authentication Error! (CLUB ID CHANGED)")
 
         exists = await clubsdb.find_one({"cid": club_input["cid"]})
@@ -292,7 +307,7 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
-    if role not in ["cc"]:
+    if role not in ["cc", "slo"]:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time
@@ -338,7 +353,7 @@ async def restartClub(
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
-    if role not in ["cc"]:
+    if role not in ["cc", "slo"]:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time

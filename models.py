@@ -109,6 +109,7 @@ class EnumCategories(str, Enum):
     technical = "technical"
     affinity = "affinity"
     admin = "admin"
+    supervisory = "supervisory"
     body = "body"
     other = "other"
 
