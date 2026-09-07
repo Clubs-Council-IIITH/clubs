@@ -61,7 +61,7 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
-    if role in ["cc"]:
+    if role in ["cc", "slo"]:
         club_input["cid"] = club_input["email"].split("@")[0]
 
         cid_exists = await clubsdb.find_one({"cid": club_input["cid"]})
@@ -135,7 +135,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     club_input = jsonable_encoder(clubInput.to_pydantic())
 
-    if role in ["cc"]:
+    if role in ["cc", "slo"]:
         exists = await clubsdb.find_one({"code": club_input["code"]})
         if not exists:
             raise Exception("A club with this code doesn't exist")
@@ -209,8 +209,8 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         )
         return FullClubType.from_pydantic(result)
 
-    elif role in ["club"]:
-        if uid != club_input["cid"]:
+    elif role in ["club", "slo"]:
+        if uid != club_input["cid"] and role != "slo":
             raise Exception("Authentication Error! (CLUB ID CHANGED)")
 
         exists = await clubsdb.find_one({"cid": club_input["cid"]})
@@ -307,7 +307,7 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
-    if role not in ["cc"]:
+    if role not in ["cc", "slo"]:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time
@@ -353,7 +353,7 @@ async def restartClub(
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
-    if role not in ["cc"]:
+    if role not in ["cc", "slo"]:
         raise Exception("Not Authenticated to access this API")
 
     # also autofills the updated time
