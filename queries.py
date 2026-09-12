@@ -2,7 +2,7 @@
 Queries for Clubs
 """
 
-from typing import List
+from typing import List, Optional
 
 import strawberry
 from fastapi.encoders import jsonable_encoder
@@ -22,7 +22,9 @@ from utils import (
 
 @strawberry.field
 async def allClubs(
-    info: Info, onlyActive: bool = False
+    info: Info,
+    category: Optional[str] = None,
+    onlyActive: bool = False,
 ) -> List[SimpleClubType]:
     """
     Fetches all the clubs
@@ -36,6 +38,8 @@ async def allClubs(
 
     Args:
         info (otypes.Info): User metadata and cookies.
+        category (Optional[str]): Category of clubs to fetch.
+            Default is None.
         onlyActive (bool): If true, returns only active clubs.
             Default is False.
 
@@ -43,19 +47,27 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    is_admin = user is not None and user["role"] in ["cc"] and not onlyActive
+    is_admin = user is not None and user["role"] in ["cc", "slo"] and not onlyActive
+
+    cache_key = f"active_clubs_{category}"
 
     # For public, serve from cache if available
     if not is_admin:
         async with active_clubs_lock.reader_lock:
-            if "active_clubs" in active_clubs_cache:
-                return active_clubs_cache["active_clubs"]
+            if cache_key in active_clubs_cache:
+                return active_clubs_cache[cache_key]
+
+    query = {}
+    if not is_admin:
+        query["state"] = "active"
+    if category is not None:
+        query["category"] = category
 
     results = []
     if is_admin:
-        results = await clubsdb.find().to_list(length=None)
+        results = await clubsdb.find(query).to_list(length=None)
     else:
-        results = await clubsdb.find({"state": "active"}, {"_id": 0}).to_list(
+        results = await clubsdb.find(query, {"_id": 0}).to_list(
             length=None
         )
 
@@ -66,7 +78,7 @@ async def allClubs(
     # Update the cache if not admin
     if not is_admin:
         async with active_clubs_lock.writer_lock:
-            active_clubs_cache["active_clubs"] = clubs
+            active_clubs_cache[cache_key] = clubs
 
     return clubs
 
@@ -94,7 +106,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
         Exception: If the club is deleted and the user is not CC.
     """
     user = info.context.user
-    is_admin = user is not None and user["role"] in ["cc"]
+    is_admin = user is not None and user["role"] in ["cc", "slo"]
 
     club_input = jsonable_encoder(clubInput)
     cid = club_input["cid"].lower()
