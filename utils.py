@@ -1,6 +1,8 @@
+import json
 import os
 
 import aiorwlock
+import httpx
 from cachetools import LFUCache, LRUCache
 from httpx import AsyncClient
 
@@ -58,7 +60,7 @@ async def update_role(uid, cookies=None, role="club") -> dict | None:
                 json={"query": query, "variables": variables},
             )
         return result.json()
-    except Exception:
+    except httpx.HTTPError, json.JSONDecodeError, KeyError:
         return None
 
 
@@ -108,7 +110,7 @@ async def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
                 json={"query": query, "variables": variables},
             )
         return1 = result.json()
-    except Exception:
+    except httpx.HTTPError, json.JSONDecodeError, KeyError:
         return False
 
     # Update Members CID
@@ -137,13 +139,10 @@ async def update_events_members_cid(old_cid, new_cid, cookies=None) -> bool:
                 json={"query": query, "variables": variables},
             )
         return2 = result.json()
-    except Exception:
+    except httpx.HTTPError, json.JSONDecodeError, KeyError:
         return False
 
-    if return1 and return2:
-        return True
-    else:
-        return False
+    return bool(return1 and return2)
 
 
 async def getUser(uid, cookies=None) -> dict | None:
@@ -178,7 +177,7 @@ async def getUser(uid, cookies=None) -> dict | None:
                 json={"query": query, "variables": variable},
             )
         return request.json()["data"]["userProfile"]
-    except Exception:
+    except httpx.HTTPError, json.JSONDecodeError, KeyError:
         return None
 
 
@@ -202,7 +201,7 @@ async def delete_file(filename) -> str:
         )
 
     if response.status_code != 200:
-        raise Exception(response.text)
+        raise RuntimeError(response.text)
 
     return response.text
 
@@ -226,7 +225,7 @@ async def check_remove_old_file(old_obj, new_obj, name="logo") -> bool:
     if old_file and new_file and old_file != new_file:
         try:
             await delete_file(old_file)
-        except Exception as e:
+        except (httpx.HTTPError, RuntimeError) as e:
             print(f"Error in deleting old {name} file: {e}")
             return False
 

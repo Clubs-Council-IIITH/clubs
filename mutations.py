@@ -1,3 +1,5 @@
+from graphql import GraphQLError
+
 """
 Mutations for Clubs
 """
@@ -26,6 +28,7 @@ from utils import (
 )
 
 NON_LOGINABLE_CIDS = {"sac", "slc"}
+
 
 def is_non_loginable(club_input):
     return (
@@ -56,7 +59,7 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
     """
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
+        raise GraphQLError("Not Authenticated")
 
     role = user["role"]
     club_input = jsonable_encoder(clubInput.to_pydantic())
@@ -66,35 +69,34 @@ async def createClub(clubInput: FullClubInput, info: Info) -> SimpleClubType:
 
         cid_exists = await clubsdb.find_one({"cid": club_input["cid"]})
         if cid_exists:
-            raise Exception("A club with this cid already exists")
+            raise GraphQLError("A club with this cid already exists")
 
         if not is_non_loginable(club_input):
             # Check whether this cid is valid or not
-            clubMember = await getUser(
-                club_input["cid"], info.context.cookies
-            )
+            clubMember = await getUser(club_input["cid"], info.context.cookies)
             if clubMember is None:
-                raise Exception("Invalid Club ID/Club Email")
+                raise GraphQLError("Invalid Club ID/Club Email")
 
         code_exists = await clubsdb.find_one({"code": club_input["code"]})
         if code_exists:
-            raise Exception("A club with this short code already exists")
+            raise GraphQLError("A club with this short code already exists")
 
         created_record = await clubsdb.insert_one(club_input)
         created_sample = Club.model_validate(
             await clubsdb.find_one({"_id": created_record.inserted_id})
         )
 
-        if not is_non_loginable(club_input):
-            if not await update_role(club_input["cid"], info.context.cookies):
-                raise Exception("Error in updating the role for the club")
+        if not is_non_loginable(club_input) and not await update_role(
+            club_input["cid"], info.context.cookies
+        ):
+            raise GraphQLError("Error in updating the role for the club")
 
         await invalidate_active_clubs_cache()
 
         return SimpleClubType.from_pydantic(created_sample)
 
     else:
-        raise Exception("Not Authenticated to access this API")
+        raise GraphQLError("Not Authenticated to access this API")
 
 
 @strawberry.mutation
@@ -128,7 +130,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     """  # noqa: E501
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
+        raise GraphQLError("Not Authenticated")
 
     role = user["role"]
     uid = user["uid"]
@@ -138,15 +140,13 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
     if role in ["cc", "slo"]:
         exists = await clubsdb.find_one({"code": club_input["code"]})
         if not exists:
-            raise Exception("A club with this code doesn't exist")
+            raise GraphQLError("A club with this code doesn't exist")
 
         if not is_non_loginable(club_input):
             # Check whether this cid is valid or not
-            clubMember = await getUser(
-                club_input["cid"], info.context.cookies
-            )
+            clubMember = await getUser(club_input["cid"], info.context.cookies)
             if clubMember is None:
-                raise Exception("Invalid Club ID/Club Email")
+                raise GraphQLError("Invalid Club ID/Club Email")
 
         club_input["state"] = exists["state"]
         club_input["_id"] = exists["_id"]
@@ -156,7 +156,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         await check_remove_old_file(exists, club_input, "banner_square")
 
         await clubsdb.replace_one({"code": club_input["code"]}, club_input)
-        if "socials" in club_input.keys():
+        if "socials" in club_input:
             await clubsdb.update_one(
                 {"code": club_input["code"]},
                 {
@@ -202,7 +202,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
                 exists["cid"], club_input["cid"], cookies=info.context.cookies
             )
             if not return1 or not return2 or not return3:
-                raise Exception("Error in updating the role/cid.")
+                raise GraphQLError("Error in updating the role/cid.")
 
         result = Club.model_validate(
             await clubsdb.find_one({"code": club_input["code"]})
@@ -211,23 +211,23 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
 
     elif role in ["club", "slo"]:
         if uid != club_input["cid"] and role != "slo":
-            raise Exception("Authentication Error! (CLUB ID CHANGED)")
+            raise GraphQLError("Authentication Error! (CLUB ID CHANGED)")
 
         exists = await clubsdb.find_one({"cid": club_input["cid"]})
         if not exists:
-            raise Exception("A club with this cid doesn't exist")
+            raise GraphQLError("A club with this cid doesn't exist")
 
         if (
             club_input["name"] != exists["name"]
             or club_input["email"] != exists["email"]
         ):
-            raise Exception(
+            raise GraphQLError(
                 "You don't have permission to change the name/email of the"
-                "club. Please contact CC for it"  # noqa: E501
+                "club. Please contact CC for it"
             )
 
         if club_input["category"] != exists["category"]:
-            raise Exception(
+            raise GraphQLError(
                 "Only CC is allowed to change the category of club."
             )
 
@@ -239,7 +239,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         await check_remove_old_file(exists, club_input, "banner_square")
 
         await clubsdb.replace_one({"cid": uid}, club_input)
-        if "socials" in club_input.keys():
+        if "socials" in club_input:
             await clubsdb.update_one(
                 {"cid": club_input["cid"]},
                 {
@@ -281,7 +281,7 @@ async def editClub(clubInput: FullClubInput, info: Info) -> FullClubType:
         return FullClubType.from_pydantic(result)
 
     else:
-        raise Exception("Not Authenticated to access this API")
+        raise GraphQLError("Not Authenticated to access this API")
 
 
 @strawberry.mutation
@@ -302,13 +302,13 @@ async def deleteClub(clubInput: SimpleClubInput, info: Info) -> SimpleClubType:
     """
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
+        raise GraphQLError("Not Authenticated")
 
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
     if role not in ["cc", "slo"]:
-        raise Exception("Not Authenticated to access this API")
+        raise GraphQLError("Not Authenticated to access this API")
 
     # also autofills the updated time
     await clubsdb.update_one(
@@ -348,13 +348,13 @@ async def restartClub(
     """
     user = info.context.user
     if user is None:
-        raise Exception("Not Authenticated")
+        raise GraphQLError("Not Authenticated")
 
     role = user["role"]
     club_input = jsonable_encoder(clubInput)
 
     if role not in ["cc", "slo"]:
-        raise Exception("Not Authenticated to access this API")
+        raise GraphQLError("Not Authenticated to access this API")
 
     # also autofills the updated time
     await clubsdb.update_one(

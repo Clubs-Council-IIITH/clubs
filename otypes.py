@@ -4,7 +4,6 @@ Types and Inputs for clubs subgraph
 
 import json
 from functools import cached_property
-from typing import Dict, List, Optional, Union
 
 import strawberry
 from strawberry.fastapi import BaseContext
@@ -22,7 +21,7 @@ class Context(BaseContext):
     """
 
     @cached_property
-    def user(self) -> Union[Dict, None]:
+    def user(self) -> dict | None:
         if not self.request:
             return None
 
@@ -30,7 +29,7 @@ class Context(BaseContext):
         return user
 
     @cached_property
-    def cookies(self) -> Union[Dict, None]:
+    def cookies(self) -> dict | None:
         if not self.request:
             return None
 
@@ -66,15 +65,15 @@ class SocialsType:
                                      Defaults to None.
     """
 
-    website: Optional[str] = strawberry.UNSET
-    instagram: Optional[str] = strawberry.UNSET
-    facebook: Optional[str] = strawberry.UNSET
-    youtube: Optional[str] = strawberry.UNSET
-    twitter: Optional[str] = strawberry.UNSET
-    linkedin: Optional[str] = strawberry.UNSET
-    discord: Optional[str] = strawberry.UNSET
-    whatsapp: Optional[str] = strawberry.UNSET
-    other_links: Optional[List[str]] = strawberry.UNSET
+    website: str | None = strawberry.UNSET
+    instagram: str | None = strawberry.UNSET
+    facebook: str | None = strawberry.UNSET
+    youtube: str | None = strawberry.UNSET
+    twitter: str | None = strawberry.UNSET
+    linkedin: str | None = strawberry.UNSET
+    discord: str | None = strawberry.UNSET
+    whatsapp: str | None = strawberry.UNSET
+    other_links: list[str] | None = strawberry.UNSET
 
 
 @strawberry.experimental.pydantic.type(Club)
@@ -152,8 +151,6 @@ class SocialsInput:
     Input used for input of social media handles of a club.
     """
 
-    pass
-
 
 @strawberry.input
 class SimpleClubInput:
@@ -196,6 +193,6 @@ class FullClubInput:
     tagline: strawberry.auto
     description: strawberry.auto
     socials: strawberry.auto
-    logo: Optional[str] = strawberry.UNSET
-    banner: Optional[str] = strawberry.UNSET
-    banner_square: Optional[str] = strawberry.UNSET
+    logo: str | None = strawberry.UNSET
+    banner: str | None = strawberry.UNSET
+    banner_square: str | None = strawberry.UNSET

@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from zoneinfo import ZoneInfo
 
 import strawberry
@@ -29,11 +29,17 @@ Annotated type and validator for HTTP URLs to be stored as strings.
 """
 
 
-def create_utc_time():
+TIMEZONE = ZoneInfo("Asia/Kolkata")
+
+
+def create_current_time():
     """
-    Returns the current time according to UTC timezone.
+    Returns the current time according to Asia/Kolkata (IST) timezone.
     """
-    return datetime.now(ZoneInfo("UTC"))
+    return datetime.now(TIMEZONE)
+
+
+create_utc_time = create_current_time
 
 
 # for handling mongo ObjectIds
@@ -90,7 +96,7 @@ def iiit_email_only(v: str) -> str:
 
 def current_year() -> int:
     """Returns the current year."""
-    return datetime.now().year
+    return datetime.now(TIMEZONE).year
 
 
 @strawberry.enum
@@ -142,7 +148,7 @@ class Social(BaseModel):
     linkedin: HttpUrlString | None = None
     discord: HttpUrlString | None = None
     whatsapp: HttpUrlString | None = None
-    other_links: List[HttpUrlString] = Field([])  # Type and URL
+    other_links: list[HttpUrlString] = Field([])  # Type and URL
 
     @field_validator("other_links")
     @classmethod

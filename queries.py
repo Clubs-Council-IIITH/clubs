@@ -1,8 +1,9 @@
+from graphql import GraphQLError
+
 """
 Queries for Clubs
 """
 
-from typing import List, Optional
 
 import strawberry
 from fastapi.encoders import jsonable_encoder
@@ -23,9 +24,9 @@ from utils import (
 @strawberry.field
 async def allClubs(
     info: Info,
-    category: Optional[str] = None,
+    category: str | None = None,
     onlyActive: bool = False,
-) -> List[SimpleClubType]:
+) -> list[SimpleClubType]:
     """
     Fetches all the clubs
 
@@ -47,7 +48,9 @@ async def allClubs(
         (List[otypes.SimpleClubType]): List of all clubs.
     """
     user = info.context.user
-    is_admin = user is not None and user["role"] in ["cc", "slo"] and not onlyActive
+    is_admin = (
+        user is not None and user["role"] in ["cc", "slo"] and not onlyActive
+    )
 
     cache_key = f"active_clubs_{category}"
 
@@ -67,9 +70,7 @@ async def allClubs(
     if is_admin:
         results = await clubsdb.find(query).to_list(length=None)
     else:
-        results = await clubsdb.find(query, {"_id": 0}).to_list(
-            length=None
-        )
+        results = await clubsdb.find(query, {"_id": 0}).to_list(length=None)
 
     clubs = []
     for result in results:
@@ -121,7 +122,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
     club = await clubsdb.find_one({"cid": cid}, {"_id": 0})
 
     if not club:
-        raise Exception("No Club Found")
+        raise GraphQLError("No Club Found")
 
     # check if club is deleted
     if club["state"] == "deleted":
@@ -131,7 +132,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
         # if not admin, raise error
         else:
-            raise Exception("No Club Found")
+            raise GraphQLError("No Club Found")
 
     # if not deleted, return club
     else:
@@ -147,7 +148,7 @@ async def club(clubInput: SimpleClubInput, info: Info) -> FullClubType:
 
         return full_club
     else:
-        raise Exception("No Club Result Found")
+        raise GraphQLError("No Club Result Found")
 
 
 # register all queries
